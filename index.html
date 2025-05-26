@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Database Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cs { color: #4CAF50; }
+        .ce { color: #2196F3; }
+        .ec { color: #FF9800; }
+        .me { color: #9C27B0; }
+
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9ff;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .metric-card {
+                padding: 20px;
+            }
+
+            .metric-number {
+                font-size: 2rem;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            select, input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Student Database Dashboard</h1>
+            <p>Real-time student analytics and management system</p>
+        </div>
+
+        <div id="loading" class="content-section">
+            <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 2rem; margin-bottom: 20px;">⏳</div>
+                <h3>Loading Student Data...</h3>
+                <p>Please wait while we fetch the student database</p>
+            </div>
+        </div>
+
+        <div id="error" class="content-section hidden">
+            <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                <div style="font-size: 2rem; margin-bottom: 20px;">❌</div>
+                <h3>Error Loading Data</h3>
+                <p id="errorMessage">Could not load students.csv file</p>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+                    Make sure 'students.csv' is in the same directory as this HTML file
+                </p>
+            </div>
+        </div>
+
+        <div id="dashboard" class="hidden">
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be populated here -->
+            </div>
+
+            <div class="content-section">
+                <h2 class="section-title">📊 Year & Course-wise Student Count</h2>
+                <div class="table-container">
+                    <table id="summaryTable">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>CS</th>
+                                <th>CE</th>
+                                <th>EC</th>
+                                <th>ME</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Summary data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h2 class="section-title">👥 Student List</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Course</label>
+                        <select id="courseFilter">
+                            <option value="">All Courses</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Year</label>
+                        <select id="yearFilter">
+                            <option value="">All Years</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Search Name</label>
+                        <input type="text" id="nameFilter" placeholder="Enter student name...">
+                    </div>
+                    <button class="btn" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn" onclick="clearFilters()">Clear</button>
+                </div>
+                <div class="table-container">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Sl No</th>
+                                <th>Student Name</th>
+                                <th>Father Name</th>
+                                <th>Year</th>
+                                <th>Course</th>
+                                <th>Reg No</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Student data will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let studentsData = [];
+        let filteredData = [];
+
+        // Auto-load CSV file on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCSVFile();
+        });
+
+        async function loadCSVFile() {
+            try {
+                showLoading();
+                const response = await fetch('students.csv');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                parseCSV(csvText);
+                hideLoading();
+                
+            } catch (error) {
+                console.error('Error loading CSV file:', error);
+                showError('Could not load students.csv file. Make sure the file exists in the same directory.');
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            studentsData = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    const student = {};
+                    
+                    headers.forEach((header, index) => {
+                        student[header] = values[index] || '';
+                    });
+                    
+                    // Filter: Only include students with 'In' status and no 'Due Fee' in remarks
+                    if (student['In/Out'] === 'In' && !student['Remarks']?.includes('Due Fee')) {
+                        studentsData.push(student);
+                    }
+                }
+            }
+            
+            filteredData = [...studentsData];
+            displayDashboard();
+        }
+
+        function displayDashboard() {
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            generateMetrics();
+            generateSummaryTable();
+            populateFilters();
+            displayStudentList();
+        }
+
+        function generateMetrics() {
+            const courseCount = {};
+            
+            studentsData.forEach(student => {
+                const course = student['Course'];
+                courseCount[course] = (courseCount[course] || 0) + 1;
+            });
+
+            const metricsGrid = document.getElementById('metricsGrid');
+            metricsGrid.innerHTML = '';
+
+            const courseColors = {
+                'CS': 'cs',
+                'CE': 'ce', 
+                'EC': 'ec',
+                'ME': 'me'
+            };
+
+            Object.entries(courseCount).forEach(([course, count]) => {
+                const metricCard = document.createElement('div');
+                metricCard.className = 'metric-card';
+                metricCard.innerHTML = `
+                    <div class="metric-number ${courseColors[course] || ''}">${count}</div>
+                    <div class="metric-label">${course} Students</div>
+                `;
+                metricsGrid.appendChild(metricCard);
+            });
+
+            // Total students card
+            const totalCard = document.createElement('div');
+            totalCard.className = 'metric-card';
+            totalCard.innerHTML = `
+                <div class="metric-number" style="color: #333;">${studentsData.length}</div>
+                <div class="metric-label">Total Students</div>
+            `;
+            metricsGrid.appendChild(totalCard);
+        }
+
+        function generateSummaryTable() {
+            const summary = {};
+            
+            studentsData.forEach(student => {
+                const year = student['Year'];
+                const course = student['Course'];
+                
+                if (!summary[year]) {
+                    summary[year] = { CS: 0, CE: 0, EC: 0, ME: 0, total: 0 };
+                }
+                
+                summary[year][course] = (summary[year][course] || 0) + 1;
+                summary[year].total++;
+            });
+
+            const tbody = document.querySelector('#summaryTable tbody');
+            tbody.innerHTML = '';
+
+            Object.entries(summary).forEach(([year, courses]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${year}</strong></td>
+                    <td>${courses.CS || 0}</td>
+                    <td>${courses.CE || 0}</td>
+                    <td>${courses.EC || 0}</td>
+                    <td>${courses.ME || 0}</td>
+                    <td><strong>${courses.total}</strong></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function populateFilters() {
+            const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
+            const years = [...new Set(studentsData.map(s => s['Year']))].sort();
+
+            const courseFilter = document.getElementById('courseFilter');
+            const yearFilter = document.getElementById('yearFilter');
+
+            courseFilter.innerHTML = '<option value="">All Courses</option>';
+            courses.forEach(course => {
+                courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+            });
+
+            yearFilter.innerHTML = '<option value="">All Years</option>';
+            years.forEach(year => {
+                yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+        }
+
+        function displayStudentList() {
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = '';
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-data">No students found</td></tr>';
+                return;
+            }
+
+            filteredData.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student['Sl No'] || ''}</td>
+                    <td>${student['Student Name'] || ''}</td>
+                    <td>${student['Father Name'] || ''}</td>
+                    <td>${student['Year'] || ''}</td>
+                    <td><span class="course-badge ${student['Course']?.toLowerCase()}">${student['Course'] || ''}</span></td>
+                    <td>${student['Reg No'] || ''}</td>
+                    <td>${student['In/Out'] || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function applyFilters() {
+            const courseFilter = document.getElementById('courseFilter').value;
+            const yearFilter = document.getElementById('yearFilter').value;
+            const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+
+            filteredData = studentsData.filter(student => {
+                const matchesCourse = !courseFilter || student['Course'] === courseFilter;
+                const matchesYear = !yearFilter || student['Year'] === yearFilter;
+                const matchesName = !nameFilter || 
+                    student['Student Name']?.toLowerCase().includes(nameFilter) ||
+                    student['Father Name']?.toLowerCase().includes(nameFilter);
+
+                return matchesCourse && matchesYear && matchesName;
+            });
+
+            displayStudentList();
+        }
+
+        function clearFilters() {
+            document.getElementById('courseFilter').value = '';
+            document.getElementById('yearFilter').value = '';
+            document.getElementById('nameFilter').value = '';
+            filteredData = [...studentsData];
+            displayStudentList();
+        }
+
+        // Auto-apply filters on input change
+        document.getElementById('nameFilter').addEventListener('input', applyFilters);
+        document.getElementById('courseFilter').addEventListener('change', applyFilters);
+        document.getElementById('yearFilter').addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>
