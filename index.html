@@ -43,6 +43,7 @@
             --ce-color: #2196F3;
             --ec-color: #FF9800;
             --me-color: #9C27B0;
+            --ee-color: #FF5722;
             
             /* Design system */
             --border-radius: 8px;
@@ -147,60 +148,6 @@
             transform: scale(1.1);
         }
 
-        /* Theme switch styling similar to fee structure */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 16px;
-            gap: 10px;
-        }
-
-        .theme-switch {
-            display: inline-block;
-            position: relative;
-            width: 60px;
-            height: 28px;
-        }
-
-        .theme-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--toggle-bg);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(32px);
-        }
-
         .nav-tabs {
             display: flex;
             background: var(--bg-card);
@@ -276,6 +223,7 @@
         .ce { color: var(--ce-color); }
         .ec { color: var(--ec-color); }
         .me { color: var(--me-color); }
+        .ee { color: var(--ee-color); }
 
         .content-section {
             background: var(--bg-card);
@@ -738,18 +686,40 @@
                 font-size: 0.9rem;
             }
         }
+
+        .footer {
+            text-align: center;
+            padding: 24px 0;
+            margin-top: 32px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer-line {
+            margin-bottom: 8px;
+        }
+
+        .footer-copyright {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        @media screen and (max-width: 768px) {
+            .footer {
+                padding: 16px 0;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="theme-switch-wrapper">
-                <span style="color: white; margin-right: 10px;">Dark Mode</span>
-                <label class="theme-switch">
-                    <input type="checkbox" id="theme-toggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                🌙
+            </button>
             <h1>SMP Admn Stats 2025-26</h1>
             <p>Real-time student analytics and management system</p>
             <p class="update-info">Visit daily for updates</p>
@@ -804,15 +774,38 @@
                             <thead>
                                 <tr>
                                     <th>Year</th>
-                                    <th>CS</th>
                                     <th>CE</th>
-                                    <th>EC</th>
                                     <th>ME</th>
+                                    <th>EC</th>
+                                    <th>CS</th>
+                                    <th>EE</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- Summary data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h2 class="section-title">📅 Date-wise & Course-wise Students Report</h2>
+                    <div class="table-container">
+                        <table id="datewiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>CE</th>
+                                    <th>ME</th>
+                                    <th>EC</th>
+                                    <th>CS</th>
+                                    <th>EE</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Datewise data will be populated here -->
                             </tbody>
                         </table>
                     </div>
@@ -839,8 +832,7 @@
                             <label>Search Name</label>
                             <input type="text" id="nameFilter" placeholder="Enter student name...">
                         </div>
-                        <button class="btn" onclick="applyFilters()">Apply Filters</button>
-                        <button class="btn" onclick="clearFilters()">Clear</button>
+                        <button class="btn" onclick="clearFilters()">Clear Filters</button>
                         <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
                         <button class="btn btn-pdf" onclick="saveToPDF()">📄 Save PDF</button>
                     </div>
@@ -865,6 +857,12 @@
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-line">This site is best optimized for Chrome on desktop</div>
+            <div class="footer-copyright">SMP(R), All Rights Reserved</div>
+        </div>
     </div>
 
     <script>
@@ -872,24 +870,33 @@
         let filteredData = [];
 
         // Dark mode functionality
-        function initializeTheme() {
-            const themeToggle = document.getElementById('theme-toggle');
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.getAttribute('data-theme') === 'dark';
+            const toggle = document.querySelector('.dark-mode-toggle');
+            
+            if (isDark) {
+                body.removeAttribute('data-theme');
+                toggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                toggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
+            const toggle = document.querySelector('.dark-mode-toggle');
             
             if (savedTheme === 'dark') {
                 document.body.setAttribute('data-theme', 'dark');
-                themeToggle.checked = true;
+                toggle.textContent = '☀️';
+            } else {
+                toggle.textContent = '🌙';
             }
-            
-            themeToggle.addEventListener('change', function() {
-                if (this.checked) {
-                    document.body.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.body.removeAttribute('data-theme');
-                    localStorage.setItem('theme', 'light');
-                }
-            });
         }
 
         // Section navigation
@@ -913,7 +920,7 @@
 
         // Auto-load CSV file on page load
         document.addEventListener('DOMContentLoaded', function() {
-            initializeTheme();
+            loadTheme();
             loadCSVFile();
         });
 
@@ -951,6 +958,52 @@
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('error').classList.remove('hidden');
             document.getElementById('errorMessage').textContent = message;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            
+            try {
+                // Try to parse the date in various formats
+                let date;
+                
+                // Handle dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd formats
+                if (dateStr.includes('/')) {
+                    const parts = dateStr.split('/');
+                    if (parts.length === 3) {
+                        // Assume dd/mm/yyyy format
+                        date = new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                } else if (dateStr.includes('-')) {
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        if (parts[0].length === 4) {
+                            // yyyy-mm-dd format
+                            date = new Date(parts[0], parts[1] - 1, parts[2]);
+                        } else {
+                            // dd-mm-yyyy format
+                            date = new Date(parts[2], parts[1] - 1, parts[0]);
+                        }
+                    }
+                } else {
+                    date = new Date(dateStr);
+                }
+                
+                if (isNaN(date.getTime())) {
+                    return dateStr; // Return original if parsing fails
+                }
+                
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = months[date.getMonth()];
+                const year = String(date.getFullYear()).slice(-2);
+                
+                return `${day}-${month}-${year}`;
+            } catch (error) {
+                return dateStr; // Return original if formatting fails
+            }
         }
 
         function parseCSV(csvText) {
@@ -991,6 +1044,7 @@
             
             generateMetrics();
             generateSummaryTable();
+            generateDatewiseReport();
             populateFilters();
             displayStudentList();
         }
@@ -1000,25 +1054,36 @@
             
             studentsData.forEach(student => {
                 const course = student['Course'];
-                courseCount[course] = (courseCount[course] || 0) + 1;
+                if (course) {
+                    courseCount[course] = (courseCount[course] || 0) + 1;
+                }
             });
 
             const metricsGrid = document.getElementById('metricsGrid');
             metricsGrid.innerHTML = '';
 
             const courseColors = {
-                'CS': 'cs',
-                'CE': 'ce', 
+                'CE': 'ce',
+                'ME': 'me', 
                 'EC': 'ec',
-                'ME': 'me'
+                'CS': 'cs',
+                'EE': 'ee'
             };
 
-            Object.entries(courseCount).forEach(([course, count]) => {
+            // Ensure all expected courses are shown, even with 0 count
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+            expectedCourses.forEach(course => {
+                if (!courseCount[course]) {
+                    courseCount[course] = 0;
+                }
+            });
+
+            expectedCourses.forEach(course => {
                 const metricCard = document.createElement('div');
                 metricCard.className = 'metric-card';
                 metricCard.innerHTML = `
-                    <div class="metric-number ${courseColors[course] || ''}">${count}</div>
-                    <div class="metric-label">${course} Students</div>
+                    <div class="metric-number ${courseColors[course] || ''}">${courseCount[course]}</div>
+                    <div class="metric-label">${course}</div>
                 `;
                 metricsGrid.appendChild(metricCard);
             });
@@ -1041,7 +1106,7 @@
                 const course = student['Course'];
                 
                 if (!summary[year]) {
-                    summary[year] = { CS: 0, CE: 0, EC: 0, ME: 0, total: 0 };
+                    summary[year] = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
                 }
                 
                 summary[year][course] = (summary[year][course] || 0) + 1;
@@ -1055,10 +1120,87 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${year}</strong></td>
-                    <td>${courses.CS || 0}</td>
                     <td>${courses.CE || 0}</td>
-                    <td>${courses.EC || 0}</td>
                     <td>${courses.ME || 0}</td>
+                    <td>${courses.EC || 0}</td>
+                    <td>${courses.CS || 0}</td>
+                    <td>${courses.EE || 0}</td>
+                    <td><strong>${courses.total}</strong></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function generateDatewiseReport() {
+            const dateSummary = {};
+            
+            // Look for common date field names
+            const possibleDateFields = ['Date', 'Admission Date', 'Registration Date', 'DOB', 'Date of Birth', 'Entry Date'];
+            let dateField = null;
+            
+            // Find which date field exists in the data
+            for (let field of possibleDateFields) {
+                if (studentsData.length > 0 && studentsData[0].hasOwnProperty(field)) {
+                    dateField = field;
+                    break;
+                }
+            }
+            
+            if (!dateField) {
+                // If no date field found, create a sample entry showing "No date data available"
+                const tbody = document.querySelector('#datewiseTable tbody');
+                tbody.innerHTML = '<tr><td colspan="7" class="no-data">No date information available in the data</td></tr>';
+                return;
+            }
+            
+            studentsData.forEach(student => {
+                const dateStr = student[dateField];
+                const course = student['Course'];
+                
+                if (dateStr && course) {
+                    const formattedDate = formatDate(dateStr);
+                    
+                    if (!dateSummary[formattedDate]) {
+                        dateSummary[formattedDate] = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+                    }
+                    
+                    dateSummary[formattedDate][course] = (dateSummary[formattedDate][course] || 0) + 1;
+                    dateSummary[formattedDate].total++;
+                }
+            });
+
+            const tbody = document.querySelector('#datewiseTable tbody');
+            tbody.innerHTML = '';
+
+            // Sort dates chronologically
+            const sortedDates = Object.keys(dateSummary).sort((a, b) => {
+                // Parse dates for sorting (dd-mmm-yy format)
+                const parseDate = (dateStr) => {
+                    const parts = dateStr.split('-');
+                    if (parts.length === 3) {
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const day = parseInt(parts[0]);
+                        const month = months.indexOf(parts[1]);
+                        const year = 2000 + parseInt(parts[2]); // Convert yy to yyyy
+                        return new Date(year, month, day);
+                    }
+                    return new Date(dateStr);
+                };
+                
+                return parseDate(a) - parseDate(b);
+            });
+
+            sortedDates.forEach(date => {
+                const courses = dateSummary[date];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${date}</strong></td>
+                    <td>${courses.CE || 0}</td>
+                    <td>${courses.ME || 0}</td>
+                    <td>${courses.EC || 0}</td>
+                    <td>${courses.CS || 0}</td>
+                    <td>${courses.EE || 0}</td>
                     <td><strong>${courses.total}</strong></td>
                 `;
                 tbody.appendChild(row);
@@ -1093,7 +1235,7 @@
             }
 
             filteredData.forEach((student, index) => {
-                const serialNumber = String(index + 1).padStart(2, '0'); // Format as 01, 02, 03, etc.
+                const serialNumber = String(index + 1).padStart(2, '0');
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${serialNumber}</td>
@@ -1141,12 +1283,12 @@
             }
 
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4'); // A4 portrait
+            const doc = new jsPDF('p', 'mm', 'a4');
             
-            // Get current filter values
             const courseFilter = document.getElementById('courseFilter').value || 'All Courses';
             const yearFilter = document.getElementById('yearFilter').value || 'All Years';
             const nameFilter = document.getElementById('nameFilter').value || 'No Name Filter';
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
             
             // Header
             doc.setFontSize(18);
@@ -1159,18 +1301,18 @@
             // Filter Information
             doc.setFontSize(10);
             doc.setFont(undefined, 'normal');
-            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+            doc.text(`Generated on: ${currentDate}`, 20, 45);
             doc.text(`Course Filter: ${courseFilter}`, 20, 52);
             doc.text(`Year Filter: ${yearFilter}`, 20, 59);
             doc.text(`Name Filter: ${nameFilter}`, 20, 66);
             doc.text(`Total Records: ${filteredData.length}`, 20, 73);
             
-            // Course-specific headers
             const courseHeaders = {
                 'CS': 'Computer Science Engineering',
                 'CE': 'Civil Engineering', 
                 'EC': 'Electronics & Communication Engineering',
-                'ME': 'Mechanical Engineering'
+                'ME': 'Mechanical Engineering',
+                'EE': 'Electrical Engineering'
             };
             
             if (courseFilter !== 'All Courses' && courseHeaders[courseFilter]) {
@@ -1186,11 +1328,9 @@
             doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             
-            // Header background
             doc.setFillColor(240, 240, 240);
             doc.rect(15, startY - 2, 180, 8, 'F');
             
-            // Header text
             const colWidths = [15, 35, 35, 15, 20, 25, 20];
             let xPos = 15;
             
@@ -1199,7 +1339,6 @@
                 xPos += colWidths[index];
             });
             
-            // Table data
             doc.setFont(undefined, 'normal');
             doc.setFontSize(8);
             
@@ -1212,7 +1351,6 @@
                     doc.addPage();
                     currentY = 20;
                     
-                    // Repeat headers on new page
                     doc.setFont(undefined, 'bold');
                     doc.setFillColor(240, 240, 240);
                     doc.rect(15, currentY - 2, 180, 8, 'F');
@@ -1238,7 +1376,6 @@
                     student['In/Out'] || ''
                 ];
                 
-                // Row background (alternate)
                 if (index % 2 === 0) {
                     doc.setFillColor(250, 250, 250);
                     doc.rect(15, currentY - 2, 180, rowHeight, 'F');
@@ -1246,7 +1383,7 @@
                 
                 xPos = 15;
                 rowData.forEach((data, i) => {
-                    const text = String(data).substring(0, 20); // Limit text length
+                    const text = String(data).substring(0, 20);
                     doc.text(text, xPos + 2, currentY + 2);
                     xPos += colWidths[i];
                 });
@@ -1254,7 +1391,6 @@
                 currentY += rowHeight;
             });
             
-            // Footer
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -1264,8 +1400,7 @@
                 doc.text('SMP Admn Stats 2025-26 - Student Directory', 105, 285, { align: 'center' });
             }
             
-            // Save the PDF
-            const fileName = `SMP_Students_${courseFilter.replace(' ', '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            const fileName = `SMP_Students_${courseFilter.replace(' ', '_')}_${currentDate.replace(/-/g, '_')}.pdf`;
             doc.save(fileName);
         }
 
@@ -1279,7 +1414,7 @@
             const csvContent = [
                 headers.join(','),
                 ...filteredData.map((student, index) => {
-                    const serialNumber = String(index + 1).padStart(2, '0'); // Sequential numbering
+                    const serialNumber = String(index + 1).padStart(2, '0');
                     const values = [
                         serialNumber,
                         student['Student Name'] || '',
@@ -1298,7 +1433,8 @@
             const url = URL.createObjectURL(blob);
             
             link.setAttribute('href', url);
-            link.setAttribute('download', `students_export_${new Date().toISOString().split('T')[0]}.csv`);
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+            link.setAttribute('download', `students_export_${currentDate.replace(/-/g, '_')}.csv`);
             link.style.visibility = 'hidden';
             
             document.body.appendChild(link);
@@ -1306,7 +1442,7 @@
             document.body.removeChild(link);
         }
 
-        // Auto-apply filters on input change
+        // Auto-apply filters on input change (removed applyFilters calls since Apply Filter button is removed)
         document.getElementById('nameFilter').addEventListener('input', applyFilters);
         document.getElementById('courseFilter').addEventListener('change', applyFilters);
         document.getElementById('yearFilter').addEventListener('change', applyFilters);
