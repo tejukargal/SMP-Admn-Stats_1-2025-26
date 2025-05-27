@@ -253,9 +253,10 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             margin: 20px 0;
             border: 1px solid var(--border-color);
+            position: relative;
         }
 
         [data-theme="dark"] .chart-container {
@@ -264,7 +265,7 @@
 
         .chart-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .chart-title {
@@ -279,13 +280,43 @@
             color: var(--text-secondary);
         }
 
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
         .chart {
             display: flex;
             align-items: end;
             justify-content: space-around;
-            height: 400px;
-            padding: 20px 0;
-            margin-bottom: 30px;
+            height: 100%;
+            padding: 20px 0 40px 0;
+            position: relative;
+        }
+
+        .intake-reference-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--warning-color), var(--accent-color));
+            border-radius: 1px;
+            z-index: 10;
+        }
+
+        .intake-label {
+            position: absolute;
+            right: 10px;
+            top: -25px;
+            background: var(--bg-card);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+            white-space: nowrap;
         }
 
         .bar-group {
@@ -293,34 +324,52 @@
             flex-direction: column;
             align-items: center;
             flex: 1;
-            max-width: 150px;
+            max-width: 120px;
         }
 
-        .bars {
-            display: flex;
-            gap: 8px;
+        .bar-container {
             height: 300px;
+            display: flex;
             align-items: end;
             margin-bottom: 15px;
+            position: relative;
         }
 
         .bar {
-            width: 40px;
+            width: 60px;
             border-radius: 8px 8px 0 0;
             position: relative;
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             height: 0%;
-        }
-
-        .bar-total {
-            background: linear-gradient(135deg, var(--border-color), #a0aec0);
-            border: 2px solid var(--text-secondary);
-        }
-
-        .bar-admitted {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .bar.ce {
+            background: linear-gradient(135deg, var(--ce-color), #1976D2);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .bar.me {
+            background: linear-gradient(135deg, var(--me-color), #7B1FA2);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .bar.ec {
+            background: linear-gradient(135deg, var(--ec-color), #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .bar.cs {
+            background: linear-gradient(135deg, var(--cs-color), #388E3C);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .bar.ee {
+            background: linear-gradient(135deg, var(--ee-color), #D84315);
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
         }
 
         .bar:hover {
@@ -330,14 +379,19 @@
 
         .bar-label {
             position: absolute;
-            top: -25px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             color: var(--text-primary);
             opacity: 0;
             transition: opacity 0.3s ease;
+            background: var(--bg-card);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
         }
 
         .bar:hover .bar-label {
@@ -345,8 +399,8 @@
         }
 
         .course-label {
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 8px;
         }
@@ -361,8 +415,10 @@
         .chart-legend {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            align-items: center;
+            gap: 20px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .legend-item {
@@ -377,12 +433,11 @@
             border-radius: 4px;
         }
 
-        .legend-total {
-            background: linear-gradient(135deg, var(--border-color), #a0aec0);
-            border: 1px solid var(--text-secondary);
+        .legend-intake {
+            background: linear-gradient(90deg, var(--warning-color), var(--accent-color));
         }
 
-        .legend-admitted {
+        .legend-students {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
 
@@ -666,30 +721,60 @@
 
             /* Chart mobile responsive */
             .chart-container {
-                padding: 20px;
+                padding: 20px 15px;
             }
 
             .chart-title {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+            }
+
+            .chart-subtitle {
+                font-size: 0.95rem;
+            }
+
+            .chart-wrapper {
+                height: 320px;
             }
 
             .chart {
-                height: 350px;
-                padding: 10px 0;
+                height: 100%;
+                padding: 15px 0 30px 0;
             }
 
-            .bars {
-                height: 250px;
+            .bar-container {
+                height: 220px;
             }
 
             .bar {
-                width: 35px;
+                width: 45px;
+            }
+
+            .bar-group {
+                max-width: 80px;
+            }
+
+            .course-label {
+                font-size: 1.1rem;
+            }
+
+            .stats {
+                font-size: 0.8rem;
             }
 
             .chart-legend {
                 flex-direction: column;
                 align-items: center;
-                gap: 15px;
+                gap: 12px;
+                margin-top: 15px;
+            }
+
+            .legend-text {
+                font-size: 0.85rem;
+            }
+
+            .intake-label {
+                font-size: 0.7rem;
+                padding: 2px 6px;
             }
         }
 
@@ -765,21 +850,23 @@
                 <div class="content-section">
                     <div class="chart-container">
                         <div class="chart-header">
-                            <h2 class="chart-title">📊 Course-wise Student Admissions</h2>
-                            <p class="chart-subtitle">Current students vs Total intake capacity (63 per course)</p>
+                            <h2 class="chart-title">📊 Course-wise Student Strength</h2>
+                            <p class="chart-subtitle">Current enrolled students by course</p>
                         </div>
 
-                        <div class="chart" id="admissionChart">
-                            <!-- Chart bars will be populated here -->
+                        <div class="chart-wrapper">
+                            <div class="chart" id="admissionChart">
+                                <!-- Chart bars will be populated here -->
+                            </div>
                         </div>
 
                         <div class="chart-legend">
                             <div class="legend-item">
-                                <div class="legend-color legend-total"></div>
-                                <span class="legend-text">Total Seats (63)</span>
+                                <div class="legend-color legend-intake"></div>
+                                <span class="legend-text">Total Intake Capacity (63)</span>
                             </div>
                             <div class="legend-item">
-                                <div class="legend-color legend-admitted"></div>
+                                <div class="legend-color legend-students"></div>
                                 <span class="legend-text">Current Students</span>
                             </div>
                         </div>
@@ -1149,24 +1236,29 @@
 
             const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
             
+            // Add reference line for intake capacity
+            const intakePercentage = 100; // 63 out of 63 is 100%
+            const referenceLine = document.createElement('div');
+            referenceLine.className = 'intake-reference-line';
+            referenceLine.style.bottom = `${40 + (intakePercentage * 300 / 100)}px`; // 40px for padding + calculated height
+            referenceLine.innerHTML = '<div class="intake-label">Intake Capacity: 63</div>';
+            chartContainer.appendChild(referenceLine);
+            
             expectedCourses.forEach(course => {
                 const admitted = courseCount[course] || 0;
-                const percentage = ((admitted / TOTAL_INTAKE_PER_COURSE) * 100).toFixed(1);
+                const percentage = ((admitted / TOTAL_INTAKE_PER_COURSE) * 100);
                 
                 const barGroup = document.createElement('div');
                 barGroup.className = 'bar-group';
                 
                 barGroup.innerHTML = `
-                    <div class="bars">
-                        <div class="bar bar-total" data-value="${TOTAL_INTAKE_PER_COURSE}" data-label="Total Seats: ${TOTAL_INTAKE_PER_COURSE}">
-                            <span class="bar-label">${TOTAL_INTAKE_PER_COURSE}</span>
-                        </div>
-                        <div class="bar bar-admitted" data-value="${admitted}" data-label="Current Students: ${admitted}">
+                    <div class="bar-container">
+                        <div class="bar ${course.toLowerCase()}" data-value="${admitted}" data-label="Students: ${admitted}">
                             <span class="bar-label">${admitted}</span>
                         </div>
                     </div>
                     <div class="course-label">${course}</div>
-                    <div class="stats">${admitted}/${TOTAL_INTAKE_PER_COURSE} (${percentage}%)</div>
+                    <div class="stats">${admitted}/63 (${percentage.toFixed(1)}%)</div>
                 `;
                 
                 chartContainer.appendChild(barGroup);
@@ -1189,7 +1281,7 @@
                 
                 setTimeout(() => {
                     bar.style.height = height + '%';
-                }, 200);
+                }, 300);
             });
         }
 
