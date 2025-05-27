@@ -248,197 +248,161 @@
             font-weight: 700;
         }
 
+        /* Bar Chart Styles */
         .chart-container {
-            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 40px;
-            background: var(--hover-bg);
-            border-radius: 8px;
-            position: relative;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        [data-theme="dark"] .chart-container {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .chart-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
         .chart-title {
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
-        .bar-chart {
-            position: relative;
+        .chart-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
             height: 400px;
-            margin: 40px 80px 80px 100px;
-            background: var(--bg-card);
-            border-radius: 8px;
-            padding: 20px;
+            padding: 20px 0;
+            margin-bottom: 30px;
         }
 
-        .chart-area {
-            position: relative;
-            height: 100%;
-            width: 100%;
-        }
-
-        .y-axis {
-            position: absolute;
-            left: -80px;
-            top: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column-reverse;
-            justify-content: space-between;
-            align-items: end;
-            padding-right: 15px;
-        }
-
-        .y-axis-label {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1;
-        }
-
-        .y-axis-title {
-            position: absolute;
-            left: -60px;
-            top: 50%;
-            transform: rotate(-90deg) translateX(50%);
-            font-weight: bold;
-            color: var(--text-primary);
-            font-size: 1.1rem;
-        }
-
-        .y-axis-arrow {
-            position: absolute;
-            left: -5px;
-            top: -10px;
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 15px solid var(--text-primary);
-        }
-
-        .x-axis {
-            position: absolute;
-            bottom: -60px;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-        .x-axis-label {
-            font-weight: bold;
-            color: var(--text-primary);
-            font-size: 1.1rem;
-            text-align: center;
-        }
-
-        .x-axis-arrow {
-            position: absolute;
-            right: -10px;
-            bottom: -5px;
-            width: 0;
-            height: 0;
-            border-top: 5px solid transparent;
-            border-bottom: 5px solid transparent;
-            border-left: 15px solid var(--text-primary);
-        }
-
-        .axis-line-y {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 3px;
-            height: 100%;
-            background: var(--text-primary);
-        }
-
-        .axis-line-x {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--text-primary);
-        }
-
-        .grid-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .grid-line {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: var(--border-color);
-            opacity: 0.3;
-        }
-
-        .bars-container {
-            position: absolute;
-            bottom: 3px;
-            left: 3px;
-            width: calc(100% - 3px);
-            height: calc(100% - 3px);
-            display: flex;
-            justify-content: space-around;
-            align-items: end;
-            padding: 0 30px;
-        }
-
-        .bar {
+        .bar-group {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100px;
-            position: relative;
+            flex: 1;
+            max-width: 150px;
         }
 
-        .bar-column {
-            width: 80px;
-            transition: all 0.3s ease;
+        .bars {
             display: flex;
-            align-items: start;
-            justify-content: center;
-            padding-top: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+            gap: 8px;
+            height: 300px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+
+        .bar {
+            width: 40px;
+            border-radius: 8px 8px 0 0;
             position: relative;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            height: 0%;
         }
 
-        .bar-column:hover {
-            transform: scaleX(1.05);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        .bar-total {
+            background: linear-gradient(135deg, var(--border-color), #a0aec0);
+            border: 2px solid var(--text-secondary);
         }
 
-        .scale-info {
+        .bar-admitted {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .bar:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .bar-label {
             position: absolute;
-            top: 10px;
-            right: 20px;
-            background: var(--bg-card);
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 2px solid var(--border-color);
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .bar:hover .bar-label {
+            opacity: 1;
+        }
+
+        .course-label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-total {
+            background: linear-gradient(135deg, var(--border-color), #a0aec0);
+            border: 1px solid var(--text-secondary);
+        }
+
+        .legend-admitted {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .legend-text {
             font-size: 0.9rem;
             color: var(--text-primary);
+            font-weight: 500;
         }
 
-        .scale-title {
-            font-weight: bold;
-            margin-bottom: 5px;
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
         }
 
         .table-container {
@@ -452,6 +416,7 @@
             border-collapse: separate;
             border-spacing: 0;
             font-size: 15px;
+            min-width: 800px; /* Prevent table compression */
         }
 
         th, td {
@@ -459,6 +424,9 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-primary);
+            white-space: nowrap; /* Prevent text wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         th {
@@ -666,8 +634,18 @@
             }
 
             th, td {
-                padding: 10px 8px;
-                font-size: 14px;
+                padding: 8px 6px;
+                font-size: 12px;
+                min-width: 80px; /* Minimum column width */
+            }
+
+            /* Make table horizontally scrollable on mobile */
+            .table-container {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            table {
+                min-width: 600px; /* Force horizontal scroll */
             }
 
             .section-title {
@@ -684,6 +662,34 @@
 
             .notice-text {
                 font-size: 0.9rem;
+            }
+
+            /* Chart mobile responsive */
+            .chart-container {
+                padding: 20px;
+            }
+
+            .chart-title {
+                font-size: 1.5rem;
+            }
+
+            .chart {
+                height: 350px;
+                padding: 10px 0;
+            }
+
+            .bars {
+                height: 250px;
+            }
+
+            .bar {
+                width: 35px;
+            }
+
+            .chart-legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
             }
         }
 
@@ -725,18 +731,6 @@
             <p class="update-info">Visit daily for updates</p>
         </div>
 
-        <!-- Important Notice Section -->
-        <div class="notice-section">
-            <div class="notice-title">
-                <span>📋</span>
-                Important Notice
-            </div>
-            <div class="notice-text">
-                Please visit the college office for accurate student numbers and official data verification. 
-                This dashboard is for reference purposes only and may not reflect the most current information.
-            </div>
-        </div>
-
         <div id="loading" class="content-section">
             <div style="text-align: center; padding: 40px;">
                 <div style="font-size: 2rem; margin-bottom: 20px;">⏳</div>
@@ -767,6 +761,31 @@
             </div>
 
             <div id="statistics" class="section active">
+                <!-- Bar Chart Section -->
+                <div class="content-section">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h2 class="chart-title">📊 Course-wise Student Admissions</h2>
+                            <p class="chart-subtitle">Current students vs Total intake capacity (63 per course)</p>
+                        </div>
+
+                        <div class="chart" id="admissionChart">
+                            <!-- Chart bars will be populated here -->
+                        </div>
+
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <div class="legend-color legend-total"></div>
+                                <span class="legend-text">Total Seats (63)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color legend-admitted"></div>
+                                <span class="legend-text">Current Students</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="content-section">
                     <h2 class="section-title">📋 Year & Course-wise Student Count</h2>
                     <div class="table-container">
@@ -858,6 +877,18 @@
             </div>
         </div>
 
+        <!-- Important Notice Section - Moved to Bottom -->
+        <div class="notice-section">
+            <div class="notice-title">
+                <span>📋</span>
+                Important Notice
+            </div>
+            <div class="notice-text">
+                Please visit the college office for accurate student numbers and official data verification. 
+                This dashboard is for reference purposes only and may not reflect the most current information.
+            </div>
+        </div>
+
         <!-- Footer -->
         <div class="footer">
             <div class="footer-line">This site is best optimized for Chrome on desktop</div>
@@ -865,9 +896,12 @@
         </div>
     </div>
 
+    <div class="tooltip" id="tooltip"></div>
+
     <script>
         let studentsData = [];
         let filteredData = [];
+        const TOTAL_INTAKE_PER_COURSE = 63;
 
         // Dark mode functionality
         function toggleDarkMode() {
@@ -1043,6 +1077,7 @@
             document.getElementById('dashboard').classList.remove('hidden');
             
             generateMetrics();
+            generateBarChart();
             generateSummaryTable();
             generateDatewiseReport();
             populateFilters();
@@ -1096,6 +1131,87 @@
                 <div class="metric-label">Total Students</div>
             `;
             metricsGrid.appendChild(totalCard);
+        }
+
+        function generateBarChart() {
+            const courseCount = {};
+            
+            // Count students by course
+            studentsData.forEach(student => {
+                const course = student['Course'];
+                if (course) {
+                    courseCount[course] = (courseCount[course] || 0) + 1;
+                }
+            });
+
+            const chartContainer = document.getElementById('admissionChart');
+            chartContainer.innerHTML = '';
+
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+            
+            expectedCourses.forEach(course => {
+                const admitted = courseCount[course] || 0;
+                const percentage = ((admitted / TOTAL_INTAKE_PER_COURSE) * 100).toFixed(1);
+                
+                const barGroup = document.createElement('div');
+                barGroup.className = 'bar-group';
+                
+                barGroup.innerHTML = `
+                    <div class="bars">
+                        <div class="bar bar-total" data-value="${TOTAL_INTAKE_PER_COURSE}" data-label="Total Seats: ${TOTAL_INTAKE_PER_COURSE}">
+                            <span class="bar-label">${TOTAL_INTAKE_PER_COURSE}</span>
+                        </div>
+                        <div class="bar bar-admitted" data-value="${admitted}" data-label="Current Students: ${admitted}">
+                            <span class="bar-label">${admitted}</span>
+                        </div>
+                    </div>
+                    <div class="course-label">${course}</div>
+                    <div class="stats">${admitted}/${TOTAL_INTAKE_PER_COURSE} (${percentage}%)</div>
+                `;
+                
+                chartContainer.appendChild(barGroup);
+            });
+
+            // Initialize chart animations and tooltips
+            setTimeout(() => {
+                initChart();
+                setupTooltip();
+            }, 100);
+        }
+
+        function initChart() {
+            const bars = document.querySelectorAll('.bar');
+            const maxValue = TOTAL_INTAKE_PER_COURSE;
+
+            bars.forEach(bar => {
+                const value = parseInt(bar.dataset.value);
+                const height = (value / maxValue) * 100;
+                
+                setTimeout(() => {
+                    bar.style.height = height + '%';
+                }, 200);
+            });
+        }
+
+        function setupTooltip() {
+            const bars = document.querySelectorAll('.bar');
+            const tooltip = document.getElementById('tooltip');
+
+            bars.forEach(bar => {
+                bar.addEventListener('mouseenter', (e) => {
+                    tooltip.textContent = bar.dataset.label;
+                    tooltip.style.opacity = '1';
+                });
+
+                bar.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = e.pageX + 10 + 'px';
+                    tooltip.style.top = e.pageY - 10 + 'px';
+                });
+
+                bar.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = '0';
+                });
+            });
         }
 
         function generateSummaryTable() {
@@ -1442,7 +1558,7 @@
             document.body.removeChild(link);
         }
 
-        // Auto-apply filters on input change (removed applyFilters calls since Apply Filter button is removed)
+        // Auto-apply filters on input change
         document.getElementById('nameFilter').addEventListener('input', applyFilters);
         document.getElementById('courseFilter').addEventListener('change', applyFilters);
         document.getElementById('yearFilter').addEventListener('change', applyFilters);
