@@ -207,52 +207,17 @@
             transition: all 0.3s ease;
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: slideInUp 0.6s ease forwards;
-        }
-
-        .metric-card:nth-child(1) { animation-delay: 0.1s; }
-        .metric-card:nth-child(2) { animation-delay: 0.2s; }
-        .metric-card:nth-child(3) { animation-delay: 0.3s; }
-        .metric-card:nth-child(4) { animation-delay: 0.4s; }
-        .metric-card:nth-child(5) { animation-delay: 0.5s; }
-        .metric-card:nth-child(6) { animation-delay: 0.6s; }
-
-        @keyframes slideInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes zoomPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes numberCountUp {
-            from { transform: scale(0.5) rotate(-5deg); opacity: 0; }
-            to { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        @keyframes textSlideIn {
-            from { transform: translateX(-10px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
         }
 
         .metric-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-            animation: zoomPulse 0.6s ease-in-out;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
 
         .metric-number {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 8px;
-            animation: numberCountUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            animation-fill-mode: both;
         }
 
         .metric-label {
@@ -261,22 +226,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
-            animation: textSlideIn 0.6s ease forwards;
-            animation-fill-mode: both;
         }
-
-        .metric-card:nth-child(1) .metric-number { animation-delay: 0.3s; }
-        .metric-card:nth-child(1) .metric-label { animation-delay: 0.4s; }
-        .metric-card:nth-child(2) .metric-number { animation-delay: 0.4s; }
-        .metric-card:nth-child(2) .metric-label { animation-delay: 0.5s; }
-        .metric-card:nth-child(3) .metric-number { animation-delay: 0.5s; }
-        .metric-card:nth-child(3) .metric-label { animation-delay: 0.6s; }
-        .metric-card:nth-child(4) .metric-number { animation-delay: 0.6s; }
-        .metric-card:nth-child(4) .metric-label { animation-delay: 0.7s; }
-        .metric-card:nth-child(5) .metric-number { animation-delay: 0.7s; }
-        .metric-card:nth-child(5) .metric-label { animation-delay: 0.8s; }
-        .metric-card:nth-child(6) .metric-number { animation-delay: 0.8s; }
-        .metric-card:nth-child(6) .metric-label { animation-delay: 0.9s; }
 
         .cs { color: var(--cs-color); }
         .ce { color: var(--ce-color); }
@@ -325,22 +275,6 @@
         .chart-header {
             text-align: center;
             margin-bottom: 30px;
-            position: relative;
-        }
-
-        .animate-btn {
-            background: linear-gradient(135deg, var(--accent-color), var(--success-color));
-            margin-top: 15px;
-            font-size: 0.9rem;
-            padding: 10px 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(72, 149, 239, 0.3);
-        }
-
-        .animate-btn:hover {
-            background: linear-gradient(135deg, var(--success-color), var(--accent-color));
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 20px rgba(72, 149, 239, 0.4);
         }
 
         .chart-title {
@@ -743,15 +677,6 @@
                 gap: 16px;
             }
 
-            .animate-btn {
-                margin-top: 10px;
-                font-size: 0.8rem;
-                padding: 8px 16px;
-                width: auto;
-                margin-left: 0;
-                margin-right: 0;
-            }
-
             .metric-card {
                 padding: 16px;
             }
@@ -942,10 +867,10 @@
             <div id="statistics" class="section active">
                 <!-- Bar Chart Section -->
                 <div class="content-section">
-                    <div class="chart-container" id="chartContainer" title="Tap anywhere to animate">
+                    <div class="chart-container">
                         <div class="chart-header">
                             <h2 class="chart-title">📊 Course-wise Student Strength</h2>
-                            <p class="chart-subtitle">Current enrolled students by course • Tap to animate</p>
+                            <p class="chart-subtitle">Current enrolled students by course</p>
                         </div>
 
                         <div class="chart-wrapper">
@@ -1279,30 +1204,6 @@
             generateDatewiseReport();
             populateFilters();
             displayStudentList();
-            
-            // Add interaction event listeners
-            setupInteractions();
-            
-            // Trigger animations after a short delay to ensure DOM is ready
-            setTimeout(() => {
-                animateMetrics();
-            }, 200);
-        }
-
-        function setupInteractions() {
-            // Chart container interaction
-            const chartContainer = document.getElementById('chartContainer');
-            if (chartContainer) {
-                chartContainer.addEventListener('click', animateBars);
-                chartContainer.addEventListener('touchstart', animateBars, { passive: true });
-            }
-            
-            // Metrics grid interaction
-            const metricsGrid = document.getElementById('metricsGrid');
-            if (metricsGrid) {
-                metricsGrid.addEventListener('click', animateMetrics);
-                metricsGrid.addEventListener('touchstart', animateMetrics, { passive: true });
-            }
         }
 
         function generateMetrics() {
@@ -1409,77 +1310,14 @@
             const bars = document.querySelectorAll('.bar');
             const maxValue = TOTAL_INTAKE_PER_COURSE;
 
-            bars.forEach((bar, index) => {
-                const value = parseInt(bar.dataset.value);
-                const height = (value / maxValue) * 100;
-                
-                // Reset bar
-                bar.style.height = '0%';
-                bar.classList.remove('animate');
-                
-                // Animate with staggered delay
-                setTimeout(() => {
-                    bar.style.height = height + '%';
-                    bar.classList.add('animate');
-                }, 400 + (index * 200));
-            });
-        }
-
-        function animateBars() {
-            const bars = document.querySelectorAll('.bar');
-            const maxValue = TOTAL_INTAKE_PER_COURSE;
-            
-            // Reset all bars to 0
             bars.forEach(bar => {
-                bar.style.height = '0%';
-                bar.classList.remove('animate');
-            });
-            
-            // Animate bars with staggered timing
-            bars.forEach((bar, index) => {
                 const value = parseInt(bar.dataset.value);
                 const height = (value / maxValue) * 100;
                 
                 setTimeout(() => {
                     bar.style.height = height + '%';
-                    bar.classList.add('animate');
-                }, 100 + (index * 150));
+                }, 300);
             });
-            
-            // Visual feedback for the chart container
-            const chartContainer = document.getElementById('chartContainer');
-            if (chartContainer) {
-                chartContainer.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    chartContainer.style.transform = 'scale(1)';
-                }, 150);
-            }
-        }
-
-        function animateMetrics() {
-            const metricCards = document.querySelectorAll('.metric-card');
-            
-            metricCards.forEach((card, index) => {
-                // Reset animation
-                card.style.animation = 'none';
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                
-                // Re-trigger animation
-                setTimeout(() => {
-                    card.style.animation = `slideInUp 0.6s ease forwards`;
-                    card.style.animationDelay = `${0.1 + (index * 0.1)}s`;
-                }, 50);
-            });
-            
-            // Visual feedback for the metrics grid
-            const metricsGrid = document.getElementById('metricsGrid');
-            if (metricsGrid) {
-                metricsGrid.style.transform = 'scale(0.98)';
-                setTimeout(() => {
-                    metricsGrid.style.transform = 'scale(1)';
-                }, 150);
-            }
         }
 
         function setupTooltip() {
