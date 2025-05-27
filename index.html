@@ -118,6 +118,15 @@
             font-weight: 500;
         }
 
+        .header .year-info {
+            text-align: center;
+            opacity: 0.95;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
         .header .update-info {
             font-size: 0.85rem;
             opacity: 0.8;
@@ -647,6 +656,15 @@
                 font-size: 1.8rem;
             }
 
+            .header .year-info {
+                font-size: 1rem;
+                margin-bottom: 6px;
+            }
+
+            .header .update-info {
+                font-size: 0.75rem;
+            }
+
             .dark-mode-toggle {
                 position: relative;
                 margin: 10px auto;
@@ -811,9 +829,10 @@
             <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
                 🌙
             </button>
-            <h1>SMP Admn Stats 2025-26</h1>
-            <p>Real-time student analytics and management system</p>
-            <p class="update-info">Visit daily for updates</p>
+            <h1>SMP Admn Stats</h1>
+            <p class="year-info">Year: 2025-26</p>
+            <p>Real-time student analytics</p>
+            <p class="update-info">Visit daily for updates • <span id="lastUpdated">Last Updated on --</span></p>
         </div>
 
         <div id="loading" class="content-section">
@@ -1056,12 +1075,28 @@
                 
                 const csvText = await response.text();
                 parseCSV(csvText);
+                updateLastModifiedDate();
                 hideLoading();
                 
             } catch (error) {
                 console.error('Error loading CSV file:', error);
                 showError('Could not load students.csv file. Make sure the file exists in the same directory.');
             }
+        }
+
+        function updateLastModifiedDate() {
+            // Since we can't access file modification date from browser,
+            // we'll use today's date as the last updated date
+            const today = new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = months[today.getMonth()];
+            const year = today.getFullYear();
+            
+            const formattedDate = `${day}-${month}-${year}`;
+            document.getElementById('lastUpdated').textContent = `Last Updated on ${formattedDate}`;
         }
 
         function showLoading() {
