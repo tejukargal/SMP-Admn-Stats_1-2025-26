@@ -134,29 +134,6 @@
             text-align: center;
         }
 
-        .dark-mode-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-light);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .dark-mode-toggle:hover {
-            background: rgba(255,255,255,0.3);
-            transform: scale(1.1);
-        }
-
         .nav-tabs {
             display: flex;
             background: var(--bg-card);
@@ -304,30 +281,6 @@
             position: relative;
         }
 
-        .intake-reference-line {
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--warning-color), var(--accent-color));
-            border-radius: 1px;
-            z-index: 10;
-        }
-
-        .intake-label {
-            position: absolute;
-            right: 10px;
-            top: -25px;
-            background: var(--bg-card);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--warning-color);
-            border: 1px solid var(--warning-color);
-            white-space: nowrap;
-        }
-
         .bar-group {
             display: flex;
             flex-direction: column;
@@ -442,10 +395,6 @@
             border-radius: 4px;
         }
 
-        .legend-intake {
-            background: linear-gradient(90deg, var(--warning-color), var(--accent-color));
-        }
-
         .legend-students {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
@@ -509,6 +458,18 @@
         tr:hover {
             background-color: rgba(67, 97, 238, 0.1);
             transition: background-color 0.2s ease;
+        }
+
+        .grand-total-row {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: bold !important;
+        }
+
+        .grand-total-row td {
+            color: white !important;
+            font-weight: bold !important;
+            border-bottom: 2px solid white;
         }
 
         .filters {
@@ -601,6 +562,28 @@
             box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
         }
 
+        .btn-theme-toggle {
+            background: #6c757d;
+            margin: 20px auto;
+            display: flex;
+            width: fit-content;
+        }
+
+        .btn-theme-toggle:hover {
+            background: #5a6268;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+        }
+
+        [data-theme="dark"] .btn-theme-toggle {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        [data-theme="dark"] .btn-theme-toggle:hover {
+            background: #e0a800;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+
         .hidden {
             display: none;
         }
@@ -624,20 +607,9 @@
             background: linear-gradient(135deg, rgba(247, 37, 133, 0.1), rgba(67, 97, 238, 0.1));
             border: 2px solid var(--primary-color);
             border-radius: var(--border-radius);
-            padding: 20px;
+            padding: 16px;
             margin-bottom: 24px;
             text-align: center;
-        }
-
-        .notice-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
         .notice-text {
@@ -663,13 +635,6 @@
 
             .header .update-info {
                 font-size: 0.75rem;
-            }
-
-            .dark-mode-toggle {
-                position: relative;
-                margin: 10px auto;
-                top: 0;
-                right: 0;
             }
 
             .metrics-grid {
@@ -726,11 +691,7 @@
             }
 
             .notice-section {
-                padding: 16px;
-            }
-
-            .notice-title {
-                font-size: 1.1rem;
+                padding: 12px;
             }
 
             .notice-text {
@@ -789,11 +750,6 @@
             .legend-text {
                 font-size: 0.85rem;
             }
-
-            .intake-label {
-                font-size: 0.7rem;
-                padding: 2px 6px;
-            }
         }
 
         .footer {
@@ -826,9 +782,6 @@
 <body>
     <div class="container">
         <div class="header">
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
-                🌙
-            </button>
             <h1>SMP Admn Stats</h1>
             <p class="year-info">Year: 2025-26</p>
             <p>Real-time student analytics</p>
@@ -880,10 +833,6 @@
                         </div>
 
                         <div class="chart-legend">
-                            <div class="legend-item">
-                                <div class="legend-color legend-intake"></div>
-                                <span class="legend-text">Total Intake Capacity (63)</span>
-                            </div>
                             <div class="legend-item">
                                 <div class="legend-color legend-students"></div>
                                 <span class="legend-text">Current Students</span>
@@ -983,17 +932,17 @@
             </div>
         </div>
 
-        <!-- Important Notice Section - Moved to Bottom -->
+        <!-- Important Notice Section - Simplified -->
         <div class="notice-section">
-            <div class="notice-title">
-                <span>📋</span>
-                Important Notice
-            </div>
             <div class="notice-text">
-                Please visit the college office for accurate student numbers and official data verification. 
-                This dashboard is for reference purposes only and may not reflect the most current information.
+                📋 <strong>Important Notice:</strong> Please visit the college office for accurate student numbers and official data verification.
             </div>
         </div>
+
+        <!-- Theme Toggle Button -->
+        <button class="btn btn-theme-toggle" onclick="toggleDarkMode()" id="themeToggle">
+            🌙 Switch to Dark Mode
+        </button>
 
         <!-- Footer -->
         <div class="footer">
@@ -1013,15 +962,15 @@
         function toggleDarkMode() {
             const body = document.body;
             const isDark = body.getAttribute('data-theme') === 'dark';
-            const toggle = document.querySelector('.dark-mode-toggle');
+            const toggle = document.getElementById('themeToggle');
             
             if (isDark) {
                 body.removeAttribute('data-theme');
-                toggle.textContent = '🌙';
+                toggle.innerHTML = '🌙 Switch to Dark Mode';
                 localStorage.setItem('theme', 'light');
             } else {
                 body.setAttribute('data-theme', 'dark');
-                toggle.textContent = '☀️';
+                toggle.innerHTML = '☀️ Switch to Light Mode';
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -1029,13 +978,13 @@
         // Load saved theme
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
-            const toggle = document.querySelector('.dark-mode-toggle');
+            const toggle = document.getElementById('themeToggle');
             
             if (savedTheme === 'dark') {
                 document.body.setAttribute('data-theme', 'dark');
-                toggle.textContent = '☀️';
+                toggle.innerHTML = '☀️ Switch to Light Mode';
             } else {
-                toggle.textContent = '🌙';
+                toggle.innerHTML = '🌙 Switch to Dark Mode';
             }
         }
 
@@ -1271,14 +1220,6 @@
 
             const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
             
-            // Add reference line for intake capacity
-            const intakePercentage = 100; // 63 out of 63 is 100%
-            const referenceLine = document.createElement('div');
-            referenceLine.className = 'intake-reference-line';
-            referenceLine.style.bottom = `${40 + (intakePercentage * 300 / 100)}px`; // 40px for padding + calculated height
-            referenceLine.innerHTML = '<div class="intake-label">Intake Capacity: 63</div>';
-            chartContainer.appendChild(referenceLine);
-            
             expectedCourses.forEach(course => {
                 const admitted = courseCount[course] || 0;
                 const percentage = ((admitted / TOTAL_INTAKE_PER_COURSE) * 100);
@@ -1359,6 +1300,9 @@
             const tbody = document.querySelector('#summaryTable tbody');
             tbody.innerHTML = '';
 
+            // Calculate grand totals
+            const grandTotals = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+
             Object.entries(summary).forEach(([year, courses]) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1371,7 +1315,29 @@
                     <td><strong>${courses.total}</strong></td>
                 `;
                 tbody.appendChild(row);
+
+                // Add to grand totals
+                grandTotals.CE += courses.CE || 0;
+                grandTotals.ME += courses.ME || 0;
+                grandTotals.EC += courses.EC || 0;
+                grandTotals.CS += courses.CS || 0;
+                grandTotals.EE += courses.EE || 0;
+                grandTotals.total += courses.total;
             });
+
+            // Add Grand Total row
+            const grandTotalRow = document.createElement('tr');
+            grandTotalRow.className = 'grand-total-row';
+            grandTotalRow.innerHTML = `
+                <td><strong>GRAND TOTAL</strong></td>
+                <td><strong>${grandTotals.CE}</strong></td>
+                <td><strong>${grandTotals.ME}</strong></td>
+                <td><strong>${grandTotals.EC}</strong></td>
+                <td><strong>${grandTotals.CS}</strong></td>
+                <td><strong>${grandTotals.EE}</strong></td>
+                <td><strong>${grandTotals.total}</strong></td>
+            `;
+            tbody.appendChild(grandTotalRow);
         }
 
         function generateDatewiseReport() {
@@ -1415,6 +1381,9 @@
             const tbody = document.querySelector('#datewiseTable tbody');
             tbody.innerHTML = '';
 
+            // Calculate grand totals
+            const grandTotals = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+
             // Sort dates chronologically
             const sortedDates = Object.keys(dateSummary).sort((a, b) => {
                 // Parse dates for sorting (dd-mmm-yy format)
@@ -1447,7 +1416,31 @@
                     <td><strong>${courses.total}</strong></td>
                 `;
                 tbody.appendChild(row);
+
+                // Add to grand totals
+                grandTotals.CE += courses.CE || 0;
+                grandTotals.ME += courses.ME || 0;
+                grandTotals.EC += courses.EC || 0;
+                grandTotals.CS += courses.CS || 0;
+                grandTotals.EE += courses.EE || 0;
+                grandTotals.total += courses.total;
             });
+
+            // Add Grand Total row if there's data
+            if (sortedDates.length > 0) {
+                const grandTotalRow = document.createElement('tr');
+                grandTotalRow.className = 'grand-total-row';
+                grandTotalRow.innerHTML = `
+                    <td><strong>GRAND TOTAL</strong></td>
+                    <td><strong>${grandTotals.CE}</strong></td>
+                    <td><strong>${grandTotals.ME}</strong></td>
+                    <td><strong>${grandTotals.EC}</strong></td>
+                    <td><strong>${grandTotals.CS}</strong></td>
+                    <td><strong>${grandTotals.EE}</strong></td>
+                    <td><strong>${grandTotals.total}</strong></td>
+                `;
+                tbody.appendChild(grandTotalRow);
+            }
         }
 
         function populateFilters() {
