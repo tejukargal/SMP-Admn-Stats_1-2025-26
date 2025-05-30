@@ -424,6 +424,50 @@
             border: 1px solid var(--border-color);
         }
 
+        .table-container.scrollable-datewise {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .table-container.scrollable-students {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Smooth scrolling for better UX */
+        .scrollable-datewise, .scrollable-students {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        /* Subtle scroll indicator */
+        .scrollable-datewise::after, .scrollable-students::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.1));
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        [data-theme="dark"] .scrollable-datewise::after, 
+        [data-theme="dark"] .scrollable-students::after {
+            background: linear-gradient(transparent, rgba(255,255,255,0.1));
+        }
+
+        /* Enhanced sticky headers for scrollable tables */
+        .scrollable-datewise th, .scrollable-students th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: var(--table-header-bg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
         table {
             width: 100%;
             border-collapse: separate;
@@ -682,6 +726,15 @@
                 -webkit-overflow-scrolling: touch;
             }
 
+            /* Adjust scrollable table heights for mobile */
+            .table-container.scrollable-datewise {
+                max-height: 280px;
+            }
+
+            .table-container.scrollable-students {
+                max-height: 400px;
+            }
+
             table {
                 min-width: 600px; /* Force horizontal scroll */
             }
@@ -865,7 +918,7 @@
 
                 <div class="content-section">
                     <h2 class="section-title">📅 Date-wise & Course-wise Students Report</h2>
-                    <div class="table-container">
+                    <div class="table-container scrollable-datewise">
                         <table id="datewiseTable">
                             <thead>
                                 <tr>
@@ -910,7 +963,7 @@
                         <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
                         <button class="btn btn-pdf" onclick="saveToPDF()">📄 Save PDF</button>
                     </div>
-                    <div class="table-container">
+                    <div class="table-container scrollable-students">
                         <table id="studentTable">
                             <thead>
                                 <tr>
