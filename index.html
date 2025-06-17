@@ -142,6 +142,7 @@
             margin-bottom: 24px;
             box-shadow: var(--box-shadow);
             transition: all 0.3s ease;
+            overflow-x: auto;
         }
 
         .nav-tab {
@@ -155,6 +156,8 @@
             font-weight: 600;
             color: var(--text-secondary);
             transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 150px;
         }
 
         .nav-tab.active {
@@ -203,6 +206,26 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .year-breakdown {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .year-item {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .year-item span {
+            font-weight: 600;
         }
 
         .cs { color: var(--cs-color); }
@@ -234,12 +257,222 @@
             font-weight: 700;
         }
 
-        /* Bar Chart Styles */
+        /* Year-wise Charts Horizontal Scrolling Container */
+        .charts-scroll-container {
+            overflow-x: auto;
+            padding: 20px 0;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        .charts-scroll-container::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        [data-theme="dark"] .charts-scroll-container::after {
+            background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+        }
+
+        .charts-wrapper {
+            display: flex;
+            gap: 30px;
+            min-width: max-content;
+            padding: 0 20px;
+        }
+
+        /* Individual Chart Styles */
+        .year-chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px 25px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            min-width: 500px;
+            flex-shrink: 0;
+        }
+
+        [data-theme="dark"] .year-chart-container {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .year-chart-header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .year-chart-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .year-chart-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .year-chart-stats {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .year-chart-wrapper {
+            position: relative;
+            height: 320px;
+            margin-bottom: 15px;
+        }
+
+        .year-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 100%;
+            padding: 30px 0 60px 0;
+            position: relative;
+        }
+
+        .year-course-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 80px;
+        }
+
+        .year-bar-container {
+            height: 220px;
+            display: flex;
+            align-items: end;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .year-bar {
+            width: 45px;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            height: 0%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .year-bar.ce {
+            background: linear-gradient(135deg, var(--ce-color), #1976D2);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .year-bar.me {
+            background: linear-gradient(135deg, var(--me-color), #7B1FA2);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+        }
+
+        .year-bar.ec {
+            background: linear-gradient(135deg, var(--ec-color), #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .year-bar.cs {
+            background: linear-gradient(135deg, var(--cs-color), #388E3C);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .year-bar.ee {
+            background: linear-gradient(135deg, var(--ee-color), #D84315);
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+        }
+
+        .year-bar:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .year-bar-label {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: var(--bg-card);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .year-bar:hover .year-bar-label {
+            opacity: 1;
+        }
+
+        .year-course-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .year-course-stats {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .year-chart-legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .year-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .year-legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+
+        .year-legend-text {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Original chart styles remain for backward compatibility */
         .chart-container {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 30px;
+            padding: 50px 30px 30px 30px;
             margin: 20px 0;
             border: 1px solid var(--border-color);
             position: relative;
@@ -251,25 +484,29 @@
 
         .chart-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 10;
         }
 
         .chart-title {
-            font-size: 1.8rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
 
         .chart-subtitle {
-            font-size: 1.1rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
 
         .chart-wrapper {
             position: relative;
-            height: 400px;
-            margin-bottom: 20px;
+            height: 380px;
+            margin-bottom: 0;
+            margin-top: 30px;
         }
 
         .chart {
@@ -277,8 +514,32 @@
             align-items: end;
             justify-content: space-around;
             height: 100%;
-            padding: 20px 0 40px 0;
+            padding: 40px 0 80px 0;
             position: relative;
+        }
+
+        .course-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 180px;
+        }
+
+        .bars-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .course-main-label {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-top: 10px;
         }
 
         .bar-group {
@@ -286,11 +547,11 @@
             flex-direction: column;
             align-items: center;
             flex: 1;
-            max-width: 120px;
+            max-width: 50px;
         }
 
         .bar-container {
-            height: 300px;
+            height: 250px;
             display: flex;
             align-items: end;
             margin-bottom: 15px;
@@ -298,8 +559,8 @@
         }
 
         .bar {
-            width: 60px;
-            border-radius: 8px 8px 0 0;
+            width: 40px;
+            border-radius: 6px 6px 0 0;
             position: relative;
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
@@ -344,7 +605,7 @@
             top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--text-primary);
             opacity: 0;
@@ -360,15 +621,16 @@
             opacity: 1;
         }
 
-        .course-label {
-            font-size: 1.3rem;
-            font-weight: 700;
+        .year-label {
+            font-size: 0.9rem;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+            text-align: center;
         }
 
         .stats {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
             text-align: center;
             font-weight: 500;
@@ -429,20 +691,30 @@
             overflow-y: auto;
         }
 
+        .table-container.scrollable-summary {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
         .table-container.scrollable-students {
             max-height: 600px;
             overflow-y: auto;
         }
 
+        .table-container.scrollable-dues {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
         /* Smooth scrolling for better UX */
-        .scrollable-datewise, .scrollable-students {
+        .scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-summary {
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
             position: relative;
         }
 
         /* Subtle scroll indicator */
-        .scrollable-datewise::after, .scrollable-students::after {
+        .scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-summary::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -455,17 +727,32 @@
         }
 
         [data-theme="dark"] .scrollable-datewise::after, 
-        [data-theme="dark"] .scrollable-students::after {
+        [data-theme="dark"] .scrollable-students::after,
+        [data-theme="dark"] .scrollable-dues::after,
+        [data-theme="dark"] .scrollable-summary::after {
             background: linear-gradient(transparent, rgba(255,255,255,0.1));
         }
 
         /* Enhanced sticky headers for scrollable tables */
-        .scrollable-datewise th, .scrollable-students th {
+        .scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-summary th {
             position: sticky;
             top: 0;
             z-index: 20;
             background-color: var(--table-header-bg);
             border-bottom: 2px solid var(--border-color);
+        }
+
+        /* Subtotal row styling */
+        .subtotal-row {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
+        .subtotal-row td {
+            font-weight: 600 !important;
+            color: white !important;
+            border-bottom: 2px solid var(--border-color) !important;
         }
 
         table {
@@ -504,6 +791,37 @@
             transition: background-color 0.2s ease;
         }
 
+        /* Remove background colors for dues table */
+        #duesTable tr {
+            background-color: transparent !important;
+        }
+
+        #duesTable tr:hover {
+            background-color: rgba(67, 97, 238, 0.1) !important;
+        }
+
+        /* Grand total row styling - ensure visibility in all modes */
+        #duesTable .grand-total-row {
+            background-color: var(--primary-color) !important;
+        }
+
+        #duesTable .grand-total-row td {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+            font-weight: bold !important;
+            border-bottom: 2px solid white !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+        }
+
+        #duesTable .grand-total-row:hover {
+            background-color: var(--primary-color) !important;
+        }
+
+        #duesTable .grand-total-row:hover td {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
         .grand-total-row {
             background-color: var(--primary-color) !important;
             color: white !important;
@@ -514,6 +832,69 @@
             color: white !important;
             font-weight: bold !important;
             border-bottom: 2px solid white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Ensure visibility in both light and dark modes */
+        [data-theme="light"] .grand-total-row,
+        [data-theme="light"] .grand-total-row td {
+            color: white !important;
+            background-color: var(--primary-color) !important;
+        }
+
+        [data-theme="dark"] .grand-total-row,
+        [data-theme="dark"] .grand-total-row td {
+            color: white !important;
+            background-color: var(--primary-color) !important;
+        }
+
+        /* Compact metric cards for dues section */
+        .compact-metric-card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .compact-metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .compact-metric-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .compact-course-name {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .compact-dues-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .compact-dues-amount {
+            font-size: 1rem;
+            color: var(--warning-color);
+            font-weight: 700;
         }
 
         .filters {
@@ -663,6 +1044,20 @@
             line-height: 1.5;
         }
 
+        /* Dues specific styles */
+        .dues-amount {
+            font-weight: bold;
+            color: var(--warning-color);
+        }
+
+        .positive-amount {
+            color: var(--success-color);
+        }
+
+        .negative-amount {
+            color: var(--warning-color);
+        }
+
         @media screen and (max-width: 768px) {
             .container {
                 padding: 12px;
@@ -686,12 +1081,45 @@
                 gap: 16px;
             }
 
-            .metric-card {
-                padding: 16px;
+            .year-breakdown {
+                flex-direction: column;
+                gap: 4px;
             }
 
-            .metric-number {
-                font-size: 2rem;
+            .year-item {
+                font-size: 0.8rem;
+            }
+
+            .compact-metric-card {
+                padding: 12px 16px;
+                min-height: 120px;
+            }
+
+            .compact-metric-number {
+                font-size: 1.8rem;
+            }
+
+            .compact-course-name {
+                font-size: 1rem;
+            }
+
+            .compact-dues-info {
+                font-size: 0.8rem;
+            }
+
+            .compact-dues-amount {
+                font-size: 0.9rem;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+                padding: 6px;
+            }
+
+            .nav-tab {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+                min-width: 120px;
             }
 
             .filters {
@@ -731,7 +1159,7 @@
                 max-height: 280px;
             }
 
-            .table-container.scrollable-students {
+            .table-container.scrollable-students, .table-container.scrollable-dues {
                 max-height: 400px;
             }
 
@@ -749,6 +1177,58 @@
 
             .notice-text {
                 font-size: 0.9rem;
+            }
+
+            /* Year-wise charts mobile responsive */
+            .charts-scroll-container {
+                padding: 15px 0;
+                margin: 15px 0;
+            }
+
+            .charts-wrapper {
+                gap: 20px;
+                padding: 0 15px;
+            }
+
+            .year-chart-container {
+                min-width: 350px;
+                padding: 20px 15px;
+            }
+
+            .year-chart-title {
+                font-size: 1.1rem;
+            }
+
+            .year-chart-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .year-chart-wrapper {
+                height: 260px;
+            }
+
+            .year-chart {
+                padding: 20px 0 50px 0;
+            }
+
+            .year-course-group {
+                max-width: 60px;
+            }
+
+            .year-bar-container {
+                height: 180px;
+            }
+
+            .year-bar {
+                width: 35px;
+            }
+
+            .year-course-label {
+                font-size: 1rem;
+            }
+
+            .year-course-stats {
+                font-size: 0.75rem;
             }
 
             /* Chart mobile responsive */
@@ -770,27 +1250,43 @@
 
             .chart {
                 height: 100%;
-                padding: 15px 0 30px 0;
+                padding: 30px 0 70px 0;
+                gap: 10px;
+            }
+
+            .course-group {
+                max-width: 140px;
+            }
+
+            .bars-container {
+                gap: 4px;
+                margin-bottom: 10px;
+            }
+
+            .course-main-label {
+                font-size: 1.1rem;
+                margin-top: 8px;
             }
 
             .bar-container {
-                height: 220px;
+                height: 200px;
             }
 
             .bar {
-                width: 45px;
+                width: 30px;
             }
 
             .bar-group {
-                max-width: 80px;
+                max-width: 35px;
             }
 
-            .course-label {
-                font-size: 1.1rem;
+            .year-label {
+                font-size: 0.8rem;
+                margin-bottom: 2px;
             }
 
             .stats {
-                font-size: 0.8rem;
+                font-size: 0.7rem;
             }
 
             .chart-legend {
@@ -868,44 +1364,22 @@
             <div class="nav-tabs">
                 <button class="nav-tab active" onclick="showSection('statistics')">📊 Statistics</button>
                 <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
+                <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
             </div>
 
             <div id="statistics" class="section active">
-                <!-- Bar Chart Section -->
                 <div class="content-section">
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <h2 class="chart-title">📊 Course-wise Student Strength</h2>
-                            <p class="chart-subtitle">Current enrolled students by course</p>
-                        </div>
-
-                        <div class="chart-wrapper">
-                            <div class="chart" id="admissionChart">
-                                <!-- Chart bars will be populated here -->
-                            </div>
-                        </div>
-
-                        <div class="chart-legend">
-                            <div class="legend-item">
-                                <div class="legend-color legend-students"></div>
-                                <span class="legend-text">Current Students</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="content-section">
-                    <h2 class="section-title">📋 Year & Course-wise Student Count</h2>
-                    <div class="table-container">
+                    <h2 class="section-title">📋 Year, Course & Admission Type-wise Student Count</h2>
+                    <div class="table-container scrollable-summary">
                         <table id="summaryTable">
                             <thead>
                                 <tr>
                                     <th>Year</th>
-                                    <th>CE</th>
-                                    <th>ME</th>
-                                    <th>EC</th>
-                                    <th>CS</th>
-                                    <th>EE</th>
+                                    <th>Course</th>
+                                    <th>Regular</th>
+                                    <th>LTRL</th>
+                                    <th>SNQ</th>
+                                    <th>RPTR</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
@@ -935,6 +1409,19 @@
                                 <!-- Datewise data will be populated here -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Year-wise Bar Charts Section -->
+                <div class="content-section">
+                    <h2 class="section-title">📊 Year-wise Course Admission Analytics</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Interactive charts showing student distribution across courses for each academic year. Scroll horizontally to view all years.
+                    </p>
+                    <div class="charts-scroll-container">
+                        <div class="charts-wrapper" id="yearChartsWrapper">
+                            <!-- Year-wise charts will be populated here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -983,6 +1470,60 @@
                     </div>
                 </div>
             </div>
+
+            <div id="dues" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">💰 Fee Dues Management</h2>
+                    
+                    <!-- Dues Metrics Grid -->
+                    <div class="metrics-grid" id="duesMetricsGrid">
+                        <!-- Dues metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="duesCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="duesYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name</label>
+                            <input type="text" id="duesNameFilter" placeholder="Enter student name...">
+                        </div>
+                        <button class="btn" onclick="clearDuesFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportDuesToCSV()">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveDuesToPDF()">📄 Save PDF</button>
+                    </div>
+                    <div class="table-container scrollable-dues">
+                        <table id="duesTable">
+                            <thead>
+                                <tr>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Status</th>
+                                    <th>Total Alloted</th>
+                                    <th>Total Paid</th>
+                                    <th>Total Dues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dues data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Important Notice Section - Simplified -->
@@ -1008,7 +1549,10 @@
 
     <script>
         let studentsData = [];
+        let allStudentsData = []; // Store all students including those with dues
         let filteredData = [];
+        let filteredDuesData = [];
+        let duesData = [];
         const TOTAL_INTAKE_PER_COURSE = 63;
 
         // Dark mode functionality
@@ -1164,27 +1708,100 @@
             }
         }
 
-        function parseCSV(csvText) {
-            const lines = csvText.split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
             
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        // Escaped quote
+                        current += '"';
+                        i++; // Skip next quote
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    // End of field
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            // Add the last field
+            result.push(current.trim());
+            return result;
+        }
+
+        function parseCSV(csvText) {
+            console.log('Starting CSV parsing...');
+            const lines = csvText.split('\n').filter(line => line.trim());
+            console.log(`Found ${lines.length} lines in CSV`);
+            
+            if (lines.length === 0) {
+                console.error('No data found in CSV');
+                return;
+            }
+            
+            const headers = parseCSVLine(lines[0]).map(h => h.trim());
+            console.log('Headers found:', headers);
+            console.log('Fee-related headers:');
+            headers.forEach((header, index) => {
+                if (header.toLowerCase().includes('fee') || 
+                    header.toLowerCase().includes('paid') || 
+                    header.toLowerCase().includes('allot')) {
+                    console.log(`  Column ${index}: "${header}"`);
+                }
+            });
+            
+            allStudentsData = [];
             studentsData = [];
             
+            // Detect status column name
+            const statusColumn = headers.find(h => 
+                h.toLowerCase().includes('in/out') || 
+                h.toLowerCase().includes('year in') ||
+                h.toLowerCase().includes('status')
+            ) || 'In/Out';
+            
+            console.log('Status column detected:', statusColumn);
+            
             for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim()) {
-                    const values = lines[i].split(',').map(v => v.trim());
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                try {
+                    const values = parseCSVLine(line);
                     const student = {};
                     
                     headers.forEach((header, index) => {
-                        student[header] = values[index] || '';
+                        student[header] = values[index] ? values[index].trim() : '';
                     });
                     
-                    // Filter: Only include students with 'In' status and no 'Due Fee' in remarks
-                    if (student['In/Out'] === 'In' && !student['Remarks']?.includes('Due Fee')) {
-                        studentsData.push(student);
+                    // Only include students with 'In' status
+                    const status = student[statusColumn] || student['In/Out'] || '';
+                    if (status.toLowerCase() === 'in') {
+                        allStudentsData.push(student);
+                        
+                        // For statistics section - exclude only if no 'Due Fee' in remarks
+                        if (!student['Remarks']?.toLowerCase().includes('due fee')) {
+                            studentsData.push(student);
+                        }
                     }
+                } catch (error) {
+                    console.warn(`Error parsing line ${i + 1}:`, error);
                 }
             }
+            
+            console.log(`Processed ${allStudentsData.length} total students`);
+            console.log(`${studentsData.length} students for statistics (excluding due fee)`);
             
             // Sort students alphabetically by name
             studentsData.sort((a, b) => {
@@ -1193,28 +1810,198 @@
                 return nameA.localeCompare(nameB);
             });
             
+            allStudentsData.sort((a, b) => {
+                const nameA = (a['Student Name'] || '').toLowerCase();
+                const nameB = (b['Student Name'] || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            
             filteredData = [...studentsData];
+            
+            // Process dues data
+            processDuesData();
+            
             displayDashboard();
+        }
+
+        function processDuesData() {
+            console.log('Processing dues data with installment aggregation...');
+            console.log('Sample student record for column analysis:', allStudentsData[0]);
+            
+            // Group students by Registration Number, treating EE course separately
+            const studentGroups = {};
+            
+            allStudentsData.forEach(student => {
+                const regNo = student['Reg No'] || student['Registration No'] || '';
+                const course = student['Course'] || '';
+                
+                if (!regNo || !course) return;
+                
+                // For EE course, use Reg No + Course as unique key to avoid conflicts
+                // For other courses (CE, ME, EC, CS), use only Reg No
+                let uniqueKey;
+                if (course.toUpperCase() === 'EE') {
+                    uniqueKey = `${regNo}_${course}`; // EE students grouped by Reg No + Course
+                } else {
+                    uniqueKey = regNo; // Other courses grouped by Reg No only
+                }
+                
+                if (!studentGroups[uniqueKey]) {
+                    studentGroups[uniqueKey] = [];
+                }
+                studentGroups[uniqueKey].push(student);
+            });
+            
+            console.log(`Found ${Object.keys(studentGroups).length} unique student groups`);
+            console.log('Group distribution:', Object.keys(studentGroups).reduce((acc, key) => {
+                const course = studentGroups[key][0]['Course'];
+                acc[course] = (acc[course] || 0) + 1;
+                return acc;
+            }, {}));
+            
+            duesData = [];
+            
+            Object.entries(studentGroups).forEach(([uniqueKey, records]) => {
+                if (records.length === 0) return;
+                
+                // Use the first record for basic student info (should be same across installments)
+                const baseStudent = records[0];
+                const course = baseStudent['Course'] || '';
+                const regNo = baseStudent['Reg No'] || '';
+                
+                // Parse financial fields with robust number extraction
+                const parseAmount = (value) => {
+                    if (!value || value === '') return 0;
+                    // Handle both string and number inputs
+                    const cleanValue = value.toString().replace(/[^\d.-]/g, '');
+                    const num = parseFloat(cleanValue);
+                    return isNaN(num) ? 0 : Math.abs(num); // Use absolute value to handle any negative signs
+                };
+                
+                // Aggregate all payments across multiple installment records for this unique key
+                let totalPaidSMP = 0;
+                let totalPaidSVK = 0;
+                
+                // Sum all installment payments for this unique identifier
+                records.forEach(record => {
+                    const smpPayment = parseAmount(record['SMP Paid']);
+                    const svkPayment = parseAmount(record['SVK Paid']);
+                    
+                    totalPaidSMP += smpPayment;
+                    totalPaidSVK += svkPayment;
+                    
+                    console.log(`  ${course} Installment - SMP: ${smpPayment}, SVK: ${svkPayment}`);
+                });
+                
+                // Get allotted amounts (should be same across all records for same student)
+                const allotedSMP = parseAmount(baseStudent['Alloted Fee SMP']);
+                const allotedSVK = parseAmount(baseStudent['Alloted Fee SVK']);
+                
+                const totalAlloted = allotedSMP + allotedSVK;
+                const totalPaid = totalPaidSMP + totalPaidSVK;
+                
+                // Calculate individual dues for SMP and SVK
+                const duesSMP = Math.max(0, allotedSMP - totalPaidSMP);
+                const duesSVK = Math.max(0, allotedSVK - totalPaidSVK);
+                const totalDues = duesSMP + duesSVK;
+                
+                // Student has dues if ANY amount is pending in either SMP OR SVK
+                const hasDues = (totalPaidSMP < allotedSMP) || (totalPaidSVK < allotedSVK);
+                
+                const keyInfo = course.toUpperCase() === 'EE' ? `${regNo} (${course})` : regNo;
+                console.log(`Student: ${baseStudent['Student Name']}, Key: ${keyInfo} (${records.length} payment records)`);
+                console.log(`  SMP: Alloted=${allotedSMP}, Total Paid=${totalPaidSMP}, Due=${duesSMP}`);
+                console.log(`  SVK: Alloted=${allotedSVK}, Total Paid=${totalPaidSVK}, Due=${duesSVK}`);
+                console.log(`  Total: Alloted=${totalAlloted}, Paid=${totalPaid}, Due=${totalDues}`);
+                console.log(`  Has Dues: ${hasDues}`);
+                
+                // Include student if they have any pending amount in either SMP or SVK
+                if (hasDues && totalDues > 0) {
+                    const duesStudent = {
+                        'Student Name': baseStudent['Student Name'] || '',
+                        'Father Name': baseStudent['Father Name'] || '',
+                        'Year': baseStudent['Year'] || '',
+                        'Course': course,
+                        'Reg No': regNo,
+                        'In/Out': baseStudent['In/Out'] || 'In',
+                        'Total Alloted': totalAlloted,
+                        'Total Paid': totalPaid,
+                        'Total Dues': totalDues,
+                        'SMP Dues': duesSMP,
+                        'SVK Dues': duesSVK,
+                        'Payment Records': records.length,
+                        'Unique Key': uniqueKey
+                    };
+                    
+                    duesData.push(duesStudent);
+                } else {
+                    console.log(`  ✅ Student ${baseStudent['Student Name']} (${course}) has no dues - both fees paid in full`);
+                }
+            });
+            
+            // Sort by course first, then by student name
+            duesData.sort((a, b) => {
+                const courseCompare = a['Course'].localeCompare(b['Course']);
+                if (courseCompare !== 0) return courseCompare;
+                
+                const nameA = (a['Student Name'] || '').toLowerCase();
+                const nameB = (b['Student Name'] || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            
+            console.log(`Found ${duesData.length} students with outstanding dues`);
+            
+            // Log course distribution
+            const courseDistribution = {};
+            duesData.forEach(student => {
+                const course = student['Course'];
+                courseDistribution[course] = (courseDistribution[course] || 0) + 1;
+            });
+            console.log('Dues by course:', courseDistribution);
+            
+            // Log EE vs Other courses separation
+            const eeStudents = duesData.filter(s => s['Course'].toUpperCase() === 'EE').length;
+            const otherStudents = duesData.filter(s => s['Course'].toUpperCase() !== 'EE').length;
+            console.log(`EE Students with dues: ${eeStudents}, Other courses: ${otherStudents}`);
+            
+            // Log sample dues calculations
+            if (duesData.length > 0) {
+                console.log('Sample dues calculation:', duesData[0]);
+            }
+            
+            filteredDuesData = [...duesData];
         }
 
         function displayDashboard() {
             document.getElementById('dashboard').classList.remove('hidden');
             
             generateMetrics();
-            generateBarChart();
+            generateYearWiseCharts();
             generateSummaryTable();
             generateDatewiseReport();
             populateFilters();
+            populateDuesFilters();
             displayStudentList();
+            displayDuesList();
+            generateDuesMetrics();
         }
 
         function generateMetrics() {
             const courseCount = {};
+            const courseYearCount = {};
             
             studentsData.forEach(student => {
                 const course = student['Course'];
+                const year = student['Year'];
                 if (course) {
                     courseCount[course] = (courseCount[course] || 0) + 1;
+                    
+                    if (!courseYearCount[course]) {
+                        courseYearCount[course] = {};
+                    }
+                    if (year) {
+                        courseYearCount[course][year] = (courseYearCount[course][year] || 0) + 1;
+                    }
                 }
             });
 
@@ -1234,77 +2021,154 @@
             expectedCourses.forEach(course => {
                 if (!courseCount[course]) {
                     courseCount[course] = 0;
+                    courseYearCount[course] = {};
                 }
             });
 
             expectedCourses.forEach(course => {
+                const yearBreakdown = courseYearCount[course] || {};
+                const firstYr = yearBreakdown['1st Yr'] || 0;
+                const secondYr = yearBreakdown['2nd Yr'] || 0;
+                const thirdYr = yearBreakdown['3rd Yr'] || 0;
+                
                 const metricCard = document.createElement('div');
                 metricCard.className = 'metric-card';
                 metricCard.innerHTML = `
                     <div class="metric-number ${courseColors[course] || ''}">${courseCount[course]}</div>
                     <div class="metric-label">${course}</div>
+                    <div class="year-breakdown">
+                        <div class="year-item">1st Yr: <span class="${courseColors[course] || ''}">${firstYr}</span></div>
+                        <div class="year-item">2nd Yr: <span class="${courseColors[course] || ''}">${secondYr}</span></div>
+                        <div class="year-item">3rd Yr: <span class="${courseColors[course] || ''}">${thirdYr}</span></div>
+                    </div>
                 `;
                 metricsGrid.appendChild(metricCard);
             });
 
-            // Total students card
+            // Total students card with year breakdown
+            const totalFirstYr = studentsData.filter(s => s['Year'] === '1st Yr').length;
+            const totalSecondYr = studentsData.filter(s => s['Year'] === '2nd Yr').length;
+            const totalThirdYr = studentsData.filter(s => s['Year'] === '3rd Yr').length;
+            
             const totalCard = document.createElement('div');
             totalCard.className = 'metric-card';
             totalCard.innerHTML = `
                 <div class="metric-number" style="color: var(--primary-color);">${studentsData.length}</div>
-                <div class="metric-label">Total Students</div>
+                <div class="metric-label">All Students</div>
+                <div class="year-breakdown">
+                    <div class="year-item">1st Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalFirstYr}</span></div>
+                    <div class="year-item">2nd Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalSecondYr}</span></div>
+                    <div class="year-item">3rd Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalThirdYr}</span></div>
+                </div>
             `;
             metricsGrid.appendChild(totalCard);
         }
 
-        function generateBarChart() {
-            const courseCount = {};
-            
-            // Count students by course
+        function generateYearWiseCharts() {
+            const yearChartsWrapper = document.getElementById('yearChartsWrapper');
+            yearChartsWrapper.innerHTML = '';
+
+            const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+
+            // Count students by year and course
+            const yearCourseCount = {};
             studentsData.forEach(student => {
                 const course = student['Course'];
-                if (course) {
-                    courseCount[course] = (courseCount[course] || 0) + 1;
+                const year = student['Year'];
+                if (course && year) {
+                    if (!yearCourseCount[year]) {
+                        yearCourseCount[year] = {};
+                    }
+                    yearCourseCount[year][course] = (yearCourseCount[year][course] || 0) + 1;
                 }
             });
 
-            const chartContainer = document.getElementById('admissionChart');
-            chartContainer.innerHTML = '';
+            expectedYears.forEach(year => {
+                const yearContainer = document.createElement('div');
+                yearContainer.className = 'year-chart-container';
+                
+                // Get total students for this year
+                const yearData = yearCourseCount[year] || {};
+                const totalStudentsThisYear = Object.values(yearData).reduce((sum, count) => sum + count, 0);
+                const maxPossibleStudents = expectedCourses.length * TOTAL_INTAKE_PER_COURSE;
+                const completionPercentage = ((totalStudentsThisYear / maxPossibleStudents) * 100).toFixed(1);
 
-            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
-            
-            expectedCourses.forEach(course => {
-                const admitted = courseCount[course] || 0;
-                const percentage = ((admitted / TOTAL_INTAKE_PER_COURSE) * 100);
-                
-                const barGroup = document.createElement('div');
-                barGroup.className = 'bar-group';
-                
-                barGroup.innerHTML = `
-                    <div class="bar-container">
-                        <div class="bar ${course.toLowerCase()}" data-value="${admitted}" data-label="Students: ${admitted}">
-                            <span class="bar-label">${admitted}</span>
-                        </div>
-                    </div>
-                    <div class="course-label">${course}</div>
-                    <div class="stats">${admitted}/63 (${percentage.toFixed(1)}%)</div>
+                // Chart header
+                const chartHeader = document.createElement('div');
+                chartHeader.className = 'year-chart-header';
+                chartHeader.innerHTML = `
+                    <div class="year-chart-title">${year} Admissions</div>
+                    <div class="year-chart-subtitle">Course-wise Student Distribution</div>
+                    <div class="year-chart-stats">${totalStudentsThisYear} of ${maxPossibleStudents} seats filled (${completionPercentage}%)</div>
                 `;
+
+                // Chart wrapper
+                const chartWrapper = document.createElement('div');
+                chartWrapper.className = 'year-chart-wrapper';
                 
-                chartContainer.appendChild(barGroup);
+                // Chart container
+                const chart = document.createElement('div');
+                chart.className = 'year-chart';
+                chart.id = `chart-${year.replace(' ', '-')}`;
+
+                expectedCourses.forEach(course => {
+                    const admitted = yearData[course] || 0;
+                    
+                    const courseGroup = document.createElement('div');
+                    courseGroup.className = 'year-course-group';
+                    
+                    courseGroup.innerHTML = `
+                        <div class="year-bar-container">
+                            <div class="year-bar ${course.toLowerCase()}" 
+                                 data-value="${admitted}" 
+                                 data-label="${course} (${year}): ${admitted} students"
+                                 data-course="${course}"
+                                 data-year="${year}">
+                                <span class="year-bar-label">${admitted}</span>
+                            </div>
+                        </div>
+                        <div class="year-course-label">${course}</div>
+                        <div class="year-course-stats">${admitted}/${TOTAL_INTAKE_PER_COURSE}</div>
+                    `;
+                    
+                    chart.appendChild(courseGroup);
+                });
+
+                chartWrapper.appendChild(chart);
+
+                // Chart legend
+                const legend = document.createElement('div');
+                legend.className = 'year-chart-legend';
+                legend.innerHTML = `
+                    <div class="year-legend-item">
+                        <div class="year-legend-color" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));"></div>
+                        <span class="year-legend-text">Students Admitted</span>
+                    </div>
+                    <div class="year-legend-item">
+                        <div class="year-legend-color" style="background: var(--border-color);"></div>
+                        <span class="year-legend-text">Available Seats: ${TOTAL_INTAKE_PER_COURSE} per course</span>
+                    </div>
+                `;
+
+                yearContainer.appendChild(chartHeader);
+                yearContainer.appendChild(chartWrapper);
+                yearContainer.appendChild(legend);
+                yearChartsWrapper.appendChild(yearContainer);
             });
 
-            // Initialize chart animations and tooltips
+            // Initialize animations and tooltips for year-wise charts
             setTimeout(() => {
-                initChart();
-                setupTooltip();
+                initYearWiseCharts();
+                setupYearWiseTooltips();
             }, 100);
         }
 
-        function initChart() {
-            const bars = document.querySelectorAll('.bar');
+        function initYearWiseCharts() {
+            const yearBars = document.querySelectorAll('.year-bar');
             const maxValue = TOTAL_INTAKE_PER_COURSE;
 
-            bars.forEach(bar => {
+            yearBars.forEach(bar => {
                 const value = parseInt(bar.dataset.value);
                 const height = (value / maxValue) * 100;
                 
@@ -1314,11 +2178,11 @@
             });
         }
 
-        function setupTooltip() {
-            const bars = document.querySelectorAll('.bar');
+        function setupYearWiseTooltips() {
+            const yearBars = document.querySelectorAll('.year-bar');
             const tooltip = document.getElementById('tooltip');
 
-            bars.forEach(bar => {
+            yearBars.forEach(bar => {
                 bar.addEventListener('mouseenter', (e) => {
                     tooltip.textContent = bar.dataset.label;
                     tooltip.style.opacity = '1';
@@ -1341,53 +2205,90 @@
             studentsData.forEach(student => {
                 const year = student['Year'];
                 const course = student['Course'];
+                let admType = student['Adm Type'] || '';
                 
-                if (!summary[year]) {
-                    summary[year] = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+                // Treat all values as Regular except "LTRL", "SNQ" & "RPTR" (case-sensitive)
+                if (admType !== 'LTRL' && admType !== 'SNQ' && admType !== 'RPTR') {
+                    admType = 'Regular';
                 }
                 
-                summary[year][course] = (summary[year][course] || 0) + 1;
-                summary[year].total++;
+                if (!summary[year]) {
+                    summary[year] = {};
+                }
+                if (!summary[year][course]) {
+                    summary[year][course] = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+                }
+                
+                summary[year][course][admType] = (summary[year][course][admType] || 0) + 1;
+                summary[year][course].total++;
             });
 
             const tbody = document.querySelector('#summaryTable tbody');
             tbody.innerHTML = '';
 
             // Calculate grand totals
-            const grandTotals = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+            const grandTotals = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
 
-            Object.entries(summary).forEach(([year, courses]) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>${year}</strong></td>
-                    <td>${courses.CE || 0}</td>
-                    <td>${courses.ME || 0}</td>
-                    <td>${courses.EC || 0}</td>
-                    <td>${courses.CS || 0}</td>
-                    <td>${courses.EE || 0}</td>
-                    <td><strong>${courses.total}</strong></td>
+            const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+            
+            expectedYears.forEach(year => {
+                let yearTotals = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+                
+                expectedCourses.forEach(course => {
+                    const admTypes = summary[year]?.[course] || { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${year}</strong></td>
+                        <td><strong>${course}</strong></td>
+                        <td>${admTypes.Regular || 0}</td>
+                        <td>${admTypes.LTRL || 0}</td>
+                        <td>${admTypes.SNQ || 0}</td>
+                        <td>${admTypes.RPTR || 0}</td>
+                        <td><strong>${admTypes.total}</strong></td>
+                    `;
+                    tbody.appendChild(row);
+
+                    // Add to year totals
+                    yearTotals.Regular += admTypes.Regular || 0;
+                    yearTotals.LTRL += admTypes.LTRL || 0;
+                    yearTotals.SNQ += admTypes.SNQ || 0;
+                    yearTotals.RPTR += admTypes.RPTR || 0;
+                    yearTotals.total += admTypes.total;
+
+                    // Add to grand totals
+                    grandTotals.Regular += admTypes.Regular || 0;
+                    grandTotals.LTRL += admTypes.LTRL || 0;
+                    grandTotals.SNQ += admTypes.SNQ || 0;
+                    grandTotals.RPTR += admTypes.RPTR || 0;
+                    grandTotals.total += admTypes.total;
+                });
+                
+                // Add subtotal row for each year
+                const subtotalRow = document.createElement('tr');
+                subtotalRow.className = 'subtotal-row';
+                subtotalRow.innerHTML = `
+                    <td><strong>${year} SUBTOTAL</strong></td>
+                    <td><strong>All Courses</strong></td>
+                    <td><strong>${yearTotals.Regular}</strong></td>
+                    <td><strong>${yearTotals.LTRL}</strong></td>
+                    <td><strong>${yearTotals.SNQ}</strong></td>
+                    <td><strong>${yearTotals.RPTR}</strong></td>
+                    <td><strong>${yearTotals.total}</strong></td>
                 `;
-                tbody.appendChild(row);
-
-                // Add to grand totals
-                grandTotals.CE += courses.CE || 0;
-                grandTotals.ME += courses.ME || 0;
-                grandTotals.EC += courses.EC || 0;
-                grandTotals.CS += courses.CS || 0;
-                grandTotals.EE += courses.EE || 0;
-                grandTotals.total += courses.total;
+                tbody.appendChild(subtotalRow);
             });
 
             // Add Grand Total row
             const grandTotalRow = document.createElement('tr');
             grandTotalRow.className = 'grand-total-row';
             grandTotalRow.innerHTML = `
-                <td><strong>GRAND TOTAL</strong></td>
-                <td><strong>${grandTotals.CE}</strong></td>
-                <td><strong>${grandTotals.ME}</strong></td>
-                <td><strong>${grandTotals.EC}</strong></td>
-                <td><strong>${grandTotals.CS}</strong></td>
-                <td><strong>${grandTotals.EE}</strong></td>
+                <td colspan="2"><strong>GRAND TOTAL</strong></td>
+                <td><strong>${grandTotals.Regular}</strong></td>
+                <td><strong>${grandTotals.LTRL}</strong></td>
+                <td><strong>${grandTotals.SNQ}</strong></td>
+                <td><strong>${grandTotals.RPTR}</strong></td>
                 <td><strong>${grandTotals.total}</strong></td>
             `;
             tbody.appendChild(grandTotalRow);
@@ -1514,6 +2415,24 @@
             });
         }
 
+        function populateDuesFilters() {
+            const courses = [...new Set(duesData.map(s => s['Course']))].sort();
+            const years = [...new Set(duesData.map(s => s['Year']))].sort();
+
+            const courseFilter = document.getElementById('duesCourseFilter');
+            const yearFilter = document.getElementById('duesYearFilter');
+
+            courseFilter.innerHTML = '<option value="">All Courses</option>';
+            courses.forEach(course => {
+                courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+            });
+
+            yearFilter.innerHTML = '<option value="">All Years</option>';
+            years.forEach(year => {
+                yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+        }
+
         function displayStudentList() {
             const tbody = document.querySelector('#studentTable tbody');
             tbody.innerHTML = '';
@@ -1539,6 +2458,146 @@
             });
         }
 
+        function generateDuesMetrics() {
+            const courseData = {};
+            
+            // Calculate metrics for each course
+            duesData.forEach(student => {
+                const course = student['Course'];
+                if (!courseData[course]) {
+                    courseData[course] = {
+                        count: 0,
+                        totalDues: 0
+                    };
+                }
+                courseData[course].count++;
+                courseData[course].totalDues += student['Total Dues'];
+            });
+
+            const duesMetricsGrid = document.getElementById('duesMetricsGrid');
+            duesMetricsGrid.innerHTML = '';
+
+            const courseColors = {
+                'CE': 'ce',
+                'ME': 'me', 
+                'EC': 'ec',
+                'CS': 'cs',
+                'EE': 'ee'
+            };
+
+            // Ensure all expected courses are shown, even with 0 count
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+            expectedCourses.forEach(course => {
+                if (!courseData[course]) {
+                    courseData[course] = { count: 0, totalDues: 0 };
+                }
+            });
+
+            let grandTotalStudents = 0;
+            let grandTotalAmount = 0;
+
+            expectedCourses.forEach(course => {
+                const data = courseData[course];
+                grandTotalStudents += data.count;
+                grandTotalAmount += data.totalDues;
+                
+                const formatAmount = (amount) => {
+                    if (amount === 0) return '₹0';
+                    return '₹' + amount.toLocaleString('en-IN', { 
+                        minimumFractionDigits: 0, 
+                        maximumFractionDigits: 0 
+                    });
+                };
+                
+                const metricCard = document.createElement('div');
+                metricCard.className = 'metric-card';
+                metricCard.innerHTML = `
+                    <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
+                    <div class="metric-label">${course} Students</div>
+                    <div style="font-size: 0.9rem; color: var(--warning-color); font-weight: 600; margin-top: 8px;">
+                        ${formatAmount(data.totalDues)}
+                    </div>
+                `;
+                duesMetricsGrid.appendChild(metricCard);
+            });
+
+            // Grand Total card
+            const formatGrandTotal = (amount) => {
+                return '₹' + amount.toLocaleString('en-IN', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                });
+            };
+
+            const totalCard = document.createElement('div');
+            totalCard.className = 'metric-card';
+            totalCard.style.background = 'linear-gradient(135deg, var(--warning-color), #dc1a68)';
+            totalCard.style.color = 'white';
+            totalCard.innerHTML = `
+                <div class="metric-number" style="color: white;">${grandTotalStudents}</div>
+                <div class="metric-label" style="color: white; opacity: 0.9;">Total Students</div>
+                <div style="font-size: 1rem; color: white; font-weight: 700; margin-top: 8px;">
+                    ${formatGrandTotal(grandTotalAmount)}
+                </div>
+            `;
+            duesMetricsGrid.appendChild(totalCard);
+        }
+
+        function displayDuesList() {
+            const tbody = document.querySelector('#duesTable tbody');
+            tbody.innerHTML = '';
+
+            if (filteredDuesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="no-data">No students with outstanding dues found</td></tr>';
+                return;
+            }
+
+            let totalAlloted = 0;
+            let totalPaid = 0;
+            let totalDues = 0;
+
+            filteredDuesData.forEach((student, index) => {
+                const serialNumber = String(index + 1).padStart(2, '0');
+                const row = document.createElement('tr');
+                
+                const formatAmount = (amount) => {
+                    return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                };
+                
+                // Add to totals
+                totalAlloted += student['Total Alloted'];
+                totalPaid += student['Total Paid'];
+                totalDues += student['Total Dues'];
+                
+                row.innerHTML = `
+                    <td>${serialNumber}</td>
+                    <td>${student['Student Name'] || ''}</td>
+                    <td>${student['Father Name'] || ''}</td>
+                    <td>${student['Year'] || ''}</td>
+                    <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
+                    <td>${student['Reg No'] || ''}</td>
+                    <td>${student['In/Out'] || ''}</td>
+                    <td class="positive-amount">${formatAmount(student['Total Alloted'])}</td>
+                    <td class="positive-amount">${formatAmount(student['Total Paid'])}</td>
+                    <td class="dues-amount">${formatAmount(student['Total Dues'])}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Add Grand Total row
+            if (filteredDuesData.length > 0) {
+                const grandTotalRow = document.createElement('tr');
+                grandTotalRow.className = 'grand-total-row';
+                grandTotalRow.innerHTML = `
+                    <td colspan="7"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+                    <td><strong>₹${totalAlloted.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalPaid.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalDues.toLocaleString('en-IN')}</strong></td>
+                `;
+                tbody.appendChild(grandTotalRow);
+            }
+        }
+
         function applyFilters() {
             const courseFilter = document.getElementById('courseFilter').value;
             const yearFilter = document.getElementById('yearFilter').value;
@@ -1557,12 +2616,125 @@
             displayStudentList();
         }
 
+        function applyDuesFilters() {
+            const courseFilter = document.getElementById('duesCourseFilter').value;
+            const yearFilter = document.getElementById('duesYearFilter').value;
+            const nameFilter = document.getElementById('duesNameFilter').value.toLowerCase();
+
+            filteredDuesData = duesData.filter(student => {
+                const matchesCourse = !courseFilter || student['Course'] === courseFilter;
+                const matchesYear = !yearFilter || student['Year'] === yearFilter;
+                const matchesName = !nameFilter || 
+                    student['Student Name']?.toLowerCase().includes(nameFilter) ||
+                    student['Father Name']?.toLowerCase().includes(nameFilter);
+
+                return matchesCourse && matchesYear && matchesName;
+            });
+
+            displayDuesList();
+            generateFilteredDuesMetrics();
+        }
+
+        function generateFilteredDuesMetrics() {
+            const courseData = {};
+            
+            // Calculate metrics for each course based on filtered data
+            filteredDuesData.forEach(student => {
+                const course = student['Course'];
+                if (!courseData[course]) {
+                    courseData[course] = {
+                        count: 0,
+                        totalDues: 0
+                    };
+                }
+                courseData[course].count++;
+                courseData[course].totalDues += student['Total Dues'];
+            });
+
+            const duesMetricsGrid = document.getElementById('duesMetricsGrid');
+            duesMetricsGrid.innerHTML = '';
+
+            const courseColors = {
+                'CE': 'ce',
+                'ME': 'me', 
+                'EC': 'ec',
+                'CS': 'cs',
+                'EE': 'ee'
+            };
+
+            // Ensure all expected courses are shown, even with 0 count
+            const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+            expectedCourses.forEach(course => {
+                if (!courseData[course]) {
+                    courseData[course] = { count: 0, totalDues: 0 };
+                }
+            });
+
+            let grandTotalStudents = 0;
+            let grandTotalAmount = 0;
+
+            expectedCourses.forEach(course => {
+                const data = courseData[course];
+                grandTotalStudents += data.count;
+                grandTotalAmount += data.totalDues;
+                
+                const formatAmount = (amount) => {
+                    if (amount === 0) return '₹0';
+                    return '₹' + amount.toLocaleString('en-IN', { 
+                        minimumFractionDigits: 0, 
+                        maximumFractionDigits: 0 
+                    });
+                };
+                
+                const metricCard = document.createElement('div');
+                metricCard.className = 'metric-card';
+                metricCard.innerHTML = `
+                    <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
+                    <div class="metric-label">${course} Students</div>
+                    <div style="font-size: 0.9rem; color: var(--warning-color); font-weight: 600; margin-top: 8px;">
+                        ${formatAmount(data.totalDues)}
+                    </div>
+                `;
+                duesMetricsGrid.appendChild(metricCard);
+            });
+
+            // Grand Total card
+            const formatGrandTotal = (amount) => {
+                return '₹' + amount.toLocaleString('en-IN', { 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                });
+            };
+
+            const totalCard = document.createElement('div');
+            totalCard.className = 'metric-card';
+            totalCard.style.background = 'linear-gradient(135deg, var(--warning-color), #dc1a68)';
+            totalCard.style.color = 'white';
+            totalCard.innerHTML = `
+                <div class="metric-number" style="color: white;">${grandTotalStudents}</div>
+                <div class="metric-label" style="color: white; opacity: 0.9;">Total Students</div>
+                <div style="font-size: 1rem; color: white; font-weight: 700; margin-top: 8px;">
+                    ${formatGrandTotal(grandTotalAmount)}
+                </div>
+            `;
+            duesMetricsGrid.appendChild(totalCard);
+        }
+
         function clearFilters() {
             document.getElementById('courseFilter').value = '';
             document.getElementById('yearFilter').value = '';
             document.getElementById('nameFilter').value = '';
             filteredData = [...studentsData];
             displayStudentList();
+        }
+
+        function clearDuesFilters() {
+            document.getElementById('duesCourseFilter').value = '';
+            document.getElementById('duesYearFilter').value = '';
+            document.getElementById('duesNameFilter').value = '';
+            filteredDuesData = [...duesData];
+            displayDuesList();
+            generateDuesMetrics(); // Regenerate original metrics
         }
 
         function saveToPDF() {
@@ -1587,14 +2759,12 @@
             doc.setFontSize(14);
             doc.text('Student Directory Report', 105, 30, { align: 'center' });
             
-            // Filter Information
-            doc.setFontSize(10);
+            // Filter Information - Compact horizontal layout
+            doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
-            doc.text(`Generated on: ${currentDate}`, 20, 45);
-            doc.text(`Course Filter: ${courseFilter}`, 20, 52);
-            doc.text(`Year Filter: ${yearFilter}`, 20, 59);
-            doc.text(`Name Filter: ${nameFilter}`, 20, 66);
-            doc.text(`Total Records: ${filteredData.length}`, 20, 73);
+            const shortNameFilter = nameFilter === 'No Name Filter' ? 'None' : (nameFilter.length > 15 ? nameFilter.substring(0, 15) + '...' : nameFilter);
+            const filterInfo = `Generated: ${currentDate} | Course: ${courseFilter} | Year: ${yearFilter} | Name: ${shortNameFilter} | Records: ${filteredData.length}`;
+            doc.text(filterInfo, 105, 45, { align: 'center' });
             
             const courseHeaders = {
                 'CS': 'Computer Science Engineering',
@@ -1607,12 +2777,12 @@
             if (courseFilter !== 'All Courses' && courseHeaders[courseFilter]) {
                 doc.setFontSize(12);
                 doc.setFont(undefined, 'bold');
-                doc.text(courseHeaders[courseFilter], 105, 85, { align: 'center' });
+                doc.text(courseHeaders[courseFilter], 105, 55, { align: 'center' });
             }
             
             // Table headers
             const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Status'];
-            const startY = courseFilter !== 'All Courses' ? 95 : 85;
+            const startY = courseFilter !== 'All Courses' ? 65 : 55;
             
             doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
@@ -1633,7 +2803,7 @@
             
             let currentY = startY + 12;
             const rowHeight = 6;
-            const pageHeight = 280;
+            const pageHeight = 270;
             
             filteredData.forEach((student, index) => {
                 if (currentY > pageHeight) {
@@ -1693,6 +2863,129 @@
             doc.save(fileName);
         }
 
+        function saveDuesToPDF() {
+            if (filteredDuesData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+            
+            const courseFilter = document.getElementById('duesCourseFilter').value || 'All Courses';
+            const yearFilter = document.getElementById('duesYearFilter').value || 'All Years';
+            const nameFilter = document.getElementById('duesNameFilter').value || 'No Name Filter';
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+            
+            // Header
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.text('Fee Dues Report', 148, 30, { align: 'center' });
+            
+            // Filter Information - Compact horizontal layout
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            const shortNameFilter = nameFilter === 'No Name Filter' ? 'None' : (nameFilter.length > 15 ? nameFilter.substring(0, 15) + '...' : nameFilter);
+            const filterInfo = `Generated: ${currentDate} | Course: ${courseFilter} | Year: ${yearFilter} | Name: ${shortNameFilter} | Records: ${filteredDuesData.length}`;
+            doc.text(filterInfo, 148, 45, { align: 'center' });
+            
+            // Calculate total dues amount
+            const totalDuesAmount = filteredDuesData.reduce((sum, student) => sum + student['Total Dues'], 0);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
+            
+            // Table headers
+            const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Status', 'Alloted', 'Paid', 'Dues'];
+            const startY = 65;
+            
+            doc.setFontSize(8);
+            doc.setFont(undefined, 'bold');
+            
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, startY - 2, 266, 8, 'F');
+            
+            const colWidths = [12, 35, 35, 12, 20, 25, 16, 30, 30, 30];
+            let xPos = 15;
+            
+            headers.forEach((header, index) => {
+                doc.text(header, xPos + 2, startY + 4);
+                xPos += colWidths[index];
+            });
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(7);
+            
+            let currentY = startY + 12;
+            const rowHeight = 6;
+            const pageHeight = 180;
+            
+            filteredDuesData.forEach((student, index) => {
+                if (currentY > pageHeight) {
+                    doc.addPage();
+                    currentY = 20;
+                    
+                    doc.setFont(undefined, 'bold');
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(15, currentY - 2, 266, 8, 'F');
+                    
+                    xPos = 15;
+                    headers.forEach((header, i) => {
+                        doc.text(header, xPos + 2, currentY + 4);
+                        xPos += colWidths[i];
+                    });
+                    
+                    currentY += 12;
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                const serialNumber = String(index + 1).padStart(2, '0');
+                const formatAmount = (amount) => '₹' + amount.toLocaleString('en-IN');
+                
+                const rowData = [
+                    serialNumber,
+                    (student['Student Name'] || '').substring(0, 18),
+                    (student['Father Name'] || '').substring(0, 18),
+                    student['Year'] || '',
+                    student['Course'] || '',
+                    student['Reg No'] || '',
+                    student['In/Out'] || '',
+                    formatAmount(student['Total Alloted']),
+                    formatAmount(student['Total Paid']),
+                    formatAmount(student['Total Dues'])
+                ];
+                
+                if (index % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(15, currentY - 2, 266, rowHeight, 'F');
+                }
+                
+                xPos = 15;
+                rowData.forEach((data, i) => {
+                    const text = String(data);
+                    doc.text(text, xPos + 2, currentY + 2);
+                    xPos += colWidths[i];
+                });
+                
+                currentY += rowHeight;
+            });
+            
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Page ${i} of ${pageCount}`, 148, 205, { align: 'center' });
+                doc.text('SMP Admn Stats 2025-26 - Fee Dues Report', 148, 200, { align: 'center' });
+            }
+            
+            const fileName = `SMP_Dues_${courseFilter.replace(' ', '_')}_${currentDate.replace(/-/g, '_')}.pdf`;
+            doc.save(fileName);
+        }
+
         function exportToCSV() {
             if (filteredData.length === 0) {
                 alert('No data to export');
@@ -1731,10 +3024,56 @@
             document.body.removeChild(link);
         }
 
+        function exportDuesToCSV() {
+            if (filteredDuesData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Status', 'Total Alloted', 'Total Paid', 'Total Dues'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredDuesData.map((student, index) => {
+                    const serialNumber = String(index + 1).padStart(2, '0');
+                    const values = [
+                        serialNumber,
+                        student['Student Name'] || '',
+                        student['Father Name'] || '',
+                        student['Year'] || '',
+                        student['Course'] || '',
+                        student['Reg No'] || '',
+                        student['In/Out'] || '',
+                        student['Total Alloted'],
+                        student['Total Paid'],
+                        student['Total Dues']
+                    ];
+                    return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
+                })
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+            link.setAttribute('download', `dues_export_${currentDate.replace(/-/g, '_')}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         // Auto-apply filters on input change
         document.getElementById('nameFilter').addEventListener('input', applyFilters);
         document.getElementById('courseFilter').addEventListener('change', applyFilters);
         document.getElementById('yearFilter').addEventListener('change', applyFilters);
+
+        // Dues filters
+        document.getElementById('duesNameFilter').addEventListener('input', applyDuesFilters);
+        document.getElementById('duesCourseFilter').addEventListener('change', applyDuesFilters);
+        document.getElementById('duesYearFilter').addEventListener('change', applyDuesFilters);
     </script>
 </body>
 </html>
