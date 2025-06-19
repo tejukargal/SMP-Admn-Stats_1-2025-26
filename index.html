@@ -763,6 +763,10 @@
             min-width: 800px; /* Prevent table compression */
         }
 
+        #duesTable {
+            min-width: 1400px; /* Wider minimum width for dues table with more columns */
+        }
+
         th, td {
             padding: 14px 16px;
             text-align: left;
@@ -1058,6 +1062,231 @@
             color: var(--warning-color);
         }
 
+        /* Course Breakdown Popup Styles */
+        .course-breakdown-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .course-breakdown-popup.show {
+            display: flex;
+        }
+
+        .popup-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 2px solid var(--border-color);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        [data-theme="dark"] .popup-content {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .popup-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+        }
+
+        .popup-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .popup-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .popup-timer {
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .popup-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        .breakdown-container {
+            margin-top: 15px;
+        }
+
+        .single-breakdown-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        .breakdown-header {
+            display: contents;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .breakdown-row {
+            display: contents;
+        }
+
+        .year-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: left;
+            padding: 4px 0;
+        }
+
+        .breakdown-value {
+            text-align: center;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+            min-width: 25px;
+        }
+
+        .breakdown-value.regular {
+            background: rgba(67, 97, 238, 0.15);
+            color: var(--primary-color);
+        }
+
+        .breakdown-value.ltrl {
+            background: rgba(247, 37, 133, 0.15);
+            color: var(--warning-color);
+        }
+
+        .breakdown-value.snq {
+            background: rgba(76, 179, 240, 0.15);
+            color: var(--success-color);
+        }
+
+        .breakdown-value.rptr {
+            background: rgba(255, 152, 0, 0.15);
+            color: var(--ec-color);
+        }
+
+        .breakdown-total {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        .breakdown-divider {
+            grid-column: 1 / -1;
+            height: 1px;
+            background: var(--border-color);
+            margin: 6px 0;
+        }
+
+        .breakdown-grand-total {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 6px;
+            border-radius: 5px;
+            margin-top: 8px;
+        }
+
+        .admtype-regular { color: var(--primary-color); font-weight: 600; }
+        .admtype-ltrl { color: var(--warning-color); font-weight: 600; }
+        .admtype-snq { color: var(--success-color); font-weight: 600; }
+        .admtype-rptr { color: var(--ec-color); font-weight: 600; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .popup-content {
+                margin: 20px;
+                padding: 18px;
+                max-width: none;
+                width: calc(100% - 40px);
+            }
+
+            .popup-title {
+                font-size: 1.1rem;
+            }
+
+            .popup-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .breakdown-grid {
+                font-size: 0.7rem;
+                gap: 6px;
+            }
+
+            .breakdown-value {
+                padding: 2px 4px;
+                min-width: 20px;
+            }
+        }
+
         @media screen and (max-width: 768px) {
             .container {
                 padding: 12px;
@@ -1165,6 +1394,10 @@
 
             table {
                 min-width: 600px; /* Force horizontal scroll */
+            }
+
+            #duesTable {
+                min-width: 1200px; /* Wider minimum width for mobile dues table */
             }
 
             .section-title {
@@ -1443,6 +1676,12 @@
                             </select>
                         </div>
                         <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="admTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <label>Search Name</label>
                             <input type="text" id="nameFilter" placeholder="Enter student name...">
                         </div>
@@ -1460,6 +1699,7 @@
                                     <th>Year</th>
                                     <th>Course</th>
                                     <th>Reg No</th>
+                                    <th>Adm Type</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -1494,6 +1734,12 @@
                             </select>
                         </div>
                         <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="duesAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <label>Search Name</label>
                             <input type="text" id="duesNameFilter" placeholder="Enter student name...">
                         </div>
@@ -1511,7 +1757,14 @@
                                     <th>Year</th>
                                     <th>Course</th>
                                     <th>Reg No</th>
+                                    <th>Adm Type</th>
                                     <th>Status</th>
+                                    <th>SMP Alloted</th>
+                                    <th>SVK Alloted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
                                     <th>Total Alloted</th>
                                     <th>Total Paid</th>
                                     <th>Total Dues</th>
@@ -1547,12 +1800,32 @@
 
     <div class="tooltip" id="tooltip"></div>
 
+    <!-- Course Breakdown Popup -->
+    <div class="course-breakdown-popup" id="courseBreakdownPopup">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closeCourseBreakdown()">×</button>
+            <div class="popup-header">
+                <div class="popup-title" id="popupTitle">Course Breakdown</div>
+                <div class="popup-subtitle" id="popupSubtitle">Detailed student distribution</div>
+                <div class="popup-timer" id="popupTimer">Auto-close in 5 seconds</div>
+            </div>
+            <div class="breakdown-content">
+                <div class="breakdown-container" id="breakdownContainer">
+                    <div class="single-breakdown-card" id="breakdownCard">
+                        <!-- Breakdown data will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let studentsData = [];
         let allStudentsData = []; // Store all students including those with dues
         let filteredData = [];
         let filteredDuesData = [];
         let duesData = [];
+        let popupTimer = null;
         const TOTAL_INTAKE_PER_COURSE = 63;
 
         // Dark mode functionality
@@ -1608,6 +1881,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
             loadCSVFile();
+            
+            // Close popup when clicking outside
+            document.getElementById('courseBreakdownPopup').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeCourseBreakdown();
+                }
+            });
+
+            // Close popup with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeCourseBreakdown();
+                }
+            });
         });
 
         async function loadCSVFile() {
@@ -1785,6 +2072,16 @@
                         student[header] = values[index] ? values[index].trim() : '';
                     });
                     
+                    // Normalize Adm Type: treat all values as REGULAR except SNQ, LTRL & RPTR
+                    if (student['Adm Type']) {
+                        const admType = student['Adm Type'].trim();
+                        if (admType !== 'SNQ' && admType !== 'LTRL' && admType !== 'RPTR') {
+                            student['Adm Type'] = 'REGULAR';
+                        }
+                    } else {
+                        student['Adm Type'] = 'REGULAR';
+                    }
+                    
                     // Only include students with 'In' status
                     const status = student[statusColumn] || student['In/Out'] || '';
                     if (status.toLowerCase() === 'in') {
@@ -1917,18 +2214,29 @@
                 
                 // Include student if they have any pending amount in either SMP or SVK
                 if (hasDues && totalDues > 0) {
+                    // Normalize Adm Type for dues data as well
+                    let normalizedAdmType = baseStudent['Adm Type'] || '';
+                    if (normalizedAdmType !== 'SNQ' && normalizedAdmType !== 'LTRL' && normalizedAdmType !== 'RPTR') {
+                        normalizedAdmType = 'REGULAR';
+                    }
+                    
                     const duesStudent = {
                         'Student Name': baseStudent['Student Name'] || '',
                         'Father Name': baseStudent['Father Name'] || '',
                         'Year': baseStudent['Year'] || '',
                         'Course': course,
                         'Reg No': regNo,
+                        'Adm Type': normalizedAdmType,
                         'In/Out': baseStudent['In/Out'] || 'In',
+                        'SMP Alloted': allotedSMP,
+                        'SVK Alloted': allotedSVK,
+                        'SMP Paid': totalPaidSMP,
+                        'SVK Paid': totalPaidSVK,
+                        'SMP Due': duesSMP,
+                        'SVK Due': duesSVK,
                         'Total Alloted': totalAlloted,
                         'Total Paid': totalPaid,
                         'Total Dues': totalDues,
-                        'SMP Dues': duesSMP,
-                        'SVK Dues': duesSVK,
                         'Payment Records': records.length,
                         'Unique Key': uniqueKey
                     };
@@ -2033,6 +2341,8 @@
                 
                 const metricCard = document.createElement('div');
                 metricCard.className = 'metric-card';
+                metricCard.style.cursor = 'pointer';
+                metricCard.setAttribute('data-course', course);
                 metricCard.innerHTML = `
                     <div class="metric-number ${courseColors[course] || ''}">${courseCount[course]}</div>
                     <div class="metric-label">${course}</div>
@@ -2042,6 +2352,10 @@
                         <div class="year-item">3rd Yr: <span class="${courseColors[course] || ''}">${thirdYr}</span></div>
                     </div>
                 `;
+                
+                // Add click event listener for course breakdown popup
+                metricCard.addEventListener('click', () => showCourseBreakdown(course));
+                
                 metricsGrid.appendChild(metricCard);
             });
 
@@ -2062,6 +2376,139 @@
                 </div>
             `;
             metricsGrid.appendChild(totalCard);
+        }
+
+        // Course breakdown popup functions
+        function showCourseBreakdown(course) {
+            const popup = document.getElementById('courseBreakdownPopup');
+            const title = document.getElementById('popupTitle');
+            const subtitle = document.getElementById('popupSubtitle');
+            const timer = document.getElementById('popupTimer');
+            const card = document.getElementById('breakdownCard');
+            
+            // Set popup title and subtitle
+            const courseNames = {
+                'CE': 'Civil Engineering',
+                'ME': 'Mechanical Engineering',
+                'EC': 'Electronics & Communication Engineering',
+                'CS': 'Computer Science Engineering',
+                'EE': 'Electrical Engineering'
+            };
+            
+            title.textContent = `${course} - ${courseNames[course] || course}`;
+            subtitle.textContent = `Year & Admission Type Breakdown`;
+            
+            // Generate breakdown data
+            const breakdown = generateCourseBreakdown(course);
+            
+            // Populate single card
+            const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+            let totalRegular = 0, totalLTRL = 0, totalSNQ = 0, totalRPTR = 0, grandTotal = 0;
+            
+            let cardHTML = `
+                <div class="breakdown-grid">
+                    <div class="breakdown-header">
+                        <div class="year-label">Year</div>
+                        <div style="text-align: center; font-weight: 600;">Regular</div>
+                        <div style="text-align: center; font-weight: 600;">LTRL</div>
+                        <div style="text-align: center; font-weight: 600;">SNQ</div>
+                        <div style="text-align: center; font-weight: 600;">RPTR</div>
+                        <div style="text-align: center; font-weight: 600;">Total</div>
+                    </div>
+                    <div class="breakdown-divider"></div>
+            `;
+            
+            expectedYears.forEach(year => {
+                const yearData = breakdown[year] || { REGULAR: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+                
+                cardHTML += `
+                    <div class="breakdown-row">
+                        <div class="year-label">${year}</div>
+                        <div class="breakdown-value regular">${yearData.REGULAR}</div>
+                        <div class="breakdown-value ltrl">${yearData.LTRL}</div>
+                        <div class="breakdown-value snq">${yearData.SNQ}</div>
+                        <div class="breakdown-value rptr">${yearData.RPTR}</div>
+                        <div class="breakdown-value breakdown-total">${yearData.total}</div>
+                    </div>
+                `;
+                
+                totalRegular += yearData.REGULAR;
+                totalLTRL += yearData.LTRL;
+                totalSNQ += yearData.SNQ;
+                totalRPTR += yearData.RPTR;
+                grandTotal += yearData.total;
+            });
+            
+            cardHTML += `
+                    <div class="breakdown-divider"></div>
+                    <div class="breakdown-row">
+                        <div class="year-label" style="font-weight: 700;">TOTAL</div>
+                        <div class="breakdown-value regular" style="font-weight: 700;">${totalRegular}</div>
+                        <div class="breakdown-value ltrl" style="font-weight: 700;">${totalLTRL}</div>
+                        <div class="breakdown-value snq" style="font-weight: 700;">${totalSNQ}</div>
+                        <div class="breakdown-value rptr" style="font-weight: 700;">${totalRPTR}</div>
+                        <div class="breakdown-value breakdown-total" style="font-weight: 700;">${grandTotal}</div>
+                    </div>
+                </div>
+                <div class="breakdown-grand-total">
+                    Grand Total: ${grandTotal} Students
+                </div>
+            `;
+            
+            card.innerHTML = cardHTML;
+            
+            // Show popup
+            popup.classList.add('show');
+            
+            // Start countdown timer (8 seconds)
+            let timeLeft = 8;
+            timer.textContent = `Auto-close in ${timeLeft} seconds`;
+            
+            // Clear any existing timer
+            if (popupTimer) {
+                clearInterval(popupTimer);
+            }
+            
+            popupTimer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    timer.textContent = `Auto-close in ${timeLeft} seconds`;
+                } else {
+                    closeCourseBreakdown();
+                }
+            }, 1000);
+        }
+
+        function generateCourseBreakdown(course) {
+            const breakdown = {};
+            
+            // Filter students for the specific course
+            const courseStudents = studentsData.filter(student => student['Course'] === course);
+            
+            courseStudents.forEach(student => {
+                const year = student['Year'];
+                const admType = student['Adm Type'] || 'REGULAR';
+                
+                if (!breakdown[year]) {
+                    breakdown[year] = { REGULAR: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+                }
+                
+                breakdown[year][admType] = (breakdown[year][admType] || 0) + 1;
+                breakdown[year].total++;
+            });
+            
+            return breakdown;
+        }
+
+        function closeCourseBreakdown() {
+            const popup = document.getElementById('courseBreakdownPopup');
+            popup.classList.remove('show');
+            
+            // Clear timer
+            if (popupTimer) {
+                clearInterval(popupTimer);
+                popupTimer = null;
+            }
         }
 
         function generateYearWiseCharts() {
@@ -2400,9 +2847,11 @@
         function populateFilters() {
             const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
             const years = [...new Set(studentsData.map(s => s['Year']))].sort();
+            const admTypes = [...new Set(studentsData.map(s => s['Adm Type']).filter(type => type))].sort();
 
             const courseFilter = document.getElementById('courseFilter');
             const yearFilter = document.getElementById('yearFilter');
+            const admTypeFilter = document.getElementById('admTypeFilter');
 
             courseFilter.innerHTML = '<option value="">All Courses</option>';
             courses.forEach(course => {
@@ -2412,15 +2861,22 @@
             yearFilter.innerHTML = '<option value="">All Years</option>';
             years.forEach(year => {
                 yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+
+            admTypeFilter.innerHTML = '<option value="">All Types</option>';
+            admTypes.forEach(admType => {
+                admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
             });
         }
 
         function populateDuesFilters() {
             const courses = [...new Set(duesData.map(s => s['Course']))].sort();
             const years = [...new Set(duesData.map(s => s['Year']))].sort();
+            const admTypes = [...new Set(duesData.map(s => s['Adm Type']).filter(type => type))].sort();
 
             const courseFilter = document.getElementById('duesCourseFilter');
             const yearFilter = document.getElementById('duesYearFilter');
+            const admTypeFilter = document.getElementById('duesAdmTypeFilter');
 
             courseFilter.innerHTML = '<option value="">All Courses</option>';
             courses.forEach(course => {
@@ -2430,6 +2886,11 @@
             yearFilter.innerHTML = '<option value="">All Years</option>';
             years.forEach(year => {
                 yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+
+            admTypeFilter.innerHTML = '<option value="">All Types</option>';
+            admTypes.forEach(admType => {
+                admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
             });
         }
 
@@ -2438,7 +2899,7 @@
             tbody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="no-data">No students found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">No students found</td></tr>';
                 return;
             }
 
@@ -2452,6 +2913,7 @@
                     <td>${student['Year'] || ''}</td>
                     <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
                     <td>${student['Reg No'] || ''}</td>
+                    <td>${student['Adm Type'] || ''}</td>
                     <td>${student['In/Out'] || ''}</td>
                 `;
                 tbody.appendChild(row);
@@ -2548,10 +3010,16 @@
             tbody.innerHTML = '';
 
             if (filteredDuesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="no-data">No students with outstanding dues found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="17" class="no-data">No students with outstanding dues found</td></tr>';
                 return;
             }
 
+            let totalSMPAlloted = 0;
+            let totalSVKAlloted = 0;
+            let totalSMPPaid = 0;
+            let totalSVKPaid = 0;
+            let totalSMPDue = 0;
+            let totalSVKDue = 0;
             let totalAlloted = 0;
             let totalPaid = 0;
             let totalDues = 0;
@@ -2565,6 +3033,12 @@
                 };
                 
                 // Add to totals
+                totalSMPAlloted += student['SMP Alloted'];
+                totalSVKAlloted += student['SVK Alloted'];
+                totalSMPPaid += student['SMP Paid'];
+                totalSVKPaid += student['SVK Paid'];
+                totalSMPDue += student['SMP Due'];
+                totalSVKDue += student['SVK Due'];
                 totalAlloted += student['Total Alloted'];
                 totalPaid += student['Total Paid'];
                 totalDues += student['Total Dues'];
@@ -2576,7 +3050,14 @@
                     <td>${student['Year'] || ''}</td>
                     <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
                     <td>${student['Reg No'] || ''}</td>
+                    <td>${student['Adm Type'] || ''}</td>
                     <td>${student['In/Out'] || ''}</td>
+                    <td class="positive-amount">${formatAmount(student['SMP Alloted'])}</td>
+                    <td class="positive-amount">${formatAmount(student['SVK Alloted'])}</td>
+                    <td class="positive-amount">${formatAmount(student['SMP Paid'])}</td>
+                    <td class="positive-amount">${formatAmount(student['SVK Paid'])}</td>
+                    <td class="dues-amount">${formatAmount(student['SMP Due'])}</td>
+                    <td class="dues-amount">${formatAmount(student['SVK Due'])}</td>
                     <td class="positive-amount">${formatAmount(student['Total Alloted'])}</td>
                     <td class="positive-amount">${formatAmount(student['Total Paid'])}</td>
                     <td class="dues-amount">${formatAmount(student['Total Dues'])}</td>
@@ -2589,7 +3070,13 @@
                 const grandTotalRow = document.createElement('tr');
                 grandTotalRow.className = 'grand-total-row';
                 grandTotalRow.innerHTML = `
-                    <td colspan="7"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+                    <td colspan="8"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+                    <td><strong>₹${totalSMPAlloted.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalSVKAlloted.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalSMPPaid.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalSVKPaid.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalSMPDue.toLocaleString('en-IN')}</strong></td>
+                    <td><strong>₹${totalSVKDue.toLocaleString('en-IN')}</strong></td>
                     <td><strong>₹${totalAlloted.toLocaleString('en-IN')}</strong></td>
                     <td><strong>₹${totalPaid.toLocaleString('en-IN')}</strong></td>
                     <td><strong>₹${totalDues.toLocaleString('en-IN')}</strong></td>
@@ -2601,16 +3088,18 @@
         function applyFilters() {
             const courseFilter = document.getElementById('courseFilter').value;
             const yearFilter = document.getElementById('yearFilter').value;
+            const admTypeFilter = document.getElementById('admTypeFilter').value;
             const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
 
             filteredData = studentsData.filter(student => {
                 const matchesCourse = !courseFilter || student['Course'] === courseFilter;
                 const matchesYear = !yearFilter || student['Year'] === yearFilter;
+                const matchesAdmType = !admTypeFilter || student['Adm Type'] === admTypeFilter;
                 const matchesName = !nameFilter || 
                     student['Student Name']?.toLowerCase().includes(nameFilter) ||
                     student['Father Name']?.toLowerCase().includes(nameFilter);
 
-                return matchesCourse && matchesYear && matchesName;
+                return matchesCourse && matchesYear && matchesAdmType && matchesName;
             });
 
             displayStudentList();
@@ -2619,16 +3108,18 @@
         function applyDuesFilters() {
             const courseFilter = document.getElementById('duesCourseFilter').value;
             const yearFilter = document.getElementById('duesYearFilter').value;
+            const admTypeFilter = document.getElementById('duesAdmTypeFilter').value;
             const nameFilter = document.getElementById('duesNameFilter').value.toLowerCase();
 
             filteredDuesData = duesData.filter(student => {
                 const matchesCourse = !courseFilter || student['Course'] === courseFilter;
                 const matchesYear = !yearFilter || student['Year'] === yearFilter;
+                const matchesAdmType = !admTypeFilter || student['Adm Type'] === admTypeFilter;
                 const matchesName = !nameFilter || 
                     student['Student Name']?.toLowerCase().includes(nameFilter) ||
                     student['Father Name']?.toLowerCase().includes(nameFilter);
 
-                return matchesCourse && matchesYear && matchesName;
+                return matchesCourse && matchesYear && matchesAdmType && matchesName;
             });
 
             displayDuesList();
@@ -2723,6 +3214,7 @@
         function clearFilters() {
             document.getElementById('courseFilter').value = '';
             document.getElementById('yearFilter').value = '';
+            document.getElementById('admTypeFilter').value = '';
             document.getElementById('nameFilter').value = '';
             filteredData = [...studentsData];
             displayStudentList();
@@ -2731,6 +3223,7 @@
         function clearDuesFilters() {
             document.getElementById('duesCourseFilter').value = '';
             document.getElementById('duesYearFilter').value = '';
+            document.getElementById('duesAdmTypeFilter').value = '';
             document.getElementById('duesNameFilter').value = '';
             filteredDuesData = [...duesData];
             displayDuesList();
@@ -2781,7 +3274,7 @@
             }
             
             // Table headers
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Status'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status'];
             const startY = courseFilter !== 'All Courses' ? 65 : 55;
             
             doc.setFontSize(9);
@@ -2790,7 +3283,7 @@
             doc.setFillColor(240, 240, 240);
             doc.rect(15, startY - 2, 180, 8, 'F');
             
-            const colWidths = [15, 35, 35, 15, 20, 25, 20];
+            const colWidths = [15, 35, 35, 18, 18, 25, 18, 16];
             let xPos = 15;
             
             headers.forEach((header, index) => {
@@ -2827,11 +3320,12 @@
                 const serialNumber = String(index + 1).padStart(2, '0');
                 const rowData = [
                     serialNumber,
-                    student['Student Name'] || '',
-                    student['Father Name'] || '',
+                    (student['Student Name'] || '').substring(0, 25),
+                    (student['Father Name'] || '').substring(0, 25),
                     student['Year'] || '',
                     student['Course'] || '',
-                    student['Reg No'] || '',
+                    (student['Reg No'] || '').substring(0, 18),
+                    (student['Adm Type'] || '').substring(0, 12),
                     student['In/Out'] || ''
                 ];
                 
@@ -2842,7 +3336,7 @@
                 
                 xPos = 15;
                 rowData.forEach((data, i) => {
-                    const text = String(data).substring(0, 20);
+                    const text = String(data);
                     doc.text(text, xPos + 2, currentY + 2);
                     xPos += colWidths[i];
                 });
@@ -2899,16 +3393,16 @@
             doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
             
             // Table headers
-            const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Status', 'Alloted', 'Paid', 'Dues'];
+            const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
             const startY = 65;
             
-            doc.setFontSize(8);
+            doc.setFontSize(7);
             doc.setFont(undefined, 'bold');
             
             doc.setFillColor(240, 240, 240);
             doc.rect(15, startY - 2, 266, 8, 'F');
             
-            const colWidths = [12, 35, 35, 12, 20, 25, 16, 30, 30, 30];
+            const colWidths = [10, 25, 25, 8, 12, 18, 10, 12, 18, 18, 18, 18, 18, 18, 18, 18, 18];
             let xPos = 15;
             
             headers.forEach((header, index) => {
@@ -2917,7 +3411,7 @@
             });
             
             doc.setFont(undefined, 'normal');
-            doc.setFontSize(7);
+            doc.setFontSize(6);
             
             let currentY = startY + 12;
             const rowHeight = 6;
@@ -2940,19 +3434,27 @@
                     
                     currentY += 12;
                     doc.setFont(undefined, 'normal');
+                    doc.setFontSize(6);
                 }
                 
                 const serialNumber = String(index + 1).padStart(2, '0');
-                const formatAmount = (amount) => '₹' + amount.toLocaleString('en-IN');
+                const formatAmount = (amount) => '₹' + Math.round(amount).toLocaleString('en-IN');
                 
                 const rowData = [
                     serialNumber,
-                    (student['Student Name'] || '').substring(0, 18),
-                    (student['Father Name'] || '').substring(0, 18),
+                    (student['Student Name'] || '').substring(0, 15),
+                    (student['Father Name'] || '').substring(0, 15),
                     student['Year'] || '',
                     student['Course'] || '',
                     student['Reg No'] || '',
+                    student['Adm Type'] || '',
                     student['In/Out'] || '',
+                    formatAmount(student['SMP Alloted']),
+                    formatAmount(student['SVK Alloted']),
+                    formatAmount(student['SMP Paid']),
+                    formatAmount(student['SVK Paid']),
+                    formatAmount(student['SMP Due']),
+                    formatAmount(student['SVK Due']),
                     formatAmount(student['Total Alloted']),
                     formatAmount(student['Total Paid']),
                     formatAmount(student['Total Dues'])
@@ -2992,7 +3494,7 @@
                 return;
             }
 
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Status'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status'];
             const csvContent = [
                 headers.join(','),
                 ...filteredData.map((student, index) => {
@@ -3004,6 +3506,7 @@
                         student['Year'] || '',
                         student['Course'] || '',
                         student['Reg No'] || '',
+                        student['Adm Type'] || '',
                         student['In/Out'] || ''
                     ];
                     return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
@@ -3030,7 +3533,7 @@
                 return;
             }
 
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Status', 'Total Alloted', 'Total Paid', 'Total Dues'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Alloted', 'Total Paid', 'Total Dues'];
             const csvContent = [
                 headers.join(','),
                 ...filteredDuesData.map((student, index) => {
@@ -3042,7 +3545,14 @@
                         student['Year'] || '',
                         student['Course'] || '',
                         student['Reg No'] || '',
+                        student['Adm Type'] || '',
                         student['In/Out'] || '',
+                        student['SMP Alloted'],
+                        student['SVK Alloted'],
+                        student['SMP Paid'],
+                        student['SVK Paid'],
+                        student['SMP Due'],
+                        student['SVK Due'],
                         student['Total Alloted'],
                         student['Total Paid'],
                         student['Total Dues']
@@ -3069,11 +3579,13 @@
         document.getElementById('nameFilter').addEventListener('input', applyFilters);
         document.getElementById('courseFilter').addEventListener('change', applyFilters);
         document.getElementById('yearFilter').addEventListener('change', applyFilters);
+        document.getElementById('admTypeFilter').addEventListener('change', applyFilters);
 
         // Dues filters
         document.getElementById('duesNameFilter').addEventListener('input', applyDuesFilters);
         document.getElementById('duesCourseFilter').addEventListener('change', applyDuesFilters);
         document.getElementById('duesYearFilter').addEventListener('change', applyDuesFilters);
+        document.getElementById('duesAdmTypeFilter').addEventListener('change', applyDuesFilters);
     </script>
 </body>
 </html>
