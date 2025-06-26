@@ -134,6 +134,121 @@
             text-align: center;
         }
 
+        /* Running Messages Ticker Styles */
+        .running-messages-container {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(63, 55, 201, 0.1));
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+            height: 50px;
+            box-shadow: var(--box-shadow);
+        }
+
+        [data-theme="dark"] .running-messages-container {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.15), rgba(63, 55, 201, 0.15));
+        }
+
+        .running-messages-wrapper {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .running-messages {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            white-space: nowrap;
+            animation: scrollMessages 40s linear infinite;
+            gap: 60px;
+        }
+
+        .running-messages:hover {
+            animation-play-state: paused;
+        }
+
+        .message-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .message-label {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(67, 97, 238, 0.3);
+        }
+
+        .message-text {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .message-urgent .message-label {
+            background: var(--warning-color);
+            animation: pulse 2s infinite;
+        }
+
+        .message-info .message-label {
+            background: var(--success-color);
+        }
+
+        .message-deadline .message-label {
+            background: var(--ec-color);
+        }
+
+        @keyframes scrollMessages {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .running-messages-container {
+                height: 45px;
+                margin-bottom: 16px;
+            }
+
+            .running-messages {
+                animation: scrollMessages 35s linear infinite;
+                gap: 40px;
+            }
+
+            .message-item {
+                font-size: 0.85rem;
+            }
+
+            .message-label {
+                padding: 3px 8px;
+                font-size: 0.75rem;
+            }
+        }
+
         .nav-tabs {
             display: flex;
             background: var(--bg-card);
@@ -1570,6 +1685,15 @@
             <p class="update-info">Visit daily for updates • <span id="lastUpdated">Last Updated on --</span></p>
         </div>
 
+        <!-- Running Messages Ticker -->
+        <div class="running-messages-container">
+            <div class="running-messages-wrapper">
+                <div class="running-messages" id="runningMessages">
+                    <!-- Messages will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
         <div id="loading" class="content-section">
             <div style="text-align: center; padding: 40px;">
                 <div style="font-size: 2rem; margin-bottom: 20px;">⏳</div>
@@ -1877,9 +2001,59 @@
             event.target.classList.add('active');
         }
 
+        // Running Messages Configuration
+        const runningMessages = [
+            {
+                type: 'urgent',
+                label: 'URGENT',
+                text: 'The Last Date for 2nd & 3rd Year Fee Payment is on Dt. 30.06.2025'
+            },
+            {
+                type: 'deadline',
+                label: 'Info',
+                text: 'You can now download Students List in PDF or CSV'
+            },
+            {
+                type: 'info',
+                label: 'Due Fee List Added',
+                text: 'You can now download Fee Pending Students List in PDF or CSV'
+            }    
+        ];
+
+        function initializeRunningMessages() {
+            const container = document.getElementById('runningMessages');
+            if (!container) return;
+
+            // Clear existing content
+            container.innerHTML = '';
+
+            // Create message elements
+            runningMessages.forEach((message, index) => {
+                const messageItem = document.createElement('div');
+                messageItem.className = `message-item message-${message.type}`;
+                messageItem.innerHTML = `
+                    <span class="message-label">${message.label}</span>
+                    <span class="message-text">${message.text}</span>
+                `;
+                container.appendChild(messageItem);
+            });
+
+            // Duplicate messages for seamless loop
+            runningMessages.forEach((message, index) => {
+                const messageItem = document.createElement('div');
+                messageItem.className = `message-item message-${message.type}`;
+                messageItem.innerHTML = `
+                    <span class="message-label">${message.label}</span>
+                    <span class="message-text">${message.text}</span>
+                `;
+                container.appendChild(messageItem);
+            });
+        }
+
         // Auto-load CSV file on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
+            initializeRunningMessages();
             loadCSVFile();
             
             // Close popup when clicking outside
