@@ -764,7 +764,7 @@
         }
 
         #duesTable {
-            min-width: 1400px; /* Wider minimum width for dues table with more columns */
+            min-width: 1500px; /* Wider minimum width for dues table with additional Adm Cat column */
         }
 
         th, td {
@@ -1393,11 +1393,11 @@
             }
 
             table {
-                min-width: 600px; /* Force horizontal scroll */
+                min-width: 700px; /* Force horizontal scroll for additional column */
             }
 
             #duesTable {
-                min-width: 1200px; /* Wider minimum width for mobile dues table */
+                min-width: 1300px; /* Wider minimum width for mobile dues table with additional column */
             }
 
             .section-title {
@@ -1700,6 +1700,7 @@
                                     <th>Course</th>
                                     <th>Reg No</th>
                                     <th>Adm Type</th>
+                                    <th>Adm Cat</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -1758,6 +1759,7 @@
                                     <th>Course</th>
                                     <th>Reg No</th>
                                     <th>Adm Type</th>
+                                    <th>Adm Cat</th>
                                     <th>Status</th>
                                     <th>SMP Alloted</th>
                                     <th>SVK Alloted</th>
@@ -2214,10 +2216,20 @@
                 
                 // Include student if they have any pending amount in either SMP or SVK
                 if (hasDues && totalDues > 0) {
-                    // Normalize Adm Type for dues data as well
-                    let normalizedAdmType = baseStudent['Adm Type'] || '';
-                    if (normalizedAdmType !== 'SNQ' && normalizedAdmType !== 'LTRL' && normalizedAdmType !== 'RPTR') {
-                        normalizedAdmType = 'REGULAR';
+                    // Mixed admission type logic for dues data
+                    let normalizedAdmType;
+                    const admCat = baseStudent['Adm Cat'] || '';
+                    const admTypeCol = baseStudent['Adm Type'] || '';
+                    
+                    if (admCat.trim() === 'SNQ') {
+                        normalizedAdmType = 'SNQ';
+                    } else {
+                        // Use Adm Type for Regular, LTRL, RPTR
+                        if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                            normalizedAdmType = admTypeCol;
+                        } else {
+                            normalizedAdmType = 'REGULAR';
+                        }
                     }
                     
                     const duesStudent = {
@@ -2227,6 +2239,7 @@
                         'Course': course,
                         'Reg No': regNo,
                         'Adm Type': normalizedAdmType,
+                        'Adm Cat': baseStudent['Adm Cat'] || '',
                         'In/Out': baseStudent['In/Out'] || 'In',
                         'SMP Alloted': allotedSMP,
                         'SVK Alloted': allotedSVK,
@@ -2872,7 +2885,25 @@
         function populateFilters() {
             const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
             const years = [...new Set(studentsData.map(s => s['Year']))].sort();
-            const admTypes = [...new Set(studentsData.map(s => s['Adm Type']).filter(type => type))].sort();
+            
+            // Collect admission types from both columns with mixed logic
+            const admTypesSet = new Set();
+            studentsData.forEach(student => {
+                const admCat = student['Adm Cat'] || '';
+                const admTypeCol = student['Adm Type'] || '';
+                
+                if (admCat.trim() === 'SNQ') {
+                    admTypesSet.add('SNQ');
+                } else {
+                    if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                        admTypesSet.add(admTypeCol);
+                    } else {
+                        admTypesSet.add('REGULAR');
+                    }
+                }
+            });
+            
+            const admTypes = Array.from(admTypesSet).sort();
 
             const courseFilter = document.getElementById('courseFilter');
             const yearFilter = document.getElementById('yearFilter');
@@ -2897,6 +2928,8 @@
         function populateDuesFilters() {
             const courses = [...new Set(duesData.map(s => s['Course']))].sort();
             const years = [...new Set(duesData.map(s => s['Year']))].sort();
+            
+            // Get admission types from processed dues data (which already has mixed logic applied)
             const admTypes = [...new Set(duesData.map(s => s['Adm Type']).filter(type => type))].sort();
 
             const courseFilter = document.getElementById('duesCourseFilter');
@@ -2924,12 +2957,28 @@
             tbody.innerHTML = '';
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="no-data">No students found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data">No students found</td></tr>';
                 return;
             }
 
             filteredData.forEach((student, index) => {
                 const serialNumber = String(index + 1).padStart(2, '0');
+                
+                // Determine displayed admission type using mixed logic
+                let displayedAdmType;
+                const admCat = student['Adm Cat'] || '';
+                const admTypeCol = student['Adm Type'] || '';
+                
+                if (admCat.trim() === 'SNQ') {
+                    displayedAdmType = 'SNQ';
+                } else {
+                    if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                        displayedAdmType = admTypeCol;
+                    } else {
+                        displayedAdmType = 'REGULAR';
+                    }
+                }
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${serialNumber}</td>
@@ -2938,7 +2987,8 @@
                     <td>${student['Year'] || ''}</td>
                     <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
                     <td>${student['Reg No'] || ''}</td>
-                    <td>${student['Adm Type'] || ''}</td>
+                    <td>${displayedAdmType}</td>
+                    <td>${student['Adm Cat'] || ''}</td>
                     <td>${student['In/Out'] || ''}</td>
                 `;
                 tbody.appendChild(row);
@@ -3035,7 +3085,7 @@
             tbody.innerHTML = '';
 
             if (filteredDuesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="17" class="no-data">No students with outstanding dues found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="18" class="no-data">No students with outstanding dues found</td></tr>';
                 return;
             }
 
@@ -3076,6 +3126,7 @@
                     <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
                     <td>${student['Reg No'] || ''}</td>
                     <td>${student['Adm Type'] || ''}</td>
+                    <td>${student['Adm Cat'] || ''}</td>
                     <td>${student['In/Out'] || ''}</td>
                     <td class="positive-amount">${formatAmount(student['SMP Alloted'])}</td>
                     <td class="positive-amount">${formatAmount(student['SVK Alloted'])}</td>
@@ -3095,7 +3146,7 @@
                 const grandTotalRow = document.createElement('tr');
                 grandTotalRow.className = 'grand-total-row';
                 grandTotalRow.innerHTML = `
-                    <td colspan="8"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+                    <td colspan="9"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
                     <td><strong>₹${totalSMPAlloted.toLocaleString('en-IN')}</strong></td>
                     <td><strong>₹${totalSVKAlloted.toLocaleString('en-IN')}</strong></td>
                     <td><strong>₹${totalSMPPaid.toLocaleString('en-IN')}</strong></td>
@@ -3119,7 +3170,30 @@
             filteredData = studentsData.filter(student => {
                 const matchesCourse = !courseFilter || student['Course'] === courseFilter;
                 const matchesYear = !yearFilter || student['Year'] === yearFilter;
-                const matchesAdmType = !admTypeFilter || student['Adm Type'] === admTypeFilter;
+                
+                // Mixed admission type filtering logic
+                let matchesAdmType = true;
+                if (admTypeFilter) {
+                    if (admTypeFilter === 'SNQ') {
+                        // For SNQ, check 'Adm Cat' column
+                        const admCat = student['Adm Cat'] || '';
+                        matchesAdmType = admCat.trim() === 'SNQ';
+                    } else {
+                        // For Regular, LTRL, RPTR - check 'Adm Type' column
+                        const admTypeCol = student['Adm Type'] || '';
+                        if (admTypeFilter === 'REGULAR') {
+                            // Regular includes all values that are not LTRL, RPTR, or SNQ
+                            const admCat = student['Adm Cat'] || '';
+                            matchesAdmType = (admCat.trim() !== 'SNQ') && 
+                                           (admTypeCol !== 'LTRL') && 
+                                           (admTypeCol !== 'RPTR');
+                        } else {
+                            // For LTRL and RPTR, exact match from Adm Type column
+                            matchesAdmType = admTypeCol === admTypeFilter;
+                        }
+                    }
+                }
+                
                 const matchesName = !nameFilter || 
                     student['Student Name']?.toLowerCase().includes(nameFilter) ||
                     student['Father Name']?.toLowerCase().includes(nameFilter);
@@ -3139,7 +3213,25 @@
             filteredDuesData = duesData.filter(student => {
                 const matchesCourse = !courseFilter || student['Course'] === courseFilter;
                 const matchesYear = !yearFilter || student['Year'] === yearFilter;
-                const matchesAdmType = !admTypeFilter || student['Adm Type'] === admTypeFilter;
+                
+                // Mixed admission type filtering logic
+                let matchesAdmType = true;
+                if (admTypeFilter) {
+                    if (admTypeFilter === 'SNQ') {
+                        // For SNQ, check if student was classified as SNQ based on Adm Cat
+                        // Since dues data stores the processed admission type, we check the stored value
+                        matchesAdmType = student['Adm Type'] === 'SNQ';
+                    } else {
+                        // For Regular, LTRL, RPTR - check stored admission type
+                        if (admTypeFilter === 'REGULAR') {
+                            matchesAdmType = student['Adm Type'] === 'REGULAR';
+                        } else {
+                            // For LTRL and RPTR
+                            matchesAdmType = student['Adm Type'] === admTypeFilter;
+                        }
+                    }
+                }
+                
                 const matchesName = !nameFilter || 
                     student['Student Name']?.toLowerCase().includes(nameFilter) ||
                     student['Father Name']?.toLowerCase().includes(nameFilter);
@@ -3299,7 +3391,7 @@
             }
             
             // Table headers
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
             const startY = courseFilter !== 'All Courses' ? 65 : 55;
             
             doc.setFontSize(9);
@@ -3308,7 +3400,7 @@
             doc.setFillColor(240, 240, 240);
             doc.rect(15, startY - 2, 180, 8, 'F');
             
-            const colWidths = [15, 35, 35, 18, 18, 25, 18, 16];
+            const colWidths = [12, 28, 28, 15, 15, 20, 20, 20, 12];
             let xPos = 15;
             
             headers.forEach((header, index) => {
@@ -3343,14 +3435,31 @@
                 }
                 
                 const serialNumber = String(index + 1).padStart(2, '0');
+                
+                // Determine displayed admission type using mixed logic
+                let displayedAdmType;
+                const admCat = student['Adm Cat'] || '';
+                const admTypeCol = student['Adm Type'] || '';
+                
+                if (admCat.trim() === 'SNQ') {
+                    displayedAdmType = 'SNQ';
+                } else {
+                    if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                        displayedAdmType = admTypeCol;
+                    } else {
+                        displayedAdmType = 'REGULAR';
+                    }
+                }
+                
                 const rowData = [
                     serialNumber,
-                    (student['Student Name'] || '').substring(0, 25),
-                    (student['Father Name'] || '').substring(0, 25),
+                    (student['Student Name'] || '').substring(0, 20),
+                    (student['Father Name'] || '').substring(0, 20),
                     student['Year'] || '',
                     student['Course'] || '',
-                    (student['Reg No'] || '').substring(0, 18),
-                    (student['Adm Type'] || '').substring(0, 12),
+                    (student['Reg No'] || '').substring(0, 15),
+                    displayedAdmType.substring(0, 12),
+                    (student['Adm Cat'] || '').substring(0, 12),
                     student['In/Out'] || ''
                 ];
                 
@@ -3418,7 +3527,7 @@
             doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
             
             // Table headers
-            const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
+            const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Cat', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
             const startY = 65;
             
             doc.setFontSize(7);
@@ -3427,7 +3536,7 @@
             doc.setFillColor(240, 240, 240);
             doc.rect(15, startY - 2, 266, 8, 'F');
             
-            const colWidths = [10, 25, 25, 8, 12, 18, 10, 12, 18, 18, 18, 18, 18, 18, 18, 18, 18];
+            const colWidths = [8, 20, 20, 8, 10, 15, 12, 12, 8, 15, 15, 15, 15, 15, 15, 15, 15, 15];
             let xPos = 15;
             
             headers.forEach((header, index) => {
@@ -3467,12 +3576,13 @@
                 
                 const rowData = [
                     serialNumber,
-                    (student['Student Name'] || '').substring(0, 15),
-                    (student['Father Name'] || '').substring(0, 15),
+                    (student['Student Name'] || '').substring(0, 11),
+                    (student['Father Name'] || '').substring(0, 11),
                     student['Year'] || '',
                     student['Course'] || '',
                     student['Reg No'] || '',
-                    student['Adm Type'] || '',
+                    (student['Adm Type'] || '').substring(0, 8),
+                    (student['Adm Cat'] || '').substring(0, 8),
                     student['In/Out'] || '',
                     formatAmount(student['SMP Alloted']),
                     formatAmount(student['SVK Alloted']),
@@ -3519,11 +3629,27 @@
                 return;
             }
 
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
             const csvContent = [
                 headers.join(','),
                 ...filteredData.map((student, index) => {
                     const serialNumber = String(index + 1).padStart(2, '0');
+                    
+                    // Determine displayed admission type using mixed logic
+                    let displayedAdmType;
+                    const admCat = student['Adm Cat'] || '';
+                    const admTypeCol = student['Adm Type'] || '';
+                    
+                    if (admCat.trim() === 'SNQ') {
+                        displayedAdmType = 'SNQ';
+                    } else {
+                        if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                            displayedAdmType = admTypeCol;
+                        } else {
+                            displayedAdmType = 'REGULAR';
+                        }
+                    }
+                    
                     const values = [
                         serialNumber,
                         student['Student Name'] || '',
@@ -3531,7 +3657,8 @@
                         student['Year'] || '',
                         student['Course'] || '',
                         student['Reg No'] || '',
-                        student['Adm Type'] || '',
+                        displayedAdmType,
+                        student['Adm Cat'] || '',
                         student['In/Out'] || ''
                     ];
                     return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
@@ -3558,7 +3685,7 @@
                 return;
             }
 
-            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Status', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Alloted', 'Total Paid', 'Total Dues'];
+            const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Alloted', 'Total Paid', 'Total Dues'];
             const csvContent = [
                 headers.join(','),
                 ...filteredDuesData.map((student, index) => {
@@ -3571,6 +3698,7 @@
                         student['Course'] || '',
                         student['Reg No'] || '',
                         student['Adm Type'] || '',
+                        student['Adm Cat'] || '',
                         student['In/Out'] || '',
                         student['SMP Alloted'],
                         student['SVK Alloted'],
