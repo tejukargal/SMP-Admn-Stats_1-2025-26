@@ -257,6 +257,22 @@
             font-weight: 700;
         }
 
+        .section-title.clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .section-title.clickable:hover {
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .section-title.clickable:hover::after {
+            content: " 📄";
+            opacity: 0.7;
+        }
+
         /* Year-wise Charts Horizontal Scrolling Container */
         .charts-scroll-container {
             overflow-x: auto;
@@ -1602,7 +1618,7 @@
 
             <div id="statistics" class="section active">
                 <div class="content-section">
-                    <h2 class="section-title">📋 Year, Course & Admission Type-wise Student Count</h2>
+                    <h2 class="section-title clickable" id="summaryTableTitle" onclick="exportSummaryToPDF()" title="Click to save as PDF">📋 Year, Course & Admission Type-wise Student Count</h2>
                     <div class="table-container scrollable-summary">
                         <table id="summaryTable">
                             <thead>
@@ -1624,7 +1640,7 @@
                 </div>
 
                 <div class="content-section">
-                    <h2 class="section-title">📅 Date-wise & Course-wise Students Report</h2>
+                    <h2 class="section-title clickable" id="datewiseTableTitle" onclick="exportDatewiseToPDF()" title="Click to save as PDF">📅 Date-wise & Course-wise Students Report</h2>
                     <div class="table-container scrollable-datewise">
                         <table id="datewiseTable">
                             <thead>
@@ -3345,6 +3361,253 @@
             filteredDuesData = [...duesData];
             displayDuesList();
             generateDuesMetrics(); // Regenerate original metrics
+        }
+
+        function exportSummaryToPDF() {
+            if (!confirm('📄 Export Year, Course & Admission Type-wise Student Count as PDF?')) {
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+            
+            // Header
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.text('Year, Course & Admission Type-wise Student Count', 105, 30, { align: 'center' });
+            
+            // Generation info
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            const genInfo = `Generated: ${currentDate}`;
+            doc.text(genInfo, 105, 45, { align: 'center' });
+            
+            // Get table data
+            const table = document.getElementById('summaryTable');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            if (rows.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            // Table headers
+            const headers = ['Year', 'Course', 'Regular', 'LTRL', 'SNQ', 'RPTR', 'Total'];
+            const startY = 55;
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, startY - 2, 180, 8, 'F');
+            
+            const colWidths = [25, 25, 22, 22, 22, 22, 22];
+            let xPos = 15;
+            
+            headers.forEach((header, index) => {
+                doc.text(header, xPos + 2, startY + 4);
+                xPos += colWidths[index];
+            });
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            
+            let currentY = startY + 12;
+            const rowHeight = 6;
+            const pageHeight = 270;
+            
+            rows.forEach((row, index) => {
+                if (currentY > pageHeight) {
+                    doc.addPage();
+                    currentY = 20;
+                    
+                    // Repeat headers on new page
+                    doc.setFont(undefined, 'bold');
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(15, currentY - 2, 180, 8, 'F');
+                    
+                    xPos = 15;
+                    headers.forEach((header, i) => {
+                        doc.text(header, xPos + 2, currentY + 4);
+                        xPos += colWidths[i];
+                    });
+                    
+                    currentY += 12;
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                const cells = row.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+                
+                // Check if this is a subtotal or grand total row
+                const isSubtotal = row.classList.contains('subtotal-row');
+                const isGrandTotal = row.classList.contains('grand-total-row');
+                
+                if (isSubtotal || isGrandTotal) {
+                    doc.setFillColor(67, 97, 238);
+                    doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont(undefined, 'bold');
+                } else if (index % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'normal');
+                } else {
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                xPos = 15;
+                rowData.forEach((data, i) => {
+                    const text = String(data);
+                    doc.text(text, xPos + 2, currentY + 2);
+                    xPos += colWidths[i];
+                });
+                
+                currentY += rowHeight;
+            });
+            
+            // Add page numbers
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+                doc.text('SMP Admn Stats 2025-26 - Summary Report', 105, 285, { align: 'center' });
+            }
+            
+            const fileName = `SMP_Summary_Report_${currentDate.replace(/-/g, '_')}.pdf`;
+            doc.save(fileName);
+        }
+
+        function exportDatewiseToPDF() {
+            if (!confirm('📄 Export Date-wise & Course-wise Students Report as PDF?')) {
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+            
+            // Header
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.text('Date-wise & Course-wise Students Report', 105, 30, { align: 'center' });
+            
+            // Generation info
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            const genInfo = `Generated: ${currentDate}`;
+            doc.text(genInfo, 105, 45, { align: 'center' });
+            
+            // Get table data
+            const table = document.getElementById('datewiseTable');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            if (rows.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            // Table headers
+            const headers = ['Date', 'CE', 'ME', 'EC', 'CS', 'EE', 'Total'];
+            const startY = 55;
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, startY - 2, 180, 8, 'F');
+            
+            const colWidths = [35, 20, 20, 20, 20, 20, 25];
+            let xPos = 15;
+            
+            headers.forEach((header, index) => {
+                doc.text(header, xPos + 2, startY + 4);
+                xPos += colWidths[index];
+            });
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            
+            let currentY = startY + 12;
+            const rowHeight = 6;
+            const pageHeight = 270;
+            
+            rows.forEach((row, index) => {
+                if (currentY > pageHeight) {
+                    doc.addPage();
+                    currentY = 20;
+                    
+                    // Repeat headers on new page
+                    doc.setFont(undefined, 'bold');
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(15, currentY - 2, 180, 8, 'F');
+                    
+                    xPos = 15;
+                    headers.forEach((header, i) => {
+                        doc.text(header, xPos + 2, currentY + 4);
+                        xPos += colWidths[i];
+                    });
+                    
+                    currentY += 12;
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                const cells = row.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+                
+                // Check if this is a grand total row
+                const isGrandTotal = row.classList.contains('grand-total-row');
+                
+                if (isGrandTotal) {
+                    doc.setFillColor(67, 97, 238);
+                    doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont(undefined, 'bold');
+                } else if (index % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'normal');
+                } else {
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFont(undefined, 'normal');
+                }
+                
+                xPos = 15;
+                rowData.forEach((data, i) => {
+                    const text = String(data);
+                    doc.text(text, xPos + 2, currentY + 2);
+                    xPos += colWidths[i];
+                });
+                
+                currentY += rowHeight;
+            });
+            
+            // Add page numbers
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setFont(undefined, 'normal');
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+                doc.text('SMP Admn Stats 2025-26 - Date-wise Report', 105, 285, { align: 'center' });
+            }
+            
+            const fileName = `SMP_Datewise_Report_${currentDate.replace(/-/g, '_')}.pdf`;
+            doc.save(fileName);
         }
 
         function saveToPDF() {
