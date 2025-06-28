@@ -1326,6 +1326,31 @@
                 gap: 16px;
             }
 
+            /* Specific styling for dues metrics grid on mobile to show 2 per row */
+            #duesMetricsGrid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            #duesMetricsGrid .metric-card {
+                min-width: auto;
+                padding: 12px 14px;
+                min-height: 110px;
+            }
+
+            #duesMetricsGrid .metric-number {
+                font-size: 1.6rem;
+            }
+
+            #duesMetricsGrid .metric-label {
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+
+            #duesMetricsGrid .metric-card > div:last-child {
+                font-size: 0.8rem;
+            }
+
             .year-breakdown {
                 flex-direction: column;
                 gap: 4px;
