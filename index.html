@@ -132,6 +132,285 @@
             opacity: 0.8;
             font-style: italic;
             text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .scrolling-message {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 8px 20px;
+            margin: 0 20px;
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            animation: scroll-left 15s linear infinite;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        @keyframes scroll-left {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .scrolling-message::before {
+            content: "📢";
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            z-index: 2;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .scrolling-message::before:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Message Editor Popup */
+        .message-editor-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message-editor-popup.show {
+            display: flex;
+        }
+
+        .editor-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 2px solid var(--border-color);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        [data-theme="dark"] .editor-content {
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .editor-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        .editor-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .editor-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .editor-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+
+        .message-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .message-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .message-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #3bb3d9;
+        }
+
+        .btn-delete {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc1a68;
+        }
+
+        .btn-add-message {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add-message:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .auth-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2500;
+        }
+
+        .auth-popup.show {
+            display: flex;
+        }
+
+        .auth-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            border: 2px solid var(--border-color);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         .nav-tabs {
@@ -1321,6 +1600,63 @@
                 font-size: 0.75rem;
             }
 
+            .scrolling-message {
+                margin: 0 10px;
+                padding: 6px 15px;
+                border-radius: 20px;
+            }
+
+            .scrolling-text {
+                font-size: 0.8rem;
+                animation: scroll-left 12s linear infinite;
+            }
+
+            .scrolling-message::before {
+                left: 8px;
+                font-size: 0.9rem;
+            }
+
+            /* Mobile responsive editor popups */
+            .editor-content {
+                margin: 10px;
+                padding: 20px;
+                max-width: none;
+                width: calc(100% - 20px);
+                max-height: 90vh;
+            }
+
+            .auth-content {
+                margin: 10px;
+                padding: 20px;
+                max-width: none;
+                width: calc(100% - 20px);
+            }
+
+            .editor-title {
+                font-size: 1.2rem;
+            }
+
+            .message-input {
+                font-size: 14px;
+                min-height: 70px;
+            }
+
+            .message-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .btn-small {
+                width: 100%;
+                padding: 8px 12px;
+            }
+
+            .btn-add-message {
+                width: 100%;
+                justify-content: center;
+                padding: 12px 20px;
+            }
+
             .metrics-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
                 gap: 16px;
@@ -1609,6 +1945,11 @@
             <p class="year-info">Year: 2025-26</p>
             <p>Real-time student analytics</p>
             <p class="update-info">Visit daily for updates • <span id="lastUpdated">Last Updated on --</span></p>
+            <div class="scrolling-message">
+                <div class="scrolling-text" id="scrollingText">
+                    📅 Last date for fee payment: 31st March 2025 | 📋 Submit original documents by 15th April 2025 | 🎓 Final semester exam registration opens 1st May 2025
+                </div>
+            </div>
         </div>
 
         <div id="loading" class="content-section">
@@ -1841,6 +2182,44 @@
         </div>
     </div>
 
+    <!-- Authentication Popup -->
+    <div class="auth-popup" id="authPopup">
+        <div class="auth-content">
+            <h3 class="auth-title">🔐 Access Control</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+                Enter the access key to edit messages
+            </p>
+            <input type="password" class="auth-input" id="authInput" placeholder="Enter access key..." maxlength="20">
+            <div class="auth-buttons">
+                <button class="btn btn-small" onclick="authenticateUser()" style="background: var(--primary-color); color: white;">
+                    🔓 Access
+                </button>
+                <button class="btn btn-small" onclick="closeAuthPopup()" style="background: var(--btn-reset-bg); color: var(--btn-reset-color);">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Editor Popup -->
+    <div class="message-editor-popup" id="messageEditorPopup">
+        <div class="editor-content">
+            <button class="editor-close" onclick="closeMessageEditor()">×</button>
+            <div class="editor-header">
+                <div class="editor-title">📢 Message Editor</div>
+                <div class="editor-subtitle">Edit scrolling announcement messages</div>
+            </div>
+            <div class="editor-body">
+                <button class="btn-add-message" onclick="addNewMessage()">
+                    ➕ Add New Message
+                </button>
+                <div id="messagesContainer">
+                    <!-- Messages will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="tooltip" id="tooltip"></div>
 
     <!-- Course Breakdown Popup -->
@@ -1869,7 +2248,172 @@
         let filteredDuesData = [];
         let duesData = [];
         let popupTimer = null;
+        let messageIndex = 0;
         const TOTAL_INTAKE_PER_COURSE = 63;
+
+        // Scrolling messages array
+        const scrollingMessages = [
+            "📅 Last date for fee payment: 31st March 2025 | 💰 Late fee charges applicable after due date",
+            "📋 Submit original documents by 15th April 2025 | 🏛️ Visit college office during working hours",
+            "🎓 Final semester exam registration opens 1st May 2025 | 📚 Ensure all dues are cleared before registration"
+        ];
+
+        // Function to update scrolling message
+        function updateScrollingMessage() {
+            const scrollingText = document.getElementById('scrollingText');
+            if (scrollingText) {
+                scrollingText.textContent = scrollingMessages[messageIndex];
+                messageIndex = (messageIndex + 1) % scrollingMessages.length;
+            }
+        }
+
+        // Initialize scrolling messages
+        function initScrollingMessages() {
+            updateScrollingMessage();
+            // Change message every 15 seconds (matches animation duration)
+            setInterval(updateScrollingMessage, 15000);
+            
+            // Add double-click event to the horn icon
+            const scrollingMessage = document.querySelector('.scrolling-message');
+            if (scrollingMessage) {
+                scrollingMessage.addEventListener('dblclick', function(e) {
+                    // Check if double-click was on the horn icon area
+                    const rect = scrollingMessage.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    
+                    // Horn icon is positioned at left: 10px with width ~30px
+                    if (clickX <= 40) {
+                        showAuthPopup();
+                    }
+                });
+                
+                // Add visual feedback on hover for the horn icon
+                scrollingMessage.style.cursor = 'default';
+            }
+        }
+
+        // Authentication functions
+        function showAuthPopup() {
+            const authPopup = document.getElementById('authPopup');
+            const authInput = document.getElementById('authInput');
+            authPopup.classList.add('show');
+            authInput.value = '';
+            authInput.focus();
+            
+            // Handle Enter key in auth input
+            authInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    authenticateUser();
+                }
+            });
+        }
+
+        function closeAuthPopup() {
+            const authPopup = document.getElementById('authPopup');
+            authPopup.classList.remove('show');
+        }
+
+        function authenticateUser() {
+            const authInput = document.getElementById('authInput');
+            const enteredKey = authInput.value.trim();
+            
+            if (enteredKey === 'tejusmp') {
+                closeAuthPopup();
+                showMessageEditor();
+            } else {
+                authInput.style.borderColor = '#f72585';
+                authInput.style.boxShadow = '0 0 0 3px rgba(247, 37, 133, 0.2)';
+                authInput.value = '';
+                authInput.placeholder = 'Incorrect key. Try again...';
+                
+                setTimeout(() => {
+                    authInput.style.borderColor = 'var(--border-color)';
+                    authInput.style.boxShadow = 'none';
+                    authInput.placeholder = 'Enter access key...';
+                }, 2000);
+            }
+        }
+
+        // Message editor functions
+        function showMessageEditor() {
+            const editorPopup = document.getElementById('messageEditorPopup');
+            editorPopup.classList.add('show');
+            populateMessageEditor();
+        }
+
+        function closeMessageEditor() {
+            const editorPopup = document.getElementById('messageEditorPopup');
+            editorPopup.classList.remove('show');
+        }
+
+        function populateMessageEditor() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+            
+            scrollingMessages.forEach((message, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message-item';
+                messageDiv.innerHTML = `
+                    <div style="margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">
+                        Message ${index + 1}
+                    </div>
+                    <textarea class="message-input" data-index="${index}">${message}</textarea>
+                    <div class="message-controls">
+                        <button class="btn-small btn-save" onclick="saveMessage(${index})">💾 Save</button>
+                        <button class="btn-small btn-delete" onclick="deleteMessage(${index})">🗑️ Delete</button>
+                    </div>
+                `;
+                container.appendChild(messageDiv);
+            });
+        }
+
+        function addNewMessage() {
+            const newMessage = "📢 New announcement message - edit this text";
+            scrollingMessages.push(newMessage);
+            populateMessageEditor();
+        }
+
+        function saveMessage(index) {
+            const messageInput = document.querySelector(`textarea[data-index="${index}"]`);
+            const newMessage = messageInput.value.trim();
+            
+            if (newMessage) {
+                scrollingMessages[index] = newMessage;
+                
+                // Visual feedback
+                messageInput.style.borderColor = '#4cc9f0';
+                messageInput.style.boxShadow = '0 0 0 3px rgba(76, 201, 240, 0.2)';
+                
+                setTimeout(() => {
+                    messageInput.style.borderColor = 'var(--border-color)';
+                    messageInput.style.boxShadow = 'none';
+                }, 1000);
+                
+                // Update the currently displayed message if it's the one being edited
+                if (messageIndex - 1 === index || (messageIndex === 0 && index === scrollingMessages.length - 1)) {
+                    updateScrollingMessage();
+                }
+            }
+        }
+
+        function deleteMessage(index) {
+            if (scrollingMessages.length <= 1) {
+                alert('❌ Cannot delete the last message. At least one message must remain.');
+                return;
+            }
+            
+            if (confirm(`🗑️ Are you sure you want to delete Message ${index + 1}?`)) {
+                scrollingMessages.splice(index, 1);
+                
+                // Adjust messageIndex if necessary
+                if (messageIndex >= scrollingMessages.length) {
+                    messageIndex = 0;
+                }
+                
+                populateMessageEditor();
+                updateScrollingMessage();
+            }
+        }
 
         // Dark mode functionality
         function toggleDarkMode() {
@@ -1923,6 +2467,7 @@
         // Auto-load CSV file on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
+            initScrollingMessages(); // Initialize scrolling messages
             loadCSVFile();
             
             // Close popup when clicking outside
@@ -1932,10 +2477,26 @@
                 }
             });
 
+            // Close auth popup when clicking outside
+            document.getElementById('authPopup').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAuthPopup();
+                }
+            });
+
+            // Close message editor when clicking outside
+            document.getElementById('messageEditorPopup').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeMessageEditor();
+                }
+            });
+
             // Close popup with Escape key
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeCourseBreakdown();
+                    closeAuthPopup();
+                    closeMessageEditor();
                 }
             });
         });
