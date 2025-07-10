@@ -1,0 +1,2441 @@
+let studentsData = [];
+let allStudentsData = []; // Store all students including those with dues
+let filteredData = [];
+let filteredDuesData = [];
+let duesData = [];
+let popupTimer = null;
+let messageIndex = 0;
+const TOTAL_INTAKE_PER_COURSE = 63;
+
+// JSONhost configuration for persistent storage
+const JSONHOST_API_KEY = 'w1he0onjv4fssfinwxquhoxif3z1llcw'; // Replace with your JSONhost API token
+const JSONHOST_JSON_ID = '1a167691ed974abc8def5c4d486b7a23'; // Replace with your JSON ID from JSONhost
+
+// Default scrolling messages (fallback)
+let scrollingMessages = [
+    "📅 Last date for fee payment: 31st March 2025 | 💰 Late fee charges applicable after due date",
+    "📋 Submit original documents by 15th April 2025 | 🏛️ Visit college office during working hours",
+    "🎓 Final semester exam registration opens 1st May 2025 | 📚 Ensure all dues are cleared before registration"
+];
+
+// Load messages from JSONhost on startup
+async function loadMessagesFromServer() {
+    try {
+        const response = await fetch(`https://jsonhost.com/json/${JSONHOST_JSON_ID}`, {
+            method: 'GET'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.messages && Array.isArray(data.messages)) {
+                scrollingMessages = data.messages;
+                console.log('✅ Messages loaded from server successfully');
+            }
+        } else {
+            console.log('⚠️ Using default messages (server data not available)');
+        }
+    } catch (error) {
+        console.log('⚠️ Using default messages (connection error):', error.message);
+    }
+}
+
+// Save messages to JSONhost
+async function saveMessagesToServer() {
+    try {
+        const response = await fetch(`https://jsonhost.com/json/${JSONHOST_JSON_ID}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': JSONHOST_API_KEY
+            },
+            body: JSON.stringify({
+                messages: scrollingMessages,
+                lastUpdated: new Date().toISOString(),
+                updatedBy: 'SMP Admin'
+            })
+        });
+
+        if (response.ok) {
+            console.log('✅ Messages saved to server successfully');
+            return true;
+        } else {
+            console.error('❌ Failed to save messages to server');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error saving messages:', error);
+        return false;
+    }
+}
+
+// Function to update scrolling message
+function updateScrollingMessage() {
+    const scrollingText = document.getElementById('scrollingText');
+    if (scrollingText && scrollingMessages.length > 0) {
+        scrollingText.textContent = scrollingMessages[messageIndex];
+        messageIndex = (messageIndex + 1) % scrollingMessages.length;
+    }
+}
+
+// Initialize scrolling messages
+async function initScrollingMessages() {
+    // Load messages from server first
+    await loadMessagesFromServer();
+    
+    // Start the scrolling display
+    updateScrollingMessage();
+    // Change message every 15 seconds (matches animation duration)
+    setInterval(updateScrollingMessage, 15000);
+    
+    // Add double-click event to the horn icon
+    const scrollingMessage = document.querySelector('.scrolling-message');
+    if (scrollingMessage) {
+        scrollingMessage.addEventListener('dblclick', function(e) {
+            // Check if double-click was on the horn icon area
+            const rect = scrollingMessage.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            
+            // Horn icon is positioned at left: 10px with width ~30px
+            if (clickX <= 40) {
+                showAuthPopup();
+            }
+        });
+        
+        // Add visual feedback on hover for the horn icon
+        scrollingMessage.style.cursor = 'default';
+    }
+}
+
+// Authentication functions
+function showAuthPopup() {
+    const authPopup = document.getElementById('authPopup');
+    const authInput = document.getElementById('authInput');
+    authPopup.classList.add('show');
+    authInput.value = '';
+    authInput.focus();
+    
+    // Handle Enter key in auth input
+    authInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            authenticateUser();
+        }
+    });
+}
+
+function closeAuthPopup() {
+    const authPopup = document.getElementById('authPopup');
+    authPopup.classList.remove('show');
+}
+
+function authenticateUser() {
+    const authInput = document.getElementById('authInput');
+    const enteredKey = authInput.value.trim();
+    
+    if (enteredKey === 'tejusmp') {
+        closeAuthPopup();
+        showMessageEditor();
+    } else {
+        authInput.style.borderColor = '#f72585';
+        authInput.style.boxShadow = '0 0 0 3px rgba(247, 37, 133, 0.2)';
+        authInput.value = '';
+        authInput.placeholder = 'Incorrect key. Try again...';
+        
+        setTimeout(() => {
+            authInput.style.borderColor = 'var(--border-color)';
+            authInput.style.boxShadow = 'none';
+            authInput.placeholder = 'Enter access key...';
+        }, 2000);
+    }
+}
+
+// Message editor functions
+function showMessageEditor() {
+    const editorPopup = document.getElementById('messageEditorPopup');
+    editorPopup.classList.add('show');
+    populateMessageEditor();
+}
+
+function closeMessageEditor() {
+    const editorPopup = document.getElementById('messageEditorPopup');
+    editorPopup.classList.remove('show');
+}
+
+function populateMessageEditor() {
+    const container = document.getElementById('messagesContainer');
+    container.innerHTML = '';
+    
+    scrollingMessages.forEach((message, index) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message-item';
+        messageDiv.innerHTML = `
+            <div style="margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">
+                Message ${index + 1}
+            </div>
+            <textarea class="message-input" data-index="${index}">${message}</textarea>
+            <div class="message-controls">
+                <button class="btn-small btn-save" onclick="saveMessage(${index})">💾 Save</button>
+                <button class="btn-small btn-delete" onclick="deleteMessage(${index})">🗑️ Delete</button>
+            </div>
+        `;
+        container.appendChild(messageDiv);
+    });
+}
+
+function addNewMessage() {
+    const newMessage = "📢 New announcement message - edit this text";
+    scrollingMessages.push(newMessage);
+    populateMessageEditor();
+}
+
+async function saveMessage(index) {
+    const messageInput = document.querySelector(`textarea[data-index="${index}"]`);
+    const newMessage = messageInput.value.trim();
+    
+    if (newMessage) {
+        scrollingMessages[index] = newMessage;
+        
+        // Show saving indicator
+        messageInput.style.borderColor = '#ffc107';
+        messageInput.style.boxShadow = '0 0 0 3px rgba(255, 193, 7, 0.2)';
+        messageInput.parentElement.querySelector('.btn-save').textContent = '⏳ Saving...';
+        messageInput.parentElement.querySelector('.btn-save').disabled = true;
+        
+        // Save to server
+        const success = await saveMessagesToServer();
+        
+        if (success) {
+            // Success feedback
+            messageInput.style.borderColor = '#4cc9f0';
+            messageInput.style.boxShadow = '0 0 0 3px rgba(76, 201, 240, 0.2)';
+            messageInput.parentElement.querySelector('.btn-save').textContent = '✅ Saved';
+        } else {
+            // Error feedback
+            messageInput.style.borderColor = '#f72585';
+            messageInput.style.boxShadow = '0 0 0 3px rgba(247, 37, 133, 0.2)';
+            messageInput.parentElement.querySelector('.btn-save').textContent = '❌ Error';
+        }
+        
+        setTimeout(() => {
+            messageInput.style.borderColor = 'var(--border-color)';
+            messageInput.style.boxShadow = 'none';
+            messageInput.parentElement.querySelector('.btn-save').textContent = '💾 Save';
+            messageInput.parentElement.querySelector('.btn-save').disabled = false;
+        }, 2000);
+        
+        // Update the currently displayed message if it's the one being edited
+        if (messageIndex - 1 === index || (messageIndex === 0 && index === scrollingMessages.length - 1)) {
+            updateScrollingMessage();
+        }
+    }
+}
+
+async function deleteMessage(index) {
+    if (scrollingMessages.length <= 1) {
+        alert('❌ Cannot delete the last message. At least one message must remain.');
+        return;
+    }
+    
+    if (confirm(`🗑️ Are you sure you want to delete Message ${index + 1}?\n\nThis will be permanently removed for all users.`)) {
+        scrollingMessages.splice(index, 1);
+        
+        // Adjust messageIndex if necessary
+        if (messageIndex >= scrollingMessages.length) {
+            messageIndex = 0;
+        }
+        
+        // Save to server
+        const success = await saveMessagesToServer();
+        
+        if (success) {
+            populateMessageEditor();
+            updateScrollingMessage();
+            
+            // Show success message
+            const container = document.getElementById('messagesContainer');
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = 'background: #4cc9f0; color: white; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 15px; font-weight: 600;';
+            successDiv.textContent = '✅ Message deleted successfully and updated for all users';
+            container.insertBefore(successDiv, container.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 3000);
+        } else {
+            alert('❌ Failed to delete message on server. Please try again.');
+        }
+    }
+}
+
+// Dark mode functionality
+function toggleDarkMode() {
+    const body = document.body;
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    const toggle = document.getElementById('themeToggle');
+    
+    if (isDark) {
+        body.removeAttribute('data-theme');
+        toggle.innerHTML = '🌙 Switch to Dark Mode';
+        localStorage.setItem('theme', 'light');
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        toggle.innerHTML = '☀️ Switch to Light Mode';
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+// Load saved theme
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const toggle = document.getElementById('themeToggle');
+    
+    if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        toggle.innerHTML = '☀️ Switch to Light Mode';
+    } else {
+        toggle.innerHTML = '🌙 Switch to Dark Mode';
+    }
+}
+
+// Section navigation
+function showSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(sectionName).classList.add('active');
+    
+    // Add active class to clicked tab
+    event.target.classList.add('active');
+}
+
+// Auto-load CSV file on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadTheme();
+    initScrollingMessages(); // Initialize scrolling messages
+    loadCSVFile();
+    
+    // Close popup when clicking outside
+    document.getElementById('courseBreakdownPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeCourseBreakdown();
+        }
+    });
+
+    // Close auth popup when clicking outside
+    document.getElementById('authPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAuthPopup();
+        }
+    });
+
+    // Close message editor when clicking outside
+    document.getElementById('messageEditorPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeMessageEditor();
+        }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeCourseBreakdown();
+            closeAuthPopup();
+            closeMessageEditor();
+        }
+    });
+});
+
+async function loadCSVFile() {
+    try {
+        showLoading();
+        const response = await fetch('students.csv');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        parseCSV(csvText);
+        updateLastModifiedDate();
+        hideLoading();
+        
+    } catch (error) {
+        console.error('Error loading CSV file:', error);
+        showError('Could not load students.csv file. Make sure the file exists in the same directory.');
+    }
+}
+
+function updateLastModifiedDate() {
+    // Since we can't access file modification date from browser,
+    // we'll use today's date as the last updated date
+    const today = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = months[today.getMonth()];
+    const year = today.getFullYear();
+    
+    const formattedDate = `${day}-${month}-${year}`;
+    document.getElementById('lastUpdated').textContent = `Last Updated on ${formattedDate}`;
+}
+
+function showLoading() {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('error').classList.add('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loading').classList.add('hidden');
+}
+
+function showError(message) {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('errorMessage').textContent = message;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    
+    try {
+        // Try to parse the date in various formats
+        let date;
+        
+        // Handle dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd formats
+        if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                // Assume dd/mm/yyyy format
+                date = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        } else if (dateStr.includes('-')) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    // yyyy-mm-dd format
+                    date = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    // dd-mm-yyyy format
+                    date = new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+        } else {
+            date = new Date(dateStr);
+        }
+        
+        if (isNaN(date.getTime())) {
+            return dateStr; // Return original if parsing fails
+        }
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = months[date.getMonth()];
+        const year = String(date.getFullYear()).slice(-2);
+        
+        return `${day}-${month}-${year}`;
+    } catch (error) {
+        return dateStr; // Return original if formatting fails
+    }
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Escaped quote
+                current += '"';
+                i++; // Skip next quote
+            } else {
+                // Toggle quote state
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            // End of field
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    return result;
+}
+
+function parseCSV(csvText) {
+    console.log('Starting CSV parsing...');
+    const lines = csvText.split('\n').filter(line => line.trim());
+    console.log(`Found ${lines.length} lines in CSV`);
+    
+    if (lines.length === 0) {
+        console.error('No data found in CSV');
+        return;
+    }
+    
+    const headers = parseCSVLine(lines[0]).map(h => h.trim());
+    console.log('Headers found:', headers);
+    console.log('Fee-related headers:');
+    headers.forEach((header, index) => {
+        if (header.toLowerCase().includes('fee') || 
+            header.toLowerCase().includes('paid') || 
+            header.toLowerCase().includes('allot')) {
+            console.log(`  Column ${index}: "${header}"`);
+        }
+    });
+    
+    allStudentsData = [];
+    studentsData = [];
+    
+    // Detect status column name
+    const statusColumn = headers.find(h => 
+        h.toLowerCase().includes('in/out') || 
+        h.toLowerCase().includes('year in') ||
+        h.toLowerCase().includes('status')
+    ) || 'In/Out';
+    
+    console.log('Status column detected:', statusColumn);
+    
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        try {
+            const values = parseCSVLine(line);
+            const student = {};
+            
+            headers.forEach((header, index) => {
+                student[header] = values[index] ? values[index].trim() : '';
+            });
+            
+            // Normalize Adm Type: treat all values as REGULAR except SNQ, LTRL & RPTR
+            if (student['Adm Type']) {
+                const admType = student['Adm Type'].trim();
+                if (admType !== 'SNQ' && admType !== 'LTRL' && admType !== 'RPTR') {
+                    student['Adm Type'] = 'REGULAR';
+                }
+            } else {
+                student['Adm Type'] = 'REGULAR';
+            }
+            
+            // Only include students with 'In' status
+            const status = student[statusColumn] || student['In/Out'] || '';
+            if (status.toLowerCase() === 'in') {
+                allStudentsData.push(student);
+                
+                // For statistics section - exclude only if no 'Due Fee' in remarks
+                if (!student['Remarks']?.toLowerCase().includes('due fee')) {
+                    studentsData.push(student);
+                }
+            }
+        } catch (error) {
+            console.warn(`Error parsing line ${i + 1}:`, error);
+        }
+    }
+    
+    console.log(`Processed ${allStudentsData.length} total students`);
+    console.log(`${studentsData.length} students for statistics (excluding due fee)`);
+    
+    // Sort students alphabetically by name
+    studentsData.sort((a, b) => {
+        const nameA = (a['Student Name'] || '').toLowerCase();
+        const nameB = (b['Student Name'] || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    allStudentsData.sort((a, b) => {
+        const nameA = (a['Student Name'] || '').toLowerCase();
+        const nameB = (b['Student Name'] || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    filteredData = [...studentsData];
+    
+    // Process dues data
+    processDuesData();
+    
+    displayDashboard();
+}
+
+function processDuesData() {
+    console.log('Processing dues data with installment aggregation...');
+    console.log('Sample student record for column analysis:', allStudentsData[0]);
+    
+    // Group students by Registration Number, treating EE course separately
+    const studentGroups = {};
+    
+    allStudentsData.forEach(student => {
+        const regNo = student['Reg No'] || student['Registration No'] || '';
+        const course = student['Course'] || '';
+        
+        if (!regNo || !course) return;
+        
+        // For EE course, use Reg No + Course as unique key to avoid conflicts
+        // For other courses (CE, ME, EC, CS), use only Reg No
+        let uniqueKey;
+        if (course.toUpperCase() === 'EE') {
+            uniqueKey = `${regNo}_${course}`; // EE students grouped by Reg No + Course
+        } else {
+            uniqueKey = regNo; // Other courses grouped by Reg No only
+        }
+        
+        if (!studentGroups[uniqueKey]) {
+            studentGroups[uniqueKey] = [];
+        }
+        studentGroups[uniqueKey].push(student);
+    });
+    
+    console.log(`Found ${Object.keys(studentGroups).length} unique student groups`);
+    console.log('Group distribution:', Object.keys(studentGroups).reduce((acc, key) => {
+        const course = studentGroups[key][0]['Course'];
+        acc[course] = (acc[course] || 0) + 1;
+        return acc;
+    }, {}));
+    
+    duesData = [];
+    
+    Object.entries(studentGroups).forEach(([uniqueKey, records]) => {
+        if (records.length === 0) return;
+        
+        // Use the first record for basic student info (should be same across installments)
+        const baseStudent = records[0];
+        const course = baseStudent['Course'] || '';
+        const regNo = baseStudent['Reg No'] || '';
+        
+        // Parse financial fields with robust number extraction
+        const parseAmount = (value) => {
+            if (!value || value === '') return 0;
+            // Handle both string and number inputs
+            const cleanValue = value.toString().replace(/[^\d.-]/g, '');
+            const num = parseFloat(cleanValue);
+            return isNaN(num) ? 0 : Math.abs(num); // Use absolute value to handle any negative signs
+        };
+        
+        // Aggregate all payments across multiple installment records for this unique key
+        let totalPaidSMP = 0;
+        let totalPaidSVK = 0;
+        
+        // Sum all installment payments for this unique identifier
+        records.forEach(record => {
+            const smpPayment = parseAmount(record['SMP Paid']);
+            const svkPayment = parseAmount(record['SVK Paid']);
+            
+            totalPaidSMP += smpPayment;
+            totalPaidSVK += svkPayment;
+            
+            console.log(`  ${course} Installment - SMP: ${smpPayment}, SVK: ${svkPayment}`);
+        });
+        
+        // Get allotted amounts (should be same across all records for same student)
+        const allotedSMP = parseAmount(baseStudent['Alloted Fee SMP']);
+        const allotedSVK = parseAmount(baseStudent['Alloted Fee SVK']);
+        
+        const totalAlloted = allotedSMP + allotedSVK;
+        const totalPaid = totalPaidSMP + totalPaidSVK;
+        
+        // Calculate individual dues for SMP and SVK
+        const duesSMP = Math.max(0, allotedSMP - totalPaidSMP);
+        const duesSVK = Math.max(0, allotedSVK - totalPaidSVK);
+        const totalDues = duesSMP + duesSVK;
+        
+        // Student has dues if ANY amount is pending in either SMP OR SVK
+        const hasDues = (totalPaidSMP < allotedSMP) || (totalPaidSVK < allotedSVK);
+        
+        const keyInfo = course.toUpperCase() === 'EE' ? `${regNo} (${course})` : regNo;
+        console.log(`Student: ${baseStudent['Student Name']}, Key: ${keyInfo} (${records.length} payment records)`);
+        console.log(`  SMP: Alloted=${allotedSMP}, Total Paid=${totalPaidSMP}, Due=${duesSMP}`);
+        console.log(`  SVK: Alloted=${allotedSVK}, Total Paid=${totalPaidSVK}, Due=${duesSVK}`);
+        console.log(`  Total: Alloted=${totalAlloted}, Paid=${totalPaid}, Due=${totalDues}`);
+        console.log(`  Has Dues: ${hasDues}`);
+        
+        // Include student if they have any pending amount in either SMP or SVK
+        if (hasDues && totalDues > 0) {
+            // Mixed admission type logic for dues data
+            let normalizedAdmType;
+            const admCat = baseStudent['Adm Cat'] || '';
+            const admTypeCol = baseStudent['Adm Type'] || '';
+            
+            if (admCat.trim() === 'SNQ') {
+                normalizedAdmType = 'SNQ';
+            } else {
+                // Use Adm Type for Regular, LTRL, RPTR
+                if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                    normalizedAdmType = admTypeCol;
+                } else {
+                    normalizedAdmType = 'REGULAR';
+                }
+            }
+            
+            const duesStudent = {
+                'Student Name': baseStudent['Student Name'] || '',
+                'Father Name': baseStudent['Father Name'] || '',
+                'Year': baseStudent['Year'] || '',
+                'Course': course,
+                'Reg No': regNo,
+                'Adm Type': normalizedAdmType,
+                'Adm Cat': baseStudent['Adm Cat'] || '',
+                'In/Out': baseStudent['In/Out'] || 'In',
+                'SMP Alloted': allotedSMP,
+                'SVK Alloted': allotedSVK,
+                'SMP Paid': totalPaidSMP,
+                'SVK Paid': totalPaidSVK,
+                'SMP Due': duesSMP,
+                'SVK Due': duesSVK,
+                'Total Alloted': totalAlloted,
+                'Total Paid': totalPaid,
+                'Total Dues': totalDues,
+                'Payment Records': records.length,
+                'Unique Key': uniqueKey
+            };
+            
+            duesData.push(duesStudent);
+        } else {
+            console.log(`  ✅ Student ${baseStudent['Student Name']} (${course}) has no dues - both fees paid in full`);
+        }
+    });
+    
+    // Sort by course first, then by student name
+    duesData.sort((a, b) => {
+        const courseCompare = a['Course'].localeCompare(b['Course']);
+        if (courseCompare !== 0) return courseCompare;
+        
+        const nameA = (a['Student Name'] || '').toLowerCase();
+        const nameB = (b['Student Name'] || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    console.log(`Found ${duesData.length} students with outstanding dues`);
+    
+    // Log course distribution
+    const courseDistribution = {};
+    duesData.forEach(student => {
+        const course = student['Course'];
+        courseDistribution[course] = (courseDistribution[course] || 0) + 1;
+    });
+    console.log('Dues by course:', courseDistribution);
+    
+    // Log EE vs Other courses separation
+    const eeStudents = duesData.filter(s => s['Course'].toUpperCase() === 'EE').length;
+    const otherStudents = duesData.filter(s => s['Course'].toUpperCase() !== 'EE').length;
+    console.log(`EE Students with dues: ${eeStudents}, Other courses: ${otherStudents}`);
+    
+    // Log sample dues calculations
+    if (duesData.length > 0) {
+        console.log('Sample dues calculation:', duesData[0]);
+    }
+    
+    filteredDuesData = [...duesData];
+}
+
+function displayDashboard() {
+    document.getElementById('dashboard').classList.remove('hidden');
+    
+    generateMetrics();
+    generateYearWiseCharts();
+    generateSummaryTable();
+    generateDatewiseReport();
+    populateFilters();
+    populateDuesFilters();
+    displayStudentList();
+    displayDuesList();
+    generateDuesMetrics();
+}
+
+function generateMetrics() {
+    const courseCount = {};
+    const courseYearCount = {};
+    
+    studentsData.forEach(student => {
+        const course = student['Course'];
+        const year = student['Year'];
+        if (course) {
+            courseCount[course] = (courseCount[course] || 0) + 1;
+            
+            if (!courseYearCount[course]) {
+                courseYearCount[course] = {};
+            }
+            if (year) {
+                courseYearCount[course][year] = (courseYearCount[course][year] || 0) + 1;
+            }
+        }
+    });
+
+    const metricsGrid = document.getElementById('metricsGrid');
+    metricsGrid.innerHTML = '';
+
+    const courseColors = {
+        'CE': 'ce',
+        'ME': 'me', 
+        'EC': 'ec',
+        'CS': 'cs',
+        'EE': 'ee'
+    };
+
+    // Ensure all expected courses are shown, even with 0 count
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    expectedCourses.forEach(course => {
+        if (!courseCount[course]) {
+            courseCount[course] = 0;
+            courseYearCount[course] = {};
+        }
+    });
+
+    expectedCourses.forEach(course => {
+        const yearBreakdown = courseYearCount[course] || {};
+        const firstYr = yearBreakdown['1st Yr'] || 0;
+        const secondYr = yearBreakdown['2nd Yr'] || 0;
+        const thirdYr = yearBreakdown['3rd Yr'] || 0;
+        
+        const metricCard = document.createElement('div');
+        metricCard.className = 'metric-card';
+        metricCard.style.cursor = 'pointer';
+        metricCard.setAttribute('data-course', course);
+        metricCard.innerHTML = `
+            <div class="metric-number ${courseColors[course] || ''}">${courseCount[course]}</div>
+            <div class="metric-label">${course}</div>
+            <div class="year-breakdown">
+                <div class="year-item">1st Yr: <span class="${courseColors[course] || ''}">${firstYr}</span></div>
+                <div class="year-item">2nd Yr: <span class="${courseColors[course] || ''}">${secondYr}</span></div>
+                <div class="year-item">3rd Yr: <span class="${courseColors[course] || ''}">${thirdYr}</span></div>
+            </div>
+        `;
+        
+        // Add click event listener for course breakdown popup
+        metricCard.addEventListener('click', () => showCourseBreakdown(course));
+        
+        metricsGrid.appendChild(metricCard);
+    });
+
+    // Total students card with year breakdown
+    const totalFirstYr = studentsData.filter(s => s['Year'] === '1st Yr').length;
+    const totalSecondYr = studentsData.filter(s => s['Year'] === '2nd Yr').length;
+    const totalThirdYr = studentsData.filter(s => s['Year'] === '3rd Yr').length;
+    
+    const totalCard = document.createElement('div');
+    totalCard.className = 'metric-card';
+    totalCard.innerHTML = `
+        <div class="metric-number" style="color: var(--primary-color);">${studentsData.length}</div>
+        <div class="metric-label">All Students</div>
+        <div class="year-breakdown">
+            <div class="year-item">1st Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalFirstYr}</span></div>
+            <div class="year-item">2nd Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalSecondYr}</span></div>
+            <div class="year-item">3rd Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalThirdYr}</span></div>
+        </div>
+    `;
+    metricsGrid.appendChild(totalCard);
+}
+
+// Course breakdown popup functions
+function showCourseBreakdown(course) {
+    const popup = document.getElementById('courseBreakdownPopup');
+    const title = document.getElementById('popupTitle');
+    const subtitle = document.getElementById('popupSubtitle');
+    const timer = document.getElementById('popupTimer');
+    const card = document.getElementById('breakdownCard');
+    
+    // Set popup title and subtitle
+    const courseNames = {
+        'CE': 'Civil Engineering',
+        'ME': 'Mechanical Engineering',
+        'EC': 'Electronics & Communication Engineering',
+        'CS': 'Computer Science Engineering',
+        'EE': 'Electrical Engineering'
+    };
+    
+    title.textContent = `${course} - ${courseNames[course] || course}`;
+    subtitle.textContent = `Year & Admission Type Breakdown`;
+    
+    // Generate breakdown data
+    const breakdown = generateCourseBreakdown(course);
+    
+    // Populate single card
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    let totalRegular = 0, totalLTRL = 0, totalSNQ = 0, totalRPTR = 0, grandTotal = 0;
+    
+    let cardHTML = `
+        <div class="breakdown-grid">
+            <div class="breakdown-header">
+                <div class="year-label">Year</div>
+                <div style="text-align: center; font-weight: 600;">Regular</div>
+                <div style="text-align: center; font-weight: 600;">LTRL</div>
+                <div style="text-align: center; font-weight: 600;">SNQ</div>
+                <div style="text-align: center; font-weight: 600;">RPTR</div>
+                <div style="text-align: center; font-weight: 600;">Total</div>
+            </div>
+            <div class="breakdown-divider"></div>
+    `;
+    
+    expectedYears.forEach(year => {
+        const yearData = breakdown[year] || { REGULAR: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+        
+        cardHTML += `
+            <div class="breakdown-row">
+                <div class="year-label">${year}</div>
+                <div class="breakdown-value regular">${yearData.REGULAR}</div>
+                <div class="breakdown-value ltrl">${yearData.LTRL}</div>
+                <div class="breakdown-value snq">${yearData.SNQ}</div>
+                <div class="breakdown-value rptr">${yearData.RPTR}</div>
+                <div class="breakdown-value breakdown-total">${yearData.total}</div>
+            </div>
+        `;
+        
+        totalRegular += yearData.REGULAR;
+        totalLTRL += yearData.LTRL;
+        totalSNQ += yearData.SNQ;
+        totalRPTR += yearData.RPTR;
+        grandTotal += yearData.total;
+    });
+    
+    cardHTML += `
+            <div class="breakdown-divider"></div>
+            <div class="breakdown-row">
+                <div class="year-label" style="font-weight: 700;">TOTAL</div>
+                <div class="breakdown-value regular" style="font-weight: 700;">${totalRegular}</div>
+                <div class="breakdown-value ltrl" style="font-weight: 700;">${totalLTRL}</div>
+                <div class="breakdown-value snq" style="font-weight: 700;">${totalSNQ}</div>
+                <div class="breakdown-value rptr" style="font-weight: 700;">${totalRPTR}</div>
+                <div class="breakdown-value breakdown-total" style="font-weight: 700;">${grandTotal}</div>
+            </div>
+        </div>
+        <div class="breakdown-grand-total">
+            Grand Total: ${grandTotal} Students
+        </div>
+    `;
+    
+    card.innerHTML = cardHTML;
+    
+    // Show popup
+    popup.classList.add('show');
+    
+    // Start countdown timer (8 seconds)
+    let timeLeft = 8;
+    timer.textContent = `Auto-close in ${timeLeft} seconds`;
+    
+    // Clear any existing timer
+    if (popupTimer) {
+        clearInterval(popupTimer);
+    }
+    
+    popupTimer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+            timer.textContent = `Auto-close in ${timeLeft} seconds`;
+        } else {
+            closeCourseBreakdown();
+        }
+    }, 1000);
+}
+
+function generateCourseBreakdown(course) {
+    const breakdown = {};
+    
+    // Filter students for the specific course
+    const courseStudents = studentsData.filter(student => student['Course'] === course);
+    
+    courseStudents.forEach(student => {
+        const year = student['Year'];
+        
+        // For SNQ, check 'Adm Cat' column; for others, check 'Adm Type' column
+        let admType;
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            admType = 'SNQ';
+        } else {
+            // Use Adm Type for Regular, LTRL, RPTR
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                admType = admTypeCol;
+            } else {
+                admType = 'REGULAR'; // Default to REGULAR for all other values
+            }
+        }
+        
+        if (!breakdown[year]) {
+            breakdown[year] = { REGULAR: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+        }
+        
+        breakdown[year][admType] = (breakdown[year][admType] || 0) + 1;
+        breakdown[year].total++;
+    });
+    
+    return breakdown;
+}
+
+function closeCourseBreakdown() {
+    const popup = document.getElementById('courseBreakdownPopup');
+    popup.classList.remove('show');
+    
+    // Clear timer
+    if (popupTimer) {
+        clearInterval(popupTimer);
+        popupTimer = null;
+    }
+}
+
+function generateYearWiseCharts() {
+    const yearChartsWrapper = document.getElementById('yearChartsWrapper');
+    yearChartsWrapper.innerHTML = '';
+
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+
+    // Count students by year and course
+    const yearCourseCount = {};
+    studentsData.forEach(student => {
+        const course = student['Course'];
+        const year = student['Year'];
+        if (course && year) {
+            if (!yearCourseCount[year]) {
+                yearCourseCount[year] = {};
+            }
+            yearCourseCount[year][course] = (yearCourseCount[year][course] || 0) + 1;
+        }
+    });
+
+    expectedYears.forEach(year => {
+        const yearContainer = document.createElement('div');
+        yearContainer.className = 'year-chart-container';
+        
+        // Get total students for this year
+        const yearData = yearCourseCount[year] || {};
+        const totalStudentsThisYear = Object.values(yearData).reduce((sum, count) => sum + count, 0);
+        const maxPossibleStudents = expectedCourses.length * TOTAL_INTAKE_PER_COURSE;
+        const completionPercentage = ((totalStudentsThisYear / maxPossibleStudents) * 100).toFixed(1);
+
+        // Chart header
+        const chartHeader = document.createElement('div');
+        chartHeader.className = 'year-chart-header';
+        chartHeader.innerHTML = `
+            <div class="year-chart-title">${year} Admissions</div>
+            <div class="year-chart-subtitle">Course-wise Student Distribution</div>
+            <div class="year-chart-stats">${totalStudentsThisYear} of ${maxPossibleStudents} seats filled (${completionPercentage}%)</div>
+        `;
+
+        // Chart wrapper
+        const chartWrapper = document.createElement('div');
+        chartWrapper.className = 'year-chart-wrapper';
+        
+        // Chart container
+        const chart = document.createElement('div');
+        chart.className = 'year-chart';
+        chart.id = `chart-${year.replace(' ', '-')}`;
+
+        expectedCourses.forEach(course => {
+            const admitted = yearData[course] || 0;
+            
+            const courseGroup = document.createElement('div');
+            courseGroup.className = 'year-course-group';
+            
+            courseGroup.innerHTML = `
+                <div class="year-bar-container">
+                    <div class="year-bar ${course.toLowerCase()}" 
+                         data-value="${admitted}" 
+                         data-label="${course} (${year}): ${admitted} students"
+                         data-course="${course}"
+                         data-year="${year}">
+                        <span class="year-bar-label">${admitted}</span>
+                    </div>
+                </div>
+                <div class="year-course-label">${course}</div>
+                <div class="year-course-stats">${admitted}/${TOTAL_INTAKE_PER_COURSE}</div>
+            `;
+            
+            chart.appendChild(courseGroup);
+        });
+
+        chartWrapper.appendChild(chart);
+
+        // Chart legend
+        const legend = document.createElement('div');
+        legend.className = 'year-chart-legend';
+        legend.innerHTML = `
+            <div class="year-legend-item">
+                <div class="year-legend-color" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));"></div>
+                <span class="year-legend-text">Students Admitted</span>
+            </div>
+            <div class="year-legend-item">
+                <div class="year-legend-color" style="background: var(--border-color);"></div>
+                <span class="year-legend-text">Available Seats: ${TOTAL_INTAKE_PER_COURSE} per course</span>
+            </div>
+        `;
+
+        yearContainer.appendChild(chartHeader);
+        yearContainer.appendChild(chartWrapper);
+        yearContainer.appendChild(legend);
+        yearChartsWrapper.appendChild(yearContainer);
+    });
+
+    // Initialize animations and tooltips for year-wise charts
+    setTimeout(() => {
+        initYearWiseCharts();
+        setupYearWiseTooltips();
+    }, 100);
+}
+
+function initYearWiseCharts() {
+    const yearBars = document.querySelectorAll('.year-bar');
+    const maxValue = TOTAL_INTAKE_PER_COURSE;
+
+    yearBars.forEach(bar => {
+        const value = parseInt(bar.dataset.value);
+        const height = (value / maxValue) * 100;
+        
+        setTimeout(() => {
+            bar.style.height = height + '%';
+        }, 300);
+    });
+}
+
+function setupYearWiseTooltips() {
+    const yearBars = document.querySelectorAll('.year-bar');
+    const tooltip = document.getElementById('tooltip');
+
+    yearBars.forEach(bar => {
+        bar.addEventListener('mouseenter', (e) => {
+            tooltip.textContent = bar.dataset.label;
+            tooltip.style.opacity = '1';
+        });
+
+        bar.addEventListener('mousemove', (e) => {
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY - 10 + 'px';
+        });
+
+        bar.addEventListener('mouseleave', () => {
+            tooltip.style.opacity = '0';
+        });
+    });
+}
+
+function generateSummaryTable() {
+    const summary = {};
+    
+    studentsData.forEach(student => {
+        const year = student['Year'];
+        const course = student['Course'];
+        
+        // For SNQ, check 'Adm Cat' column; for others, check 'Adm Type' column
+        let admType;
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            admType = 'SNQ';
+        } else {
+            // Use Adm Type for Regular, LTRL, RPTR
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                admType = admTypeCol;
+            } else {
+                admType = 'Regular'; // Default to Regular for display
+            }
+        }
+        
+        if (!summary[year]) {
+            summary[year] = {};
+        }
+        if (!summary[year][course]) {
+            summary[year][course] = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+        }
+        
+        summary[year][course][admType] = (summary[year][course][admType] || 0) + 1;
+        summary[year][course].total++;
+    });
+
+    const tbody = document.querySelector('#summaryTable tbody');
+    tbody.innerHTML = '';
+
+    // Calculate grand totals
+    const grandTotals = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    
+    expectedYears.forEach(year => {
+        let yearTotals = { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+        
+        expectedCourses.forEach(course => {
+            const admTypes = summary[year]?.[course] || { Regular: 0, LTRL: 0, SNQ: 0, RPTR: 0, total: 0 };
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${year}</strong></td>
+                <td><strong>${course}</strong></td>
+                <td>${admTypes.Regular || 0}</td>
+                <td>${admTypes.LTRL || 0}</td>
+                <td>${admTypes.SNQ || 0}</td>
+                <td>${admTypes.RPTR || 0}</td>
+                <td><strong>${admTypes.total}</strong></td>
+            `;
+            tbody.appendChild(row);
+
+            // Add to year totals
+            yearTotals.Regular += admTypes.Regular || 0;
+            yearTotals.LTRL += admTypes.LTRL || 0;
+            yearTotals.SNQ += admTypes.SNQ || 0;
+            yearTotals.RPTR += admTypes.RPTR || 0;
+            yearTotals.total += admTypes.total;
+
+            // Add to grand totals
+            grandTotals.Regular += admTypes.Regular || 0;
+            grandTotals.LTRL += admTypes.LTRL || 0;
+            grandTotals.SNQ += admTypes.SNQ || 0;
+            grandTotals.RPTR += admTypes.RPTR || 0;
+            grandTotals.total += admTypes.total;
+        });
+        
+        // Add subtotal row for each year
+        const subtotalRow = document.createElement('tr');
+        subtotalRow.className = 'subtotal-row';
+        subtotalRow.innerHTML = `
+            <td><strong>${year} SUBTOTAL</strong></td>
+            <td><strong>All Courses</strong></td>
+            <td><strong>${yearTotals.Regular}</strong></td>
+            <td><strong>${yearTotals.LTRL}</strong></td>
+            <td><strong>${yearTotals.SNQ}</strong></td>
+            <td><strong>${yearTotals.RPTR}</strong></td>
+            <td><strong>${yearTotals.total}</strong></td>
+        `;
+        tbody.appendChild(subtotalRow);
+    });
+
+    // Add Grand Total row
+    const grandTotalRow = document.createElement('tr');
+    grandTotalRow.className = 'grand-total-row';
+    grandTotalRow.innerHTML = `
+        <td colspan="2"><strong>GRAND TOTAL</strong></td>
+        <td><strong>${grandTotals.Regular}</strong></td>
+        <td><strong>${grandTotals.LTRL}</strong></td>
+        <td><strong>${grandTotals.SNQ}</strong></td>
+        <td><strong>${grandTotals.RPTR}</strong></td>
+        <td><strong>${grandTotals.total}</strong></td>
+    `;
+    tbody.appendChild(grandTotalRow);
+}
+
+function generateDatewiseReport() {
+    const dateSummary = {};
+    
+    // Look for common date field names
+    const possibleDateFields = ['Date', 'Admission Date', 'Registration Date', 'DOB', 'Date of Birth', 'Entry Date'];
+    let dateField = null;
+    
+    // Find which date field exists in the data
+    for (let field of possibleDateFields) {
+        if (studentsData.length > 0 && studentsData[0].hasOwnProperty(field)) {
+            dateField = field;
+            break;
+        }
+    }
+    
+    if (!dateField) {
+        // If no date field found, create a sample entry showing "No date data available"
+        const tbody = document.querySelector('#datewiseTable tbody');
+        tbody.innerHTML = '<tr><td colspan="7" class="no-data">No date information available in the data</td></tr>';
+        return;
+    }
+    
+    studentsData.forEach(student => {
+        const dateStr = student[dateField];
+        const course = student['Course'];
+        
+        if (dateStr && course) {
+            const formattedDate = formatDate(dateStr);
+            
+            if (!dateSummary[formattedDate]) {
+                dateSummary[formattedDate] = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+            }
+            
+            dateSummary[formattedDate][course] = (dateSummary[formattedDate][course] || 0) + 1;
+            dateSummary[formattedDate].total++;
+        }
+    });
+
+    const tbody = document.querySelector('#datewiseTable tbody');
+    tbody.innerHTML = '';
+
+    // Calculate grand totals
+    const grandTotals = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+
+    // Sort dates chronologically
+    const sortedDates = Object.keys(dateSummary).sort((a, b) => {
+        // Parse dates for sorting (dd-mmm-yy format)
+        const parseDate = (dateStr) => {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const day = parseInt(parts[0]);
+                const month = months.indexOf(parts[1]);
+                const year = 2000 + parseInt(parts[2]); // Convert yy to yyyy
+                return new Date(year, month, day);
+            }
+            return new Date(dateStr);
+        };
+        
+        return parseDate(a) - parseDate(b);
+    });
+
+    sortedDates.forEach(date => {
+        const courses = dateSummary[date];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><strong>${date}</strong></td>
+            <td>${courses.CE || 0}</td>
+            <td>${courses.ME || 0}</td>
+            <td>${courses.EC || 0}</td>
+            <td>${courses.CS || 0}</td>
+            <td>${courses.EE || 0}</td>
+            <td><strong>${courses.total}</strong></td>
+        `;
+        tbody.appendChild(row);
+
+        // Add to grand totals
+        grandTotals.CE += courses.CE || 0;
+        grandTotals.ME += courses.ME || 0;
+        grandTotals.EC += courses.EC || 0;
+        grandTotals.CS += courses.CS || 0;
+        grandTotals.EE += courses.EE || 0;
+        grandTotals.total += courses.total;
+    });
+
+    // Add Grand Total row if there's data
+    if (sortedDates.length > 0) {
+        const grandTotalRow = document.createElement('tr');
+        grandTotalRow.className = 'grand-total-row';
+        grandTotalRow.innerHTML = `
+            <td><strong>GRAND TOTAL</strong></td>
+            <td><strong>${grandTotals.CE}</strong></td>
+            <td><strong>${grandTotals.ME}</strong></td>
+            <td><strong>${grandTotals.EC}</strong></td>
+            <td><strong>${grandTotals.CS}</strong></td>
+            <td><strong>${grandTotals.EE}</strong></td>
+            <td><strong>${grandTotals.total}</strong></td>
+        `;
+        tbody.appendChild(grandTotalRow);
+    }
+}
+
+function populateFilters() {
+    const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
+    const years = [...new Set(studentsData.map(s => s['Year']))].sort();
+    
+    // Collect admission types from both columns with mixed logic
+    const admTypesSet = new Set();
+    studentsData.forEach(student => {
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            admTypesSet.add('SNQ');
+        } else {
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                admTypesSet.add(admTypeCol);
+            } else {
+                admTypesSet.add('REGULAR');
+            }
+        }
+    });
+    
+    const admTypes = Array.from(admTypesSet).sort();
+
+    const courseFilter = document.getElementById('courseFilter');
+    const yearFilter = document.getElementById('yearFilter');
+    const admTypeFilter = document.getElementById('admTypeFilter');
+
+    courseFilter.innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+        courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+    });
+
+    yearFilter.innerHTML = '<option value="">All Years</option>';
+    years.forEach(year => {
+        yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+    });
+
+    admTypeFilter.innerHTML = '<option value="">All Types</option>';
+    admTypes.forEach(admType => {
+        admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
+    });
+}
+
+function populateDuesFilters() {
+    const courses = [...new Set(duesData.map(s => s['Course']))].sort();
+    const years = [...new Set(duesData.map(s => s['Year']))].sort();
+    
+    // Get admission types from processed dues data (which already has mixed logic applied)
+    const admTypes = [...new Set(duesData.map(s => s['Adm Type']).filter(type => type))].sort();
+
+    const courseFilter = document.getElementById('duesCourseFilter');
+    const yearFilter = document.getElementById('duesYearFilter');
+    const admTypeFilter = document.getElementById('duesAdmTypeFilter');
+
+    courseFilter.innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+        courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+    });
+
+    yearFilter.innerHTML = '<option value="">All Years</option>';
+    years.forEach(year => {
+        yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+    });
+
+    admTypeFilter.innerHTML = '<option value="">All Types</option>';
+    admTypes.forEach(admType => {
+        admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
+    });
+}
+
+function displayStudentList() {
+    const tbody = document.querySelector('#studentTable tbody');
+    tbody.innerHTML = '';
+
+    if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="no-data">No students found</td></tr>';
+        return;
+    }
+
+    filteredData.forEach((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        
+        // Determine displayed admission type using mixed logic
+        let displayedAdmType;
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            displayedAdmType = 'SNQ';
+        } else {
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                displayedAdmType = admTypeCol;
+            } else {
+                displayedAdmType = 'REGULAR';
+            }
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${serialNumber}</td>
+            <td>${student['Student Name'] || ''}</td>
+            <td>${student['Father Name'] || ''}</td>
+            <td>${student['Year'] || ''}</td>
+            <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
+            <td>${student['Reg No'] || ''}</td>
+            <td>${displayedAdmType}</td>
+            <td>${student['Adm Cat'] || ''}</td>
+            <td>${student['In/Out'] || ''}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function generateDuesMetrics() {
+    const courseData = {};
+    
+    // Calculate metrics for each course
+    duesData.forEach(student => {
+        const course = student['Course'];
+        if (!courseData[course]) {
+            courseData[course] = {
+                count: 0,
+                totalDues: 0
+            };
+        }
+        courseData[course].count++;
+        courseData[course].totalDues += student['Total Dues'];
+    });
+
+    const duesMetricsGrid = document.getElementById('duesMetricsGrid');
+    duesMetricsGrid.innerHTML = '';
+
+    const courseColors = {
+        'CE': 'ce',
+        'ME': 'me', 
+        'EC': 'ec',
+        'CS': 'cs',
+        'EE': 'ee'
+    };
+
+    // Ensure all expected courses are shown, even with 0 count
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    expectedCourses.forEach(course => {
+        if (!courseData[course]) {
+            courseData[course] = { count: 0, totalDues: 0 };
+        }
+    });
+
+    let grandTotalStudents = 0;
+    let grandTotalAmount = 0;
+
+    expectedCourses.forEach(course => {
+        const data = courseData[course];
+        grandTotalStudents += data.count;
+        grandTotalAmount += data.totalDues;
+        
+        const formatAmount = (amount) => {
+            if (amount === 0) return '₹0';
+            return '₹' + amount.toLocaleString('en-IN', { 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 0 
+            });
+        };
+        
+        const metricCard = document.createElement('div');
+        metricCard.className = 'metric-card';
+        metricCard.innerHTML = `
+            <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
+            <div class="metric-label">${course} Students</div>
+            <div style="font-size: 0.9rem; color: var(--warning-color); font-weight: 600; margin-top: 8px;">
+                ${formatAmount(data.totalDues)}
+            </div>
+        `;
+        duesMetricsGrid.appendChild(metricCard);
+    });
+
+    // Grand Total card
+    const formatGrandTotal = (amount) => {
+        return '₹' + amount.toLocaleString('en-IN', { 
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: 0 
+        });
+    };
+
+    const totalCard = document.createElement('div');
+    totalCard.className = 'metric-card';
+    totalCard.style.background = 'linear-gradient(135deg, var(--warning-color), #dc1a68)';
+    totalCard.style.color = 'white';
+    totalCard.innerHTML = `
+        <div class="metric-number" style="color: white;">${grandTotalStudents}</div>
+        <div class="metric-label" style="color: white; opacity: 0.9;">Total Students</div>
+        <div style="font-size: 1rem; color: white; font-weight: 700; margin-top: 8px;">
+            ${formatGrandTotal(grandTotalAmount)}
+        </div>
+    `;
+    duesMetricsGrid.appendChild(totalCard);
+}
+
+function displayDuesList() {
+    const tbody = document.querySelector('#duesTable tbody');
+    tbody.innerHTML = '';
+
+    if (filteredDuesData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="18" class="no-data">No students with outstanding dues found</td></tr>';
+        return;
+    }
+
+    let totalSMPAlloted = 0;
+    let totalSVKAlloted = 0;
+    let totalSMPPaid = 0;
+    let totalSVKPaid = 0;
+    let totalSMPDue = 0;
+    let totalSVKDue = 0;
+    let totalAlloted = 0;
+    let totalPaid = 0;
+    let totalDues = 0;
+
+    filteredDuesData.forEach((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        const row = document.createElement('tr');
+        
+        const formatAmount = (amount) => {
+            return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        };
+        
+        // Add to totals
+        totalSMPAlloted += student['SMP Alloted'];
+        totalSVKAlloted += student['SVK Alloted'];
+        totalSMPPaid += student['SMP Paid'];
+        totalSVKPaid += student['SVK Paid'];
+        totalSMPDue += student['SMP Due'];
+        totalSVKDue += student['SVK Due'];
+        totalAlloted += student['Total Alloted'];
+        totalPaid += student['Total Paid'];
+        totalDues += student['Total Dues'];
+        
+        row.innerHTML = `
+            <td>${serialNumber}</td>
+            <td>${student['Student Name'] || ''}</td>
+            <td>${student['Father Name'] || ''}</td>
+            <td>${student['Year'] || ''}</td>
+            <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
+            <td>${student['Reg No'] || ''}</td>
+            <td>${student['Adm Type'] || ''}</td>
+            <td>${student['Adm Cat'] || ''}</td>
+            <td>${student['In/Out'] || ''}</td>
+            <td class="positive-amount">${formatAmount(student['SMP Alloted'])}</td>
+            <td class="positive-amount">${formatAmount(student['SVK Alloted'])}</td>
+            <td class="positive-amount">${formatAmount(student['SMP Paid'])}</td>
+            <td class="positive-amount">${formatAmount(student['SVK Paid'])}</td>
+            <td class="dues-amount">${formatAmount(student['SMP Due'])}</td>
+            <td class="dues-amount">${formatAmount(student['SVK Due'])}</td>
+            <td class="positive-amount">${formatAmount(student['Total Alloted'])}</td>
+            <td class="positive-amount">${formatAmount(student['Total Paid'])}</td>
+            <td class="dues-amount">${formatAmount(student['Total Dues'])}</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add Grand Total row
+    if (filteredDuesData.length > 0) {
+        const grandTotalRow = document.createElement('tr');
+        grandTotalRow.className = 'grand-total-row';
+        grandTotalRow.innerHTML = `
+            <td colspan="9"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+            <td><strong>₹${totalSMPAlloted.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalSVKAlloted.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalSMPPaid.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalSVKPaid.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalSMPDue.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalSVKDue.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td><strong>₹${totalDues.toLocaleString('en-IN')}</strong></td>
+        `;
+        tbody.appendChild(grandTotalRow);
+    }
+}
+
+function applyFilters() {
+    const courseFilter = document.getElementById('courseFilter').value;
+    const yearFilter = document.getElementById('yearFilter').value;
+    const admTypeFilter = document.getElementById('admTypeFilter').value;
+    const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
+
+    filteredData = studentsData.filter(student => {
+        const matchesCourse = !courseFilter || student['Course'] === courseFilter;
+        const matchesYear = !yearFilter || student['Year'] === yearFilter;
+        
+        // Mixed admission type filtering logic
+        let matchesAdmType = true;
+        if (admTypeFilter) {
+            if (admTypeFilter === 'SNQ') {
+                // For SNQ, check 'Adm Cat' column
+                const admCat = student['Adm Cat'] || '';
+                matchesAdmType = admCat.trim() === 'SNQ';
+            } else {
+                // For Regular, LTRL, RPTR - check 'Adm Type' column
+                const admTypeCol = student['Adm Type'] || '';
+                if (admTypeFilter === 'REGULAR') {
+                    // Regular includes all values that are not LTRL, RPTR, or SNQ
+                    const admCat = student['Adm Cat'] || '';
+                    matchesAdmType = (admCat.trim() !== 'SNQ') && 
+                                   (admTypeCol !== 'LTRL') && 
+                                   (admTypeCol !== 'RPTR');
+                } else {
+                    // For LTRL and RPTR, exact match from Adm Type column
+                    matchesAdmType = admTypeCol === admTypeFilter;
+                }
+            }
+        }
+        
+        const matchesName = !nameFilter || 
+            student['Student Name']?.toLowerCase().includes(nameFilter) ||
+            student['Father Name']?.toLowerCase().includes(nameFilter);
+
+        return matchesCourse && matchesYear && matchesAdmType && matchesName;
+    });
+
+    displayStudentList();
+}
+
+function applyDuesFilters() {
+    const courseFilter = document.getElementById('duesCourseFilter').value;
+    const yearFilter = document.getElementById('duesYearFilter').value;
+    const admTypeFilter = document.getElementById('duesAdmTypeFilter').value;
+    const nameFilter = document.getElementById('duesNameFilter').value.toLowerCase();
+
+    filteredDuesData = duesData.filter(student => {
+        const matchesCourse = !courseFilter || student['Course'] === courseFilter;
+        const matchesYear = !yearFilter || student['Year'] === yearFilter;
+        
+        // Mixed admission type filtering logic
+        let matchesAdmType = true;
+        if (admTypeFilter) {
+            if (admTypeFilter === 'SNQ') {
+                // For SNQ, check if student was classified as SNQ based on Adm Cat
+                // Since dues data stores the processed admission type, we check the stored value
+                matchesAdmType = student['Adm Type'] === 'SNQ';
+            } else {
+                // For Regular, LTRL, RPTR - check stored admission type
+                if (admTypeFilter === 'REGULAR') {
+                    matchesAdmType = student['Adm Type'] === 'REGULAR';
+                } else {
+                    // For LTRL and RPTR
+                    matchesAdmType = student['Adm Type'] === admTypeFilter;
+                }
+            }
+        }
+        
+        const matchesName = !nameFilter || 
+            student['Student Name']?.toLowerCase().includes(nameFilter) ||
+            student['Father Name']?.toLowerCase().includes(nameFilter);
+
+        return matchesCourse && matchesYear && matchesAdmType && matchesName;
+    });
+
+    displayDuesList();
+    generateFilteredDuesMetrics();
+}
+
+function generateFilteredDuesMetrics() {
+    const courseData = {};
+    
+    // Calculate metrics for each course based on filtered data
+    filteredDuesData.forEach(student => {
+        const course = student['Course'];
+        if (!courseData[course]) {
+            courseData[course] = {
+                count: 0,
+                totalDues: 0
+            };
+        }
+        courseData[course].count++;
+        courseData[course].totalDues += student['Total Dues'];
+    });
+
+    const duesMetricsGrid = document.getElementById('duesMetricsGrid');
+    duesMetricsGrid.innerHTML = '';
+
+    const courseColors = {
+        'CE': 'ce',
+        'ME': 'me', 
+        'EC': 'ec',
+        'CS': 'cs',
+        'EE': 'ee'
+    };
+
+    // Ensure all expected courses are shown, even with 0 count
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    expectedCourses.forEach(course => {
+        if (!courseData[course]) {
+            courseData[course] = { count: 0, totalDues: 0 };
+        }
+    });
+
+    let grandTotalStudents = 0;
+    let grandTotalAmount = 0;
+
+    expectedCourses.forEach(course => {
+        const data = courseData[course];
+        grandTotalStudents += data.count;
+        grandTotalAmount += data.totalDues;
+        
+        const formatAmount = (amount) => {
+            if (amount === 0) return '₹0';
+            return '₹' + amount.toLocaleString('en-IN', { 
+                minimumFractionDigits: 0, 
+                maximumFractionDigits: 0 
+            });
+        };
+        
+        const metricCard = document.createElement('div');
+        metricCard.className = 'metric-card';
+        metricCard.innerHTML = `
+            <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
+            <div class="metric-label">${course} Students</div>
+            <div style="font-size: 0.9rem; color: var(--warning-color); font-weight: 600; margin-top: 8px;">
+                ${formatAmount(data.totalDues)}
+            </div>
+        `;
+        duesMetricsGrid.appendChild(metricCard);
+    });
+
+    // Grand Total card
+    const formatGrandTotal = (amount) => {
+        return '₹' + amount.toLocaleString('en-IN', { 
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: 0 
+        });
+    };
+
+    const totalCard = document.createElement('div');
+    totalCard.className = 'metric-card';
+    totalCard.style.background = 'linear-gradient(135deg, var(--warning-color), #dc1a68)';
+    totalCard.style.color = 'white';
+    totalCard.innerHTML = `
+        <div class="metric-number" style="color: white;">${grandTotalStudents}</div>
+        <div class="metric-label" style="color: white; opacity: 0.9;">Total Students</div>
+        <div style="font-size: 1rem; color: white; font-weight: 700; margin-top: 8px;">
+            ${formatGrandTotal(grandTotalAmount)}
+        </div>
+    `;
+    duesMetricsGrid.appendChild(totalCard);
+}
+
+function clearFilters() {
+    document.getElementById('courseFilter').value = '';
+    document.getElementById('yearFilter').value = '';
+    document.getElementById('admTypeFilter').value = '';
+    document.getElementById('nameFilter').value = '';
+    filteredData = [...studentsData];
+    displayStudentList();
+}
+
+function clearDuesFilters() {
+    document.getElementById('duesCourseFilter').value = '';
+    document.getElementById('duesYearFilter').value = '';
+    document.getElementById('duesAdmTypeFilter').value = '';
+    document.getElementById('duesNameFilter').value = '';
+    filteredDuesData = [...duesData];
+    displayDuesList();
+    generateDuesMetrics(); // Regenerate original metrics
+}
+
+function exportSummaryToPDF() {
+    if (!confirm('📄 Export Year, Course & Admission Type-wise Student Count as PDF?')) {
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Year, Course & Admission Type-wise Student Count', 105, 30, { align: 'center' });
+    
+    // Generation info
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const genInfo = `Generated: ${currentDate}`;
+    doc.text(genInfo, 105, 45, { align: 'center' });
+    
+    // Get table data
+    const table = document.getElementById('summaryTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    if (rows.length === 0) {
+        alert('No data to export');
+        return;
+    }
+    
+    // Table headers
+    const headers = ['Year', 'Course', 'Regular', 'LTRL', 'SNQ', 'RPTR', 'Total'];
+    const startY = 55;
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, startY - 2, 180, 8, 'F');
+    
+    const colWidths = [25, 25, 22, 22, 22, 22, 22];
+    let xPos = 15;
+    
+    headers.forEach((header, index) => {
+        doc.text(header, xPos + 2, startY + 4);
+        xPos += colWidths[index];
+    });
+    
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(8);
+    
+    let currentY = startY + 12;
+    const rowHeight = 6;
+    const pageHeight = 270;
+    
+    rows.forEach((row, index) => {
+        if (currentY > pageHeight) {
+            doc.addPage();
+            currentY = 20;
+            
+            // Repeat headers on new page
+            doc.setFont(undefined, 'bold');
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, currentY - 2, 180, 8, 'F');
+            
+            xPos = 15;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 2, currentY + 4);
+                xPos += colWidths[i];
+            });
+            
+            currentY += 12;
+            doc.setFont(undefined, 'normal');
+        }
+        
+        const cells = row.querySelectorAll('td');
+        const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+        
+        // Check if this is a subtotal or grand total row
+        const isSubtotal = row.classList.contains('subtotal-row');
+        const isGrandTotal = row.classList.contains('grand-total-row');
+        
+        if (isSubtotal || isGrandTotal) {
+            doc.setFillColor(67, 97, 238);
+            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont(undefined, 'bold');
+        } else if (index % 2 === 0) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        } else {
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        }
+        
+        xPos = 15;
+        rowData.forEach((data, i) => {
+            const text = String(data);
+            doc.text(text, xPos + 2, currentY + 2);
+            xPos += colWidths[i];
+        });
+        
+        currentY += rowHeight;
+    });
+    
+    // Add page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('SMP Admn Stats 2025-26 - Summary Report', 105, 285, { align: 'center' });
+    }
+    
+    const fileName = `SMP_Summary_Report_${currentDate.replace(/-/g, '_')}.pdf`;
+    doc.save(fileName);
+}
+
+function exportDatewiseToPDF() {
+    if (!confirm('📄 Export Date-wise & Course-wise Students Report as PDF?')) {
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Date-wise & Course-wise Students Report', 105, 30, { align: 'center' });
+    
+    // Generation info
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const genInfo = `Generated: ${currentDate}`;
+    doc.text(genInfo, 105, 45, { align: 'center' });
+    
+    // Get table data
+    const table = document.getElementById('datewiseTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    if (rows.length === 0) {
+        alert('No data to export');
+        return;
+    }
+    
+    // Table headers
+    const headers = ['Date', 'CE', 'ME', 'EC', 'CS', 'EE', 'Total'];
+    const startY = 55;
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, startY - 2, 180, 8, 'F');
+    
+    const colWidths = [35, 20, 20, 20, 20, 20, 25];
+    let xPos = 15;
+    
+    headers.forEach((header, index) => {
+        doc.text(header, xPos + 2, startY + 4);
+        xPos += colWidths[index];
+    });
+    
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(8);
+    
+    let currentY = startY + 12;
+    const rowHeight = 6;
+    const pageHeight = 270;
+    
+    rows.forEach((row, index) => {
+        if (currentY > pageHeight) {
+            doc.addPage();
+            currentY = 20;
+            
+            // Repeat headers on new page
+            doc.setFont(undefined, 'bold');
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, currentY - 2, 180, 8, 'F');
+            
+            xPos = 15;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 2, currentY + 4);
+                xPos += colWidths[i];
+            });
+            
+            currentY += 12;
+            doc.setFont(undefined, 'normal');
+        }
+        
+        const cells = row.querySelectorAll('td');
+        const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+        
+        // Check if this is a grand total row
+        const isGrandTotal = row.classList.contains('grand-total-row');
+        
+        if (isGrandTotal) {
+            doc.setFillColor(67, 97, 238);
+            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont(undefined, 'bold');
+        } else if (index % 2 === 0) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        } else {
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        }
+        
+        xPos = 15;
+        rowData.forEach((data, i) => {
+            const text = String(data);
+            doc.text(text, xPos + 2, currentY + 2);
+            xPos += colWidths[i];
+        });
+        
+        currentY += rowHeight;
+    });
+    
+    // Add page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('SMP Admn Stats 2025-26 - Date-wise Report', 105, 285, { align: 'center' });
+    }
+    
+    const fileName = `SMP_Datewise_Report_${currentDate.replace(/-/g, '_')}.pdf`;
+    doc.save(fileName);
+}
+
+function saveToPDF() {
+    if (filteredData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const courseFilter = document.getElementById('courseFilter').value || 'All Courses';
+    const yearFilter = document.getElementById('yearFilter').value || 'All Years';
+    const nameFilter = document.getElementById('nameFilter').value || 'No Name Filter';
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Student Directory Report', 105, 30, { align: 'center' });
+    
+    // Filter Information - Compact horizontal layout
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const shortNameFilter = nameFilter === 'No Name Filter' ? 'None' : (nameFilter.length > 15 ? nameFilter.substring(0, 15) + '...' : nameFilter);
+    const filterInfo = `Generated: ${currentDate} | Course: ${courseFilter} | Year: ${yearFilter} | Name: ${shortNameFilter} | Records: ${filteredData.length}`;
+    doc.text(filterInfo, 105, 45, { align: 'center' });
+    
+    const courseHeaders = {
+        'CS': 'Computer Science Engineering',
+        'CE': 'Civil Engineering', 
+        'EC': 'Electronics & Communication Engineering',
+        'ME': 'Mechanical Engineering',
+        'EE': 'Electrical Engineering'
+    };
+    
+    if (courseFilter !== 'All Courses' && courseHeaders[courseFilter]) {
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text(courseHeaders[courseFilter], 105, 55, { align: 'center' });
+    }
+    
+    // Table headers
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const startY = courseFilter !== 'All Courses' ? 65 : 55;
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, startY - 2, 180, 8, 'F');
+    
+    const colWidths = [12, 28, 28, 15, 15, 20, 20, 20, 12];
+    let xPos = 15;
+    
+    headers.forEach((header, index) => {
+        doc.text(header, xPos + 2, startY + 4);
+        xPos += colWidths[index];
+    });
+    
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(8);
+    
+    let currentY = startY + 12;
+    const rowHeight = 6;
+    const pageHeight = 270;
+    
+    filteredData.forEach((student, index) => {
+        if (currentY > pageHeight) {
+            doc.addPage();
+            currentY = 20;
+            
+            doc.setFont(undefined, 'bold');
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, currentY - 2, 180, 8, 'F');
+            
+            xPos = 15;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 2, currentY + 4);
+                xPos += colWidths[i];
+            });
+            
+            currentY += 12;
+            doc.setFont(undefined, 'normal');
+        }
+        
+        const serialNumber = String(index + 1).padStart(2, '0');
+        
+        // Determine displayed admission type using mixed logic
+        let displayedAdmType;
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            displayedAdmType = 'SNQ';
+        } else {
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                displayedAdmType = admTypeCol;
+            } else {
+                displayedAdmType = 'REGULAR';
+            }
+        }
+        
+        const rowData = [
+            serialNumber,
+            (student['Student Name'] || '').substring(0, 20),
+            (student['Father Name'] || '').substring(0, 20),
+            student['Year'] || '',
+            student['Course'] || '',
+            (student['Reg No'] || '').substring(0, 15),
+            displayedAdmType.substring(0, 12),
+            (student['Adm Cat'] || '').substring(0, 12),
+            student['In/Out'] || ''
+        ];
+        
+        if (index % 2 === 0) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+        }
+        
+        xPos = 15;
+        rowData.forEach((data, i) => {
+            const text = String(data);
+            doc.text(text, xPos + 2, currentY + 2);
+            xPos += colWidths[i];
+        });
+        
+        currentY += rowHeight;
+    });
+    
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('SMP Admn Stats 2025-26 - Student Directory', 105, 285, { align: 'center' });
+    }
+    
+    const fileName = `SMP_Students_${courseFilter.replace(' ', '_')}_${currentDate.replace(/-/g, '_')}.pdf`;
+    doc.save(fileName);
+}
+
+function saveDuesToPDF() {
+    if (filteredDuesData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+    
+    const courseFilter = document.getElementById('duesCourseFilter').value || 'All Courses';
+    const yearFilter = document.getElementById('duesYearFilter').value || 'All Years';
+    const nameFilter = document.getElementById('duesNameFilter').value || 'No Name Filter';
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Fee Dues Report', 148, 30, { align: 'center' });
+    
+    // Filter Information - Compact horizontal layout
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const shortNameFilter = nameFilter === 'No Name Filter' ? 'None' : (nameFilter.length > 15 ? nameFilter.substring(0, 15) + '...' : nameFilter);
+    const filterInfo = `Generated: ${currentDate} | Course: ${courseFilter} | Year: ${yearFilter} | Name: ${shortNameFilter} | Records: ${filteredDuesData.length}`;
+    doc.text(filterInfo, 148, 45, { align: 'center' });
+    
+    // Calculate total dues amount
+    const totalDuesAmount = filteredDuesData.reduce((sum, student) => sum + student['Total Dues'], 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
+    
+    // Table headers
+    const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Cat', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
+    const startY = 65;
+    
+    doc.setFontSize(7);
+    doc.setFont(undefined, 'bold');
+    
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, startY - 2, 266, 8, 'F');
+    
+    const colWidths = [8, 20, 20, 8, 10, 15, 12, 12, 8, 15, 15, 15, 15, 15, 15, 15, 15, 15];
+    let xPos = 15;
+    
+    headers.forEach((header, index) => {
+        doc.text(header, xPos + 2, startY + 4);
+        xPos += colWidths[index];
+    });
+    
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(6);
+    
+    let currentY = startY + 12;
+    const rowHeight = 6;
+    const pageHeight = 180;
+    
+    filteredDuesData.forEach((student, index) => {
+        if (currentY > pageHeight) {
+            doc.addPage();
+            currentY = 20;
+            
+            doc.setFont(undefined, 'bold');
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, currentY - 2, 266, 8, 'F');
+            
+            xPos = 15;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 2, currentY + 4);
+                xPos += colWidths[i];
+            });
+            
+            currentY += 12;
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(6);
+        }
+        
+        const serialNumber = String(index + 1).padStart(2, '0');
+        const formatAmount = (amount) => '₹' + Math.round(amount).toLocaleString('en-IN');
+        
+        const rowData = [
+            serialNumber,
+            (student['Student Name'] || '').substring(0, 11),
+            (student['Father Name'] || '').substring(0, 11),
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            (student['Adm Type'] || '').substring(0, 8),
+            (student['Adm Cat'] || '').substring(0, 8),
+            student['In/Out'] || '',
+            formatAmount(student['SMP Alloted']),
+            formatAmount(student['SVK Alloted']),
+            formatAmount(student['SMP Paid']),
+            formatAmount(student['SVK Paid']),
+            formatAmount(student['SMP Due']),
+            formatAmount(student['SVK Due']),
+            formatAmount(student['Total Alloted']),
+            formatAmount(student['Total Paid']),
+            formatAmount(student['Total Dues'])
+        ];
+        
+        if (index % 2 === 0) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(15, currentY - 2, 266, rowHeight, 'F');
+        }
+        
+        xPos = 15;
+        rowData.forEach((data, i) => {
+            const text = String(data);
+            doc.text(text, xPos + 2, currentY + 2);
+            xPos += colWidths[i];
+        });
+        
+        currentY += rowHeight;
+    });
+    
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Page ${i} of ${pageCount}`, 148, 205, { align: 'center' });
+        doc.text('SMP Admn Stats 2025-26 - Fee Dues Report', 148, 200, { align: 'center' });
+    }
+    
+    const fileName = `SMP_Dues_${courseFilter.replace(' ', '_')}_${currentDate.replace(/-/g, '_')}.pdf`;
+    doc.save(fileName);
+}
+
+function exportToCSV() {
+    if (filteredData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const csvContent = [
+        headers.join(','),
+        ...filteredData.map((student, index) => {
+            const serialNumber = String(index + 1).padStart(2, '0');
+            
+            // Determine displayed admission type using mixed logic
+            let displayedAdmType;
+            const admCat = student['Adm Cat'] || '';
+            const admTypeCol = student['Adm Type'] || '';
+            
+            if (admCat.trim() === 'SNQ') {
+                displayedAdmType = 'SNQ';
+            } else {
+                if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                    displayedAdmType = admTypeCol;
+                } else {
+                    displayedAdmType = 'REGULAR';
+                }
+            }
+            
+            const values = [
+                serialNumber,
+                student['Student Name'] || '',
+                student['Father Name'] || '',
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                displayedAdmType,
+                student['Adm Cat'] || '',
+                student['In/Out'] || ''
+            ];
+            return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
+        })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    link.setAttribute('download', `students_export_${currentDate.replace(/-/g, '_')}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportDuesToCSV() {
+    if (filteredDuesData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Alloted', 'Total Paid', 'Total Dues'];
+    const csvContent = [
+        headers.join(','),
+        ...filteredDuesData.map((student, index) => {
+            const serialNumber = String(index + 1).padStart(2, '0');
+            const values = [
+                serialNumber,
+                student['Student Name'] || '',
+                student['Father Name'] || '',
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                student['Adm Type'] || '',
+                student['Adm Cat'] || '',
+                student['In/Out'] || '',
+                student['SMP Alloted'],
+                student['SVK Alloted'],
+                student['SMP Paid'],
+                student['SVK Paid'],
+                student['SMP Due'],
+                student['SVK Due'],
+                student['Total Alloted'],
+                student['Total Paid'],
+                student['Total Dues']
+            ];
+            return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
+        })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    link.setAttribute('download', `dues_export_${currentDate.replace(/-/g, '_')}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Auto-apply filters on input change
+document.getElementById('nameFilter').addEventListener('input', applyFilters);
+document.getElementById('courseFilter').addEventListener('change', applyFilters);
+document.getElementById('yearFilter').addEventListener('change', applyFilters);
+document.getElementById('admTypeFilter').addEventListener('change', applyFilters);
+
+// Dues filters
+document.getElementById('duesNameFilter').addEventListener('input', applyDuesFilters);
+document.getElementById('duesCourseFilter').addEventListener('change', applyDuesFilters);
+document.getElementById('duesYearFilter').addEventListener('change', applyDuesFilters);
+document.getElementById('duesAdmTypeFilter').addEventListener('change', applyDuesFilters);
