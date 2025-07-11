@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>How to Run SMP Admn Stats</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .method { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .easy { background-color: #e8f5e8; border-color: #4caf50; }
+        code { background-color: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
+        .warning { background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <h1>How to Run SMP Admn Stats Application</h1>
+    
+    <div class="warning">
+        <strong>Important:</strong> Do NOT open index.html directly in the browser. It will show "Error Loading Data" due to security restrictions.
+    </div>
+
+    <div class="method easy">
+        <h2>✅ Method 1: Use the Start Server Batch File (Easiest)</h2>
+        <ol>
+            <li>Double-click on <strong>start-server.bat</strong> in this folder</li>
+            <li>A command prompt window will open and start the server</li>
+            <li>Open your browser and go to: <code>http://localhost:8000</code></li>
+            <li>The application will load with all data</li>
+            <li>Keep the command prompt window open while using the app</li>
+        </ol>
+    </div>
+
+    <div class="method">
+        <h2>Method 2: Manual Command Prompt</h2>
+        <ol>
+            <li>Open Command Prompt</li>
+            <li>Navigate to this folder: <code>cd "path\to\this\folder"</code></li>
+            <li>Run: <code>python -m http.server 8000</code></li>
+            <li>Open browser and go to: <code>http://localhost:8000</code></li>
+        </ol>
+    </div>
+
+    <div class="method">
+        <h2>Method 3: VS Code Live Server</h2>
+        <ol>
+            <li>Install VS Code if you don't have it</li>
+            <li>Install the "Live Server" extension</li>
+            <li>Open this folder in VS Code</li>
+            <li>Right-click on index.html → "Open with Live Server"</li>
+        </ol>
+    </div>
+
+    <h3>Why does this happen?</h3>
+    <p>Modern browsers block local file access for security reasons when you open HTML files directly (file:// protocol). 
+    Running a local server solves this by serving files over HTTP protocol.</p>
+
+    <h3>Troubleshooting</h3>
+    <ul>
+        <li>Make sure Python is installed on your system</li>
+        <li>If port 8000 is busy, try: <code>python -m http.server 8080</code></li>
+        <li>Ensure all CSV files are in the same folder as index.html</li>
+    </ul>
+</body>
+</html>

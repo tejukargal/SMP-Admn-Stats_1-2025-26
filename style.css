@@ -1048,15 +1048,20 @@ body {
     overflow-y: auto;
 }
 
+.table-container.scrollable-notadmitted {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
 /* Smooth scrolling for better UX */
-.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-summary {
+.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-notadmitted, .scrollable-summary {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
 /* Subtle scroll indicator */
-.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-summary::after {
+.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-notadmitted::after, .scrollable-summary::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -1071,12 +1076,13 @@ body {
 [data-theme="dark"] .scrollable-datewise::after, 
 [data-theme="dark"] .scrollable-students::after,
 [data-theme="dark"] .scrollable-dues::after,
+[data-theme="dark"] .scrollable-notadmitted::after,
 [data-theme="dark"] .scrollable-summary::after {
     background: linear-gradient(transparent, rgba(255,255,255,0.1));
 }
 
 /* Enhanced sticky headers for scrollable tables */
-.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-summary th {
+.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-notadmitted th, .scrollable-summary th {
     position: sticky;
     top: 0;
     z-index: 20;
@@ -1812,7 +1818,7 @@ select:focus, input:focus {
         max-height: 280px;
     }
 
-    .table-container.scrollable-students, .table-container.scrollable-dues {
+    .table-container.scrollable-students, .table-container.scrollable-dues, .table-container.scrollable-notadmitted {
         max-height: 400px;
     }
 
@@ -1981,5 +1987,97 @@ select:focus, input:focus {
     .footer {
         padding: 16px 0;
         font-size: 12px;
+    }
+}
+
+/* Data Info Popup Styles */
+.data-info-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.data-info-popup.show {
+    display: flex;
+}
+
+.popup-info-content {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    animation: slideInUp 0.25s ease-out;
+    position: relative;
+    z-index: 10001;
+}
+
+.popup-info-header h3 {
+    margin: 0 0 16px 0;
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.popup-info-body p {
+    margin: 8px 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.popup-info-body .dev-info {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: normal;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .popup-info-content {
+        padding: 20px;
+        max-width: 350px;
+    }
+    
+    .popup-info-header h3 {
+        font-size: 1.2rem;
     }
 }

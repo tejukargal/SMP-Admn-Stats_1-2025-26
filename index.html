@@ -1,4 +1,4 @@
-2<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,8 +17,6 @@
         <div class="header">
             <h1>SMP Admn Stats</h1>
             <p class="year-info">Year: 2025-26</p>
-            <p>Real-time student analytics</p>
-            <p class="update-info">Visit daily for updates • <span id="lastUpdated">Last Updated on --</span></p>
             <div class="scrolling-message" title="Double-click the 📢 icon to edit messages">
                 <div class="scrolling-text" id="scrollingText">
                     📅 Last date for fee payment: 31st March 2025 | 📋 Submit original documents by 15th April 2025 | 🎓 Final semester exam registration opens 1st May 2025
@@ -52,6 +52,7 @@
                 <button class="nav-tab active" onclick="showSection('statistics')">📊 Statistics</button>
                 <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
                 <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
+                <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
             </div>
 
             <div id="statistics" class="section active">
@@ -136,8 +137,8 @@
                             </select>
                         </div>
                         <div class="filter-group">
-                            <label>Search Name</label>
-                            <input type="text" id="nameFilter" placeholder="Enter student name...">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="nameFilter" placeholder="Enter student name or reg no...">
                         </div>
                         <button class="btn" onclick="clearFilters()">Clear Filters</button>
                         <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
@@ -195,8 +196,8 @@
                             </select>
                         </div>
                         <div class="filter-group">
-                            <label>Search Name</label>
-                            <input type="text" id="duesNameFilter" placeholder="Enter student name...">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="duesNameFilter" placeholder="Enter student name or reg no...">
                         </div>
                         <button class="btn" onclick="clearDuesFilters()">Clear Filters</button>
                         <button class="btn btn-export" onclick="exportDuesToCSV()">📥 Export CSV</button>
@@ -228,6 +229,64 @@
                             </thead>
                             <tbody>
                                 <!-- Dues data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notadmitted" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">🚫 Not Admitted List</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Students from previous years who have not been admitted to the current academic year (2025-26)
+                    </p>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="notAdmittedCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="notAdmittedYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="notAdmittedAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="notAdmittedNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearNotAdmittedFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportNotAdmittedToCSV()">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveNotAdmittedToPDF()">📄 Save PDF</button>
+                    </div>
+                    <div class="table-container scrollable-notadmitted">
+                        <table id="notAdmittedTable">
+                            <thead>
+                                <tr>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Academic Year</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Not admitted data will be populated here -->
                             </tbody>
                         </table>
                     </div>
@@ -328,6 +387,20 @@
                         <!-- Breakdown data will be populated here -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Info Popup -->
+    <div class="data-info-popup" id="dataInfoPopup">
+        <div class="popup-info-content">
+            <div class="popup-info-header">
+                <h3>📊 Real-time Student Analytics</h3>
+            </div>
+            <div class="popup-info-body">
+                <p>Visit daily for updates</p>
+                <p>Last Updated on <span id="popupLastUpdated">--</span></p>
+                <div class="dev-info">by Thejaraj R, SMP</div>
             </div>
         </div>
     </div>

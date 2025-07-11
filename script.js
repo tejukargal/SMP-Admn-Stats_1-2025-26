@@ -3,6 +3,9 @@ let allStudentsData = []; // Store all students including those with dues
 let filteredData = [];
 let filteredDuesData = [];
 let duesData = [];
+let previousStudentsData = []; // Store previous year students
+let notAdmittedData = [];
+let filteredNotAdmittedData = [];
 let popupTimer = null;
 let messageIndex = 0;
 const TOTAL_INTAKE_PER_COURSE = 63;
@@ -313,6 +316,32 @@ function showSection(sectionName) {
     
     // Add active class to clicked tab
     event.target.classList.add('active');
+    
+    // If switching to not admitted section, ensure data is loaded and displayed
+    if (sectionName === 'notadmitted') {
+        
+        // If data exists but table is empty, refresh display
+        if (notAdmittedData.length > 0) {
+            console.log('Refreshing display with existing data');
+            filteredNotAdmittedData = [...notAdmittedData];
+            populateNotAdmittedFilters();
+            displayNotAdmittedStudents();
+        } else {
+            console.log('Loading not admitted data');
+            // Try to load data if not already loaded
+            loadNotAdmittedData();
+        }
+        
+        // As a fallback, if still no data after 1 second, show a message
+        setTimeout(() => {
+            if (notAdmittedData.length === 0) {
+                const tableBody = document.querySelector('#notAdmittedTable tbody');
+                if (tableBody && !tableBody.innerHTML.includes('No students found')) {
+                    tableBody.innerHTML = '<tr><td colspan="10" class="no-data">Unable to load not admitted students. Please check console for errors.</td></tr>';
+                }
+            }
+        }, 1000);
+    }
 }
 
 // Auto-load CSV file on page load
@@ -362,9 +391,20 @@ async function loadCSVFile() {
         }
         
         const csvText = await response.text();
+        
+        // Parse CSV and show basic UI immediately
         parseCSV(csvText);
         updateLastModifiedDate();
         hideLoading();
+        
+        // Show data info popup after successful loading
+        showDataInfoPopup();
+        
+        // Defer heavy processing to next tick for better perceived performance
+        setTimeout(() => {
+            // Load not admitted students data in background
+            loadNotAdmittedData();
+        }, 100);
         
     } catch (error) {
         console.error('Error loading CSV file:', error);
@@ -373,18 +413,8 @@ async function loadCSVFile() {
 }
 
 function updateLastModifiedDate() {
-    // Since we can't access file modification date from browser,
-    // we'll use today's date as the last updated date
-    const today = new Date();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    const day = String(today.getDate()).padStart(2, '0');
-    const month = months[today.getMonth()];
-    const year = today.getFullYear();
-    
-    const formattedDate = `${day}-${month}-${year}`;
-    document.getElementById('lastUpdated').textContent = `Last Updated on ${formattedDate}`;
+    // This function is no longer needed since we show the date in the popup
+    // Keeping it empty to maintain compatibility with existing calls
 }
 
 function showLoading() {
@@ -402,6 +432,35 @@ function showError(message) {
     document.getElementById('dashboard').classList.add('hidden');
     document.getElementById('error').classList.remove('hidden');
     document.getElementById('errorMessage').textContent = message;
+}
+
+// Data Info Popup Functions
+function showDataInfoPopup() {
+    // Update the popup with current date
+    const today = new Date();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = months[today.getMonth()];
+    const year = today.getFullYear();
+    const formattedDate = `${day}-${month}-${year}`;
+    
+    document.getElementById('popupLastUpdated').textContent = formattedDate;
+    
+    // Show the popup
+    const popup = document.getElementById('dataInfoPopup');
+    popup.classList.add('show');
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+        hideDataInfoPopup();
+    }, 4000);
+}
+
+function hideDataInfoPopup() {
+    const popup = document.getElementById('dataInfoPopup');
+    popup.classList.remove('show');
 }
 
 function formatDate(dateStr) {
@@ -483,25 +542,14 @@ function parseCSVLine(line) {
 }
 
 function parseCSV(csvText) {
-    console.log('Starting CSV parsing...');
     const lines = csvText.split('\n').filter(line => line.trim());
-    console.log(`Found ${lines.length} lines in CSV`);
     
     if (lines.length === 0) {
-        console.error('No data found in CSV');
+        showError('CSV file is empty');
         return;
     }
     
     const headers = parseCSVLine(lines[0]).map(h => h.trim());
-    console.log('Headers found:', headers);
-    console.log('Fee-related headers:');
-    headers.forEach((header, index) => {
-        if (header.toLowerCase().includes('fee') || 
-            header.toLowerCase().includes('paid') || 
-            header.toLowerCase().includes('allot')) {
-            console.log(`  Column ${index}: "${header}"`);
-        }
-    });
     
     allStudentsData = [];
     studentsData = [];
@@ -512,8 +560,6 @@ function parseCSV(csvText) {
         h.toLowerCase().includes('year in') ||
         h.toLowerCase().includes('status')
     ) || 'In/Out';
-    
-    console.log('Status column detected:', statusColumn);
     
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -577,8 +623,6 @@ function parseCSV(csvText) {
 }
 
 function processDuesData() {
-    console.log('Processing dues data with installment aggregation...');
-    console.log('Sample student record for column analysis:', allStudentsData[0]);
     
     // Group students by Registration Number, treating EE course separately
     const studentGroups = {};
@@ -1649,7 +1693,8 @@ function applyFilters() {
         
         const matchesName = !nameFilter || 
             student['Student Name']?.toLowerCase().includes(nameFilter) ||
-            student['Father Name']?.toLowerCase().includes(nameFilter);
+            student['Father Name']?.toLowerCase().includes(nameFilter) ||
+            student['Reg No']?.toString().toLowerCase().includes(nameFilter);
 
         return matchesCourse && matchesYear && matchesAdmType && matchesName;
     });
@@ -1687,7 +1732,8 @@ function applyDuesFilters() {
         
         const matchesName = !nameFilter || 
             student['Student Name']?.toLowerCase().includes(nameFilter) ||
-            student['Father Name']?.toLowerCase().includes(nameFilter);
+            student['Father Name']?.toLowerCase().includes(nameFilter) ||
+            student['Reg No']?.toString().toLowerCase().includes(nameFilter);
 
         return matchesCourse && matchesYear && matchesAdmType && matchesName;
     });
@@ -2428,7 +2474,16 @@ function exportDuesToCSV() {
     document.body.removeChild(link);
 }
 
-// Auto-apply filters on input change
+// Function to convert input to uppercase as user types
+function makeUppercaseOnInput(inputElement) {
+    inputElement.addEventListener('input', function() {
+        const cursorPosition = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(cursorPosition, cursorPosition);
+    });
+}
+
+// Auto-apply filters on input change and convert to uppercase
 document.getElementById('nameFilter').addEventListener('input', applyFilters);
 document.getElementById('courseFilter').addEventListener('change', applyFilters);
 document.getElementById('yearFilter').addEventListener('change', applyFilters);
@@ -2439,3 +2494,401 @@ document.getElementById('duesNameFilter').addEventListener('input', applyDuesFil
 document.getElementById('duesCourseFilter').addEventListener('change', applyDuesFilters);
 document.getElementById('duesYearFilter').addEventListener('change', applyDuesFilters);
 document.getElementById('duesAdmTypeFilter').addEventListener('change', applyDuesFilters);
+
+// Apply uppercase conversion to all search input fields
+makeUppercaseOnInput(document.getElementById('nameFilter'));
+makeUppercaseOnInput(document.getElementById('duesNameFilter'));
+makeUppercaseOnInput(document.getElementById('notAdmittedNameFilter'));
+
+// Data Info Popup event listener
+document.getElementById('dataInfoPopup').addEventListener('click', function(e) {
+    // Hide popup when clicking on the background (not the content)
+    if (e.target === this) {
+        hideDataInfoPopup();
+    }
+});
+
+// ============================================
+// NOT ADMITTED LIST FUNCTIONALITY
+// ============================================
+
+// Apply filters for not admitted students
+function applyNotAdmittedFilters() {
+    const courseFilter = document.getElementById('notAdmittedCourseFilter')?.value || '';
+    const yearFilter = document.getElementById('notAdmittedYearFilter')?.value || '';
+    const admTypeFilter = document.getElementById('notAdmittedAdmTypeFilter')?.value || '';
+    const nameFilter = document.getElementById('notAdmittedNameFilter')?.value.toLowerCase() || '';
+
+    filteredNotAdmittedData = notAdmittedData.filter(student => {
+        const courseMatch = !courseFilter || student['Course'] === courseFilter;
+        const yearMatch = !yearFilter || student['Year'] === yearFilter;
+        const admTypeMatch = !admTypeFilter || student['Adm Type'] === admTypeFilter;
+        const nameMatch = !nameFilter || 
+            student['Student Name'].toLowerCase().includes(nameFilter) ||
+            student['Reg No'].toLowerCase().includes(nameFilter);
+
+        return courseMatch && yearMatch && admTypeMatch && nameMatch;
+    });
+
+    displayNotAdmittedStudents();
+}
+
+// Display not admitted students in table
+function displayNotAdmittedStudents() {
+    console.log('=== DISPLAY NOT ADMITTED STUDENTS ===');
+    const tableBody = document.querySelector('#notAdmittedTable tbody');
+    console.log('Table body found:', !!tableBody);
+    console.log('Filtered data length:', filteredNotAdmittedData.length);
+    
+    if (!tableBody) {
+        console.error('notAdmittedTable tbody not found in DOM');
+        return;
+    }
+
+    if (filteredNotAdmittedData.length === 0) {
+        console.log('No filtered data - showing no data message');
+        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">No students found matching the current filters</td></tr>';
+        return;
+    }
+    
+    console.log('Populating table with', filteredNotAdmittedData.length, 'students');
+
+    tableBody.innerHTML = filteredNotAdmittedData.map((student, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${student['Student Name'] || ''}</td>
+            <td>${student['Father Name'] || ''}</td>
+            <td>${student['Year'] || ''}</td>
+            <td class="${(student['Course'] || '').toLowerCase()}">${student['Course'] || ''}</td>
+            <td>${student['Reg No'] || ''}</td>
+            <td class="admtype-${(student['Adm Type'] || '').toLowerCase()}">${student['Adm Type'] || ''}</td>
+            <td>${student['Adm Cat'] || student['Admn Cat'] || ''}</td>
+            <td>${student['Acdmc Year'] || ''}</td>
+            <td>${student['In/Out'] || 'Not Admitted'}</td>
+        </tr>
+    `).join('');
+}
+
+// Clear all not admitted filters
+function clearNotAdmittedFilters() {
+    document.getElementById('notAdmittedCourseFilter').value = '';
+    document.getElementById('notAdmittedYearFilter').value = '';
+    document.getElementById('notAdmittedAdmTypeFilter').value = '';
+    document.getElementById('notAdmittedNameFilter').value = '';
+    applyNotAdmittedFilters();
+}
+
+// Populate not admitted filter dropdowns
+function populateNotAdmittedFilters() {
+    if (notAdmittedData.length === 0) return;
+
+    const courses = [...new Set(notAdmittedData.map(s => s['Course']).filter(Boolean))].sort();
+    const years = [...new Set(notAdmittedData.map(s => s['Year']).filter(Boolean))].sort();
+    const admTypes = [...new Set(notAdmittedData.map(s => s['Adm Type']).filter(Boolean))].sort();
+
+    // Populate course filter
+    const courseFilter = document.getElementById('notAdmittedCourseFilter');
+    if (courseFilter) {
+        courseFilter.innerHTML = '<option value="">All Courses</option>' +
+            courses.map(course => `<option value="${course}">${course}</option>`).join('');
+    }
+
+    // Populate year filter
+    const yearFilter = document.getElementById('notAdmittedYearFilter');
+    if (yearFilter) {
+        yearFilter.innerHTML = '<option value="">All Years</option>' +
+            years.map(year => `<option value="${year}">${year}</option>`).join('');
+    }
+
+    // Populate adm type filter
+    const admTypeFilter = document.getElementById('notAdmittedAdmTypeFilter');
+    if (admTypeFilter) {
+        admTypeFilter.innerHTML = '<option value="">All Types</option>' +
+            admTypes.map(type => `<option value="${type}">${type}</option>`).join('');
+    }
+}
+
+// Export not admitted students to CSV
+function exportNotAdmittedToCSV() {
+    if (filteredNotAdmittedData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const headers = [
+        'Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 
+        'Reg No', 'Adm Type', 'Adm Cat', 'Academic Year', 'Status'
+    ];
+
+    const csvContent = [
+        headers.join(','),
+        ...filteredNotAdmittedData.map((student, index) => {
+            const values = [
+                index + 1,
+                student['Student Name'] || '',
+                student['Father Name'] || '',
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                student['Adm Type'] || '',
+                student['Adm Cat'] || student['Admn Cat'] || '',
+                student['Acdmc Year'] || '',
+                student['In/Out'] || 'Not Admitted'
+            ];
+            return values.map(value => `"${value.toString().replace(/"/g, '""')}"`).join(',');
+        })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    link.setAttribute('download', `not_admitted_export_${currentDate.replace(/-/g, '_')}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Save not admitted students list as PDF
+function saveNotAdmittedToPDF() {
+    if (filteredNotAdmittedData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text('SMP Not Admitted Students List', 14, 15);
+    
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 25);
+    doc.text(`Total Students: ${filteredNotAdmittedData.length}`, 14, 32);
+    
+    // Prepare data for the table
+    const headers = [['Sl No', 'Student Name', 'Father Name', 'Prev Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status']];
+    const data = filteredNotAdmittedData.map((student, index) => [
+        (index + 1).toString(),
+        student['Student Name'] || '',
+        student['Father Name'] || '',
+        student['Year'] || '',
+        student['Course'] || '',
+        student['Reg No'] || '',
+        student['Adm Type'] || '',
+        student['Adm Cat'] || student['Admn Cat'] || '',
+        student['In/Out'] || 'Not Admitted'
+    ]);
+    
+    // Add table
+    doc.autoTable({
+        head: headers,
+        body: data,
+        startY: 40,
+        styles: {
+            fontSize: 8,
+            cellPadding: 2
+        },
+        headStyles: {
+            fillColor: [67, 97, 238],
+            textColor: 255
+        },
+        columnStyles: {
+            0: { cellWidth: 15 }, // Sl No
+            1: { cellWidth: 35 }, // Student Name
+            2: { cellWidth: 35 }, // Father Name
+            3: { cellWidth: 20 }, // Prev Year
+            4: { cellWidth: 20 }, // Course
+            5: { cellWidth: 30 }, // Reg No
+            6: { cellWidth: 25 }, // Adm Type
+            7: { cellWidth: 25 }, // Adm Cat
+            8: { cellWidth: 25 }  // Status
+        }
+    });
+    
+    // Save the PDF
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    doc.save(`not_admitted_list_${currentDate.replace(/-/g, '_')}.pdf`);
+}
+
+// Load not admitted students data from Previous Students.csv
+async function loadNotAdmittedData() {
+    try {
+        
+        
+        // If no current students data, don't proceed
+        if (allStudentsData.length === 0) {
+            console.log('No current students data available yet');
+            const tableBody = document.querySelector('#notAdmittedTable tbody');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="10" class="no-data">Current students data not loaded yet. Please wait...</td></tr>';
+            }
+            return;
+        }
+        
+        const response = await fetch('Previous Students.csv');
+        if (!response.ok) {
+            console.log('Previous Students.csv not found, not admitted list will be empty');
+            // Show message in table
+            const tableBody = document.querySelector('#notAdmittedTable tbody');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="10" class="no-data">Previous Students.csv file not found. Unable to load not admitted students data.</td></tr>';
+            }
+            return;
+        }
+        console.log('Previous Students.csv loaded successfully');
+        
+        const csvText = await response.text();
+        
+        // Parse CSV manually like the main parseCSV function
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length === 0) {
+            console.error('Previous Students.csv is empty');
+            return;
+        }
+        
+        // Parse headers
+        const headers = parseCSVLine(lines[0]).map(h => h.trim());
+        
+        // Parse data rows
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = parseCSVLine(lines[i]);
+            if (values.length === 0) continue;
+            
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] || '';
+            });
+            data.push(row);
+        }
+        
+        const results = { data };
+        
+        // Create a comprehensive set of current students for comparison
+        // Use multiple identifiers: Reg No, Student Name, and extracted course+sequence
+        const currentStudentIdentifiers = new Set();
+        
+        allStudentsData.forEach(s => {
+            // Add registration numbers 
+            if (s['Reg No']) {
+                currentStudentIdentifiers.add(s['Reg No'].toString().trim());
+            }
+            
+            // Add student names (normalized)
+            if (s['Student Name'] && s['Student Name'] !== 'ABC') {
+                currentStudentIdentifiers.add(s['Student Name'].toLowerCase().trim());
+            }
+            
+            // Create a course-based identifier for cross-year comparison
+            // For 2025-26 students: course + reg number might match previous year patterns
+            if (s['Course'] && s['Reg No']) {
+                const courseCode = s['Course'].toUpperCase();
+                const regNum = s['Reg No'].toString().padStart(3, '0');
+                // Try different possible formats that might match previous year
+                currentStudentIdentifiers.add(`${courseCode}${regNum}`);
+                currentStudentIdentifiers.add(`308${courseCode}25${regNum}`); // 2025-26 format
+            }
+        });
+        
+        console.log('Current student identifiers sample:', Array.from(currentStudentIdentifiers).slice(0, 10));
+        
+        // Filter students from 2024-25 who are NOT in current 2025-26 data
+        notAdmittedData = results.data.filter(student => {
+            // Must be from 2024-25 academic year
+            if (student['Acdmc Year'] !== '2024-25') return false;
+            
+            // Must have a valid name
+            if (!student['Student Name'] || student['Student Name'].trim() === '') return false;
+            
+            // Skip students with "OUT" status (they have completed their studies)
+            if (student['Year'] === 'OUT') return false;
+            
+            const studentName = student['Student Name'].toLowerCase().trim();
+            const regNo = student['Reg No']?.toString().trim();
+            
+            // Check if this student appears in current data by any identifier
+            let isInCurrentData = false;
+            
+            // Check by name
+            if (currentStudentIdentifiers.has(studentName)) {
+                isInCurrentData = true;
+            }
+            
+            // Check by registration number
+            if (regNo && currentStudentIdentifiers.has(regNo)) {
+                isInCurrentData = true;
+            }
+            
+            // Check by extracted course sequence (for students who got promoted)
+            // Previous: 308CE24001 -> might become CE001 or similar in current year
+            if (regNo && regNo.length >= 10) {
+                const courseCode = regNo.substring(3, 5); // Extract "CE" from "308CE24001"
+                const sequence = regNo.substring(7); // Extract "001" from "308CE24001"
+                
+                if (currentStudentIdentifiers.has(`${courseCode}${sequence}`) ||
+                    currentStudentIdentifiers.has(`308${courseCode}25${sequence}`) ||
+                    currentStudentIdentifiers.has(sequence)) {
+                    isInCurrentData = true;
+                }
+            }
+            
+            // Return true if NOT in current data (i.e., not admitted)
+            return !isInCurrentData;
+        });
+        
+        console.log(`=== NOT ADMITTED ANALYSIS ===`);
+        console.log(`Current students: ${allStudentsData.length}`);
+        console.log(`Previous students (total): ${results.data.length}`);
+        console.log(`Previous students (2024-25): ${results.data.filter(s => s['Acdmc Year'] === '2024-25').length}`);
+        console.log(`Previous students with OUT status: ${results.data.filter(s => s['Acdmc Year'] === '2024-25' && s['Year'] === 'OUT').length}`);
+        console.log(`Previous students eligible for re-admission: ${results.data.filter(s => s['Acdmc Year'] === '2024-25' && s['Year'] !== 'OUT').length}`);
+        console.log(`Not admitted students: ${notAdmittedData.length}`);
+        console.log('Sample current student reg nos:', allStudentsData.slice(0, 5).map(s => s['Reg No']));
+        console.log('Sample previous student reg nos:', results.data.slice(0, 5).map(s => s['Reg No']));
+        if (notAdmittedData.length > 0) {
+            console.log('Sample not admitted students:');
+            notAdmittedData.slice(0, 3).forEach((student, index) => {
+                console.log(`  ${index + 1}. ${student['Student Name']} (${student['Reg No']}) - ${student['Course']}`);
+            });
+        }
+        
+        // Initialize the not admitted section
+        filteredNotAdmittedData = [...notAdmittedData];
+        console.log('Initializing not admitted section with', notAdmittedData.length, 'students');
+        
+        // Ensure DOM is ready before trying to populate
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOM loaded - populating not admitted filters and display');
+                populateNotAdmittedFilters();
+                displayNotAdmittedStudents();
+            });
+        } else {
+            console.log('DOM already ready - populating not admitted filters and display');
+            populateNotAdmittedFilters();
+            displayNotAdmittedStudents();
+        }
+        
+    } catch (error) {
+        console.error('Error loading Previous Students.csv:', error);
+    }
+}
+
+// Not admitted filters event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const notAdmittedNameFilter = document.getElementById('notAdmittedNameFilter');
+    const notAdmittedCourseFilter = document.getElementById('notAdmittedCourseFilter');
+    const notAdmittedYearFilter = document.getElementById('notAdmittedYearFilter');
+    const notAdmittedAdmTypeFilter = document.getElementById('notAdmittedAdmTypeFilter');
+    
+    if (notAdmittedNameFilter) notAdmittedNameFilter.addEventListener('input', applyNotAdmittedFilters);
+    if (notAdmittedCourseFilter) notAdmittedCourseFilter.addEventListener('change', applyNotAdmittedFilters);
+    if (notAdmittedYearFilter) notAdmittedYearFilter.addEventListener('change', applyNotAdmittedFilters);
+    if (notAdmittedAdmTypeFilter) notAdmittedAdmTypeFilter.addEventListener('change', applyNotAdmittedFilters);
+});
