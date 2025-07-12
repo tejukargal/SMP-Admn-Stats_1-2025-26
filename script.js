@@ -2971,52 +2971,14 @@ function generateAdmissionSummary() {
 }
 
 function generateSummaryReport(previousYearStudents) {
-    const currentStudentIdentifiers = new Set();
-    
-    // Create identifier set for current students (excluding 1st year and LTRL from 2nd year)
-    allStudentsData.forEach(s => {
-        if (s['Student Name'] && s['Student Name'] !== 'ABC') {
-            const year = (s['Year'] || '').trim();
-            const admType = (s['Adm Type'] || '').toUpperCase().trim();
-            
-            // Skip 1st year students and LTRL students from 2nd year in current data
-            if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
-                ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
-                return;
-            }
-            
-            const regNo = (s['Reg No'] || '').toString().trim();
-            const studentName = (s['Student Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
-            const fatherName = (s['Father Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
-            const course = (s['Course'] || '').toUpperCase().trim();
-            
-            if (regNo) {
-                currentStudentIdentifiers.add(`REG:${regNo}`);
-            }
-            if (studentName && fatherName && fatherName !== 'abc' && course) {
-                currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
-            }
-            if (studentName && fatherName && fatherName !== 'abc') {
-                currentStudentIdentifiers.add(`${studentName}###${fatherName}`);
-            }
-            if (studentName && course) {
-                currentStudentIdentifiers.add(`${studentName}###${course}`);
-            }
-            if (studentName) {
-                currentStudentIdentifiers.add(studentName);
-            }
-        }
-    });
-
-    // Group previous year students by Course and Year (excluding 1st year and LTRL from 2nd year)
+    // Use the already calculated notAdmittedData for accurate counts
+    // Group the data from the existing calculations
     const groupedPrevious = {};
     const groupedCurrent = {};
     const groupedNotAdmitted = {};
     const newAdmissions = {};
 
-    // Process previous year students
+    // Process previous year students to get total counts
     previousYearStudents.forEach(student => {
         const course = (student['Course'] || '').toUpperCase().trim();
         const year = (student['Year'] || '').trim();
@@ -3033,43 +2995,34 @@ function generateSummaryReport(previousYearStudents) {
             groupedPrevious[key] = [];
         }
         groupedPrevious[key].push(student);
-        
-        // Check if this student is admitted in current year
-        const regNo = (student['Reg No'] || '').toString().trim();
-        const studentName = (student['Student Name'] || '').toLowerCase().trim()
-            .replace(/\s+/g, ' ').replace(/[.]/g, '');
-        const fatherName = (student['Father Name'] || '').toLowerCase().trim()
-            .replace(/\s+/g, ' ').replace(/[.]/g, '');
-        
-        let isAdmitted = false;
-        
-        // Check using hierarchical matching
-        if (regNo && currentStudentIdentifiers.has(`REG:${regNo}`)) {
-            isAdmitted = true;
-        } else if (studentName && fatherName && course && 
-                   currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`)) {
-            isAdmitted = true;
-        } else if (studentName && fatherName && 
-                   currentStudentIdentifiers.has(`${studentName}###${fatherName}`)) {
-            isAdmitted = true;
-        } else if (studentName && course && 
-                   currentStudentIdentifiers.has(`${studentName}###${course}`)) {
-            isAdmitted = true;
-        } else if (studentName && currentStudentIdentifiers.has(studentName)) {
-            isAdmitted = true;
-        }
-        
-        if (isAdmitted) {
-            if (!groupedCurrent[key]) {
-                groupedCurrent[key] = 0;
+    });
+
+    // Use the actual notAdmittedData for accurate not admitted counts
+    if (notAdmittedData && notAdmittedData.length > 0) {
+        notAdmittedData.forEach(student => {
+            const course = (student['Course'] || '').toUpperCase().trim();
+            const year = (student['Year'] || '').trim();
+            const admType = (student['Adm Type'] || '').toUpperCase().trim();
+            
+            // Skip 1st year students and LTRL students from 2nd year
+            if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
+                ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
+                return;
             }
-            groupedCurrent[key]++;
-        } else {
+            
+            const key = `${year} ${course}`;
             if (!groupedNotAdmitted[key]) {
                 groupedNotAdmitted[key] = 0;
             }
             groupedNotAdmitted[key]++;
-        }
+        });
+    }
+
+    // Calculate current (readmitted) students by subtracting not admitted from total previous
+    Object.keys(groupedPrevious).forEach(key => {
+        const totalPrevious = groupedPrevious[key].length;
+        const notAdmitted = groupedNotAdmitted[key] || 0;
+        groupedCurrent[key] = totalPrevious - notAdmitted;
     });
 
     // Find new admissions (students in current year who were not in previous year)
