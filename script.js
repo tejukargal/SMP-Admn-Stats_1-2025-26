@@ -2776,7 +2776,6 @@ async function loadNotAdmittedData() {
         
         allStudentsData.forEach(s => {
             if (s['Student Name'] && s['Student Name'] !== 'ABC') {
-                // Create composite key: "studentname|fathername|course"
                 const studentName = (s['Student Name'] || '').toLowerCase().trim()
                     .replace(/\s+/g, ' ').replace(/[.]/g, '');
                 const fatherName = (s['Father Name'] || '').toLowerCase().trim()
@@ -2784,13 +2783,18 @@ async function loadNotAdmittedData() {
                 const course = (s['Course'] || '').toUpperCase().trim();
                 
                 // Add multiple combinations for robust matching
-                if (studentName && fatherName && course) {
+                // Skip father name if it's "ABC" (placeholder in current year data)
+                if (studentName && fatherName && fatherName !== 'abc' && course) {
                     currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
                 }
-                if (studentName && fatherName) {
+                if (studentName && fatherName && fatherName !== 'abc') {
                     currentStudentIdentifiers.add(`${studentName}###${fatherName}`);
                 }
-                // Fallback to just name (but less reliable)
+                // Add name + course combination (important for matching across years)
+                if (studentName && course) {
+                    currentStudentIdentifiers.add(`${studentName}###${course}`);
+                }
+                // Fallback to just name (least reliable but handles edge cases)
                 if (studentName) {
                     currentStudentIdentifiers.add(studentName);
                 }
@@ -2821,17 +2825,22 @@ async function loadNotAdmittedData() {
             // Check if this student appears in current data using composite matching
             let isInCurrentData = false;
             
-            // Try most specific match first: name + father + course
+            // Try most specific match first: name + father + course (only if father name is not ABC)
             if (studentName && fatherName && course) {
                 isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`);
             }
             
-            // If not found, try name + father
+            // If not found, try name + father (only if father name is not ABC)
             if (!isInCurrentData && studentName && fatherName) {
                 isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}`);
             }
             
-            // Last resort: just name (less reliable but handles missing father names)
+            // Try name + course combination (important since father names may be placeholders)
+            if (!isInCurrentData && studentName && course) {
+                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${course}`);
+            }
+            
+            // Last resort: just name (least reliable but handles edge cases)
             if (!isInCurrentData && studentName) {
                 isInCurrentData = currentStudentIdentifiers.has(studentName);
             }
