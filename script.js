@@ -3028,7 +3028,7 @@ function generateSummaryReport(previousYearStudents) {
             return;
         }
         
-        const key = `${year} Yr ${course}`;
+        const key = `${year} ${course}`;
         if (!groupedPrevious[key]) {
             groupedPrevious[key] = [];
         }
@@ -3146,7 +3146,7 @@ function generateSummaryReport(previousYearStudents) {
             }
             
             if (!wasInPrevious) {
-                const key = `${year} Yr ${course}`;
+                const key = `${year} ${course}`;
                 if (!newAdmissions[key]) {
                     newAdmissions[key] = 0;
                 }
