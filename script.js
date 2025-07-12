@@ -2770,33 +2770,22 @@ async function loadNotAdmittedData() {
         
         const results = { data };
         
-        // Create a comprehensive set of current students for comparison
-        // Use multiple identifiers: Reg No, Student Name, and extracted course+sequence
+        // Create a set of current students for comparison - focus on names as primary identifier
+        // since Reg No formats are completely different between years
         const currentStudentIdentifiers = new Set();
         
         allStudentsData.forEach(s => {
-            // Add registration numbers 
-            if (s['Reg No']) {
-                currentStudentIdentifiers.add(s['Reg No'].toString().trim());
-            }
-            
-            // Add student names (normalized)
+            // Add student names (normalized) - primary matching method
             if (s['Student Name'] && s['Student Name'] !== 'ABC') {
-                currentStudentIdentifiers.add(s['Student Name'].toLowerCase().trim());
-            }
-            
-            // Create a course-based identifier for cross-year comparison
-            // For 2025-26 students: course + reg number might match previous year patterns
-            if (s['Course'] && s['Reg No']) {
-                const courseCode = s['Course'].toUpperCase();
-                const regNum = s['Reg No'].toString().padStart(3, '0');
-                // Try different possible formats that might match previous year
-                currentStudentIdentifiers.add(`${courseCode}${regNum}`);
-                currentStudentIdentifiers.add(`308${courseCode}25${regNum}`); // 2025-26 format
+                const normalizedName = s['Student Name'].toLowerCase().trim()
+                    .replace(/\s+/g, ' ') // normalize spaces
+                    .replace(/[.]/g, ''); // remove periods
+                currentStudentIdentifiers.add(normalizedName);
             }
         });
         
-        console.log('Current student identifiers sample:', Array.from(currentStudentIdentifiers).slice(0, 10));
+        console.log('Current student count for comparison:', currentStudentIdentifiers.size);
+        console.log('Current student names sample:', Array.from(currentStudentIdentifiers).slice(0, 5));
         
         // Filter students from 2024-25 who are NOT in current 2025-26 data
         notAdmittedData = results.data.filter(student => {
@@ -2809,34 +2798,13 @@ async function loadNotAdmittedData() {
             // Skip students with "OUT" status (they have completed their studies)
             if (student['Year'] === 'OUT') return false;
             
-            const studentName = student['Student Name'].toLowerCase().trim();
-            const regNo = student['Reg No']?.toString().trim();
+            // Normalize the previous student's name for comparison
+            const studentName = student['Student Name'].toLowerCase().trim()
+                .replace(/\s+/g, ' ') // normalize spaces
+                .replace(/[.]/g, ''); // remove periods
             
-            // Check if this student appears in current data by any identifier
-            let isInCurrentData = false;
-            
-            // Check by name
-            if (currentStudentIdentifiers.has(studentName)) {
-                isInCurrentData = true;
-            }
-            
-            // Check by registration number
-            if (regNo && currentStudentIdentifiers.has(regNo)) {
-                isInCurrentData = true;
-            }
-            
-            // Check by extracted course sequence (for students who got promoted)
-            // Previous: 308CE24001 -> might become CE001 or similar in current year
-            if (regNo && regNo.length >= 10) {
-                const courseCode = regNo.substring(3, 5); // Extract "CE" from "308CE24001"
-                const sequence = regNo.substring(7); // Extract "001" from "308CE24001"
-                
-                if (currentStudentIdentifiers.has(`${courseCode}${sequence}`) ||
-                    currentStudentIdentifiers.has(`308${courseCode}25${sequence}`) ||
-                    currentStudentIdentifiers.has(sequence)) {
-                    isInCurrentData = true;
-                }
-            }
+            // Check if this student appears in current data by name
+            const isInCurrentData = currentStudentIdentifiers.has(studentName);
             
             // Return true if NOT in current data (i.e., not admitted)
             return !isInCurrentData;
