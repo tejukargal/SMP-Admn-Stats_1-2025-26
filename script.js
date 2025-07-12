@@ -2770,22 +2770,35 @@ async function loadNotAdmittedData() {
         
         const results = { data };
         
-        // Create a set of current students for comparison - focus on names as primary identifier
-        // since Reg No formats are completely different between years
+        // Create a set of current students for comparison using composite keys
+        // Use combination of Student Name + Father Name + Course for accurate matching
         const currentStudentIdentifiers = new Set();
         
         allStudentsData.forEach(s => {
-            // Add student names (normalized) - primary matching method
             if (s['Student Name'] && s['Student Name'] !== 'ABC') {
-                const normalizedName = s['Student Name'].toLowerCase().trim()
-                    .replace(/\s+/g, ' ') // normalize spaces
-                    .replace(/[.]/g, ''); // remove periods
-                currentStudentIdentifiers.add(normalizedName);
+                // Create composite key: "studentname|fathername|course"
+                const studentName = (s['Student Name'] || '').toLowerCase().trim()
+                    .replace(/\s+/g, ' ').replace(/[.]/g, '');
+                const fatherName = (s['Father Name'] || '').toLowerCase().trim()
+                    .replace(/\s+/g, ' ').replace(/[.]/g, '');
+                const course = (s['Course'] || '').toUpperCase().trim();
+                
+                // Add multiple combinations for robust matching
+                if (studentName && fatherName && course) {
+                    currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
+                }
+                if (studentName && fatherName) {
+                    currentStudentIdentifiers.add(`${studentName}###${fatherName}`);
+                }
+                // Fallback to just name (but less reliable)
+                if (studentName) {
+                    currentStudentIdentifiers.add(studentName);
+                }
             }
         });
         
-        console.log('Current student count for comparison:', currentStudentIdentifiers.size);
-        console.log('Current student names sample:', Array.from(currentStudentIdentifiers).slice(0, 5));
+        console.log('Current student identifiers count:', currentStudentIdentifiers.size);
+        console.log('Sample identifiers:', Array.from(currentStudentIdentifiers).slice(0, 3));
         
         // Filter students from 2024-25 who are NOT in current 2025-26 data
         notAdmittedData = results.data.filter(student => {
@@ -2798,13 +2811,30 @@ async function loadNotAdmittedData() {
             // Skip students with "OUT" status (they have completed their studies)
             if (student['Year'] === 'OUT') return false;
             
-            // Normalize the previous student's name for comparison
-            const studentName = student['Student Name'].toLowerCase().trim()
-                .replace(/\s+/g, ' ') // normalize spaces
-                .replace(/[.]/g, ''); // remove periods
+            // Create composite keys for the previous student
+            const studentName = (student['Student Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            const fatherName = (student['Father Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            const course = (student['Course'] || '').toUpperCase().trim();
             
-            // Check if this student appears in current data by name
-            const isInCurrentData = currentStudentIdentifiers.has(studentName);
+            // Check if this student appears in current data using composite matching
+            let isInCurrentData = false;
+            
+            // Try most specific match first: name + father + course
+            if (studentName && fatherName && course) {
+                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`);
+            }
+            
+            // If not found, try name + father
+            if (!isInCurrentData && studentName && fatherName) {
+                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}`);
+            }
+            
+            // Last resort: just name (less reliable but handles missing father names)
+            if (!isInCurrentData && studentName) {
+                isInCurrentData = currentStudentIdentifiers.has(studentName);
+            }
             
             // Return true if NOT in current data (i.e., not admitted)
             return !isInCurrentData;
