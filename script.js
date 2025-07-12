@@ -2911,3 +2911,475 @@ document.addEventListener('DOMContentLoaded', function() {
     if (notAdmittedYearFilter) notAdmittedYearFilter.addEventListener('change', applyNotAdmittedFilters);
     if (notAdmittedAdmTypeFilter) notAdmittedAdmTypeFilter.addEventListener('change', applyNotAdmittedFilters);
 });
+
+// Generate admission comparison summary
+function generateAdmissionSummary() {
+    if (!allStudentsData || allStudentsData.length === 0) {
+        alert('Current students data not loaded yet. Please wait...');
+        return;
+    }
+
+    // Get previous year students data (2024-25)
+    let previousYearStudents = [];
+    try {
+        // We need to parse the Previous Students.csv again to get full data
+        fetch('Previous Students.csv')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Previous Students.csv not found');
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                // Parse CSV manually
+                const lines = csvText.split('\n').filter(line => line.trim());
+                if (lines.length === 0) {
+                    throw new Error('Previous Students.csv is empty');
+                }
+                
+                const headers = parseCSVLine(lines[0]).map(h => h.trim());
+                const data = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = parseCSVLine(lines[i]);
+                    if (values.length === 0) continue;
+                    
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    data.push(row);
+                }
+                
+                // Filter for 2024-25 students who are not OUT
+                previousYearStudents = data.filter(student => 
+                    student['Acdmc Year'] === '2024-25' && 
+                    student['Year'] !== 'OUT' &&
+                    student['Student Name'] && 
+                    student['Student Name'].trim() !== ''
+                );
+                
+                generateSummaryReport(previousYearStudents);
+            })
+            .catch(error => {
+                console.error('Error loading previous students data:', error);
+                alert('Unable to load previous students data. Please ensure Previous Students.csv file is available.');
+            });
+    } catch (error) {
+        console.error('Error generating summary:', error);
+        alert('Error generating summary. Please check console for details.');
+    }
+}
+
+function generateSummaryReport(previousYearStudents) {
+    const currentStudentIdentifiers = new Set();
+    
+    // Create identifier set for current students (excluding 1st year and LTRL from 2nd year)
+    allStudentsData.forEach(s => {
+        if (s['Student Name'] && s['Student Name'] !== 'ABC') {
+            const year = (s['Year'] || '').trim();
+            const admType = (s['Adm Type'] || '').toUpperCase().trim();
+            
+            // Skip 1st year students and LTRL students from 2nd year in current data
+            if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
+                ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
+                return;
+            }
+            
+            const regNo = (s['Reg No'] || '').toString().trim();
+            const studentName = (s['Student Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            const fatherName = (s['Father Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            const course = (s['Course'] || '').toUpperCase().trim();
+            
+            if (regNo) {
+                currentStudentIdentifiers.add(`REG:${regNo}`);
+            }
+            if (studentName && fatherName && fatherName !== 'abc' && course) {
+                currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
+            }
+            if (studentName && fatherName && fatherName !== 'abc') {
+                currentStudentIdentifiers.add(`${studentName}###${fatherName}`);
+            }
+            if (studentName && course) {
+                currentStudentIdentifiers.add(`${studentName}###${course}`);
+            }
+            if (studentName) {
+                currentStudentIdentifiers.add(studentName);
+            }
+        }
+    });
+
+    // Group previous year students by Course and Year (excluding 1st year and LTRL from 2nd year)
+    const groupedPrevious = {};
+    const groupedCurrent = {};
+    const groupedNotAdmitted = {};
+    const newAdmissions = {};
+
+    // Process previous year students
+    previousYearStudents.forEach(student => {
+        const course = (student['Course'] || '').toUpperCase().trim();
+        const year = (student['Year'] || '').trim();
+        const admType = (student['Adm Type'] || '').toUpperCase().trim();
+        
+        // Skip 1st year students and LTRL students from 2nd year
+        if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
+            ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
+            return;
+        }
+        
+        const key = `${year} Yr ${course}`;
+        if (!groupedPrevious[key]) {
+            groupedPrevious[key] = [];
+        }
+        groupedPrevious[key].push(student);
+        
+        // Check if this student is admitted in current year
+        const regNo = (student['Reg No'] || '').toString().trim();
+        const studentName = (student['Student Name'] || '').toLowerCase().trim()
+            .replace(/\s+/g, ' ').replace(/[.]/g, '');
+        const fatherName = (student['Father Name'] || '').toLowerCase().trim()
+            .replace(/\s+/g, ' ').replace(/[.]/g, '');
+        
+        let isAdmitted = false;
+        
+        // Check using hierarchical matching
+        if (regNo && currentStudentIdentifiers.has(`REG:${regNo}`)) {
+            isAdmitted = true;
+        } else if (studentName && fatherName && course && 
+                   currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`)) {
+            isAdmitted = true;
+        } else if (studentName && fatherName && 
+                   currentStudentIdentifiers.has(`${studentName}###${fatherName}`)) {
+            isAdmitted = true;
+        } else if (studentName && course && 
+                   currentStudentIdentifiers.has(`${studentName}###${course}`)) {
+            isAdmitted = true;
+        } else if (studentName && currentStudentIdentifiers.has(studentName)) {
+            isAdmitted = true;
+        }
+        
+        if (isAdmitted) {
+            if (!groupedCurrent[key]) {
+                groupedCurrent[key] = 0;
+            }
+            groupedCurrent[key]++;
+        } else {
+            if (!groupedNotAdmitted[key]) {
+                groupedNotAdmitted[key] = 0;
+            }
+            groupedNotAdmitted[key]++;
+        }
+    });
+
+    // Find new admissions (students in current year who were not in previous year)
+    const previousStudentIdentifiers = new Set();
+    previousYearStudents.forEach(s => {
+        const year = (s['Year'] || '').trim();
+        const admType = (s['Adm Type'] || '').toUpperCase().trim();
+        
+        // Only include eligible students from previous year (excluding 1st year and LTRL from 2nd year)
+        if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
+            ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
+            return;
+        }
+        
+        const regNo = (s['Reg No'] || '').toString().trim();
+        const studentName = (s['Student Name'] || '').toLowerCase().trim()
+            .replace(/\s+/g, ' ').replace(/[.]/g, '');
+        const fatherName = (s['Father Name'] || '').toLowerCase().trim()
+            .replace(/\s+/g, ' ').replace(/[.]/g, '');
+        const course = (s['Course'] || '').toUpperCase().trim();
+        
+        if (regNo) {
+            previousStudentIdentifiers.add(`REG:${regNo}`);
+        }
+        if (studentName && fatherName && course) {
+            previousStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
+        }
+        if (studentName && fatherName) {
+            previousStudentIdentifiers.add(`${studentName}###${fatherName}`);
+        }
+        if (studentName && course) {
+            previousStudentIdentifiers.add(`${studentName}###${course}`);
+        }
+        if (studentName) {
+            previousStudentIdentifiers.add(studentName);
+        }
+    });
+
+    // Check current year students for new admissions
+    allStudentsData.forEach(student => {
+        const course = (student['Course'] || '').toUpperCase().trim();
+        const year = (student['Year'] || '').trim();
+        const admType = (student['Adm Type'] || '').toUpperCase().trim();
+        
+        // Skip 1st year students and LTRL students from 2nd year
+        if (year === '1' || year === 'I' || year === '1st' || year === '1st Yr' || 
+            ((year === '2' || year === 'II' || year === '2nd' || year === '2nd Yr') && admType === 'LTRL')) {
+            return;
+        }
+        
+        if (student['Student Name'] && student['Student Name'] !== 'ABC') {
+            const regNo = (student['Reg No'] || '').toString().trim();
+            const studentName = (student['Student Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            const fatherName = (student['Father Name'] || '').toLowerCase().trim()
+                .replace(/\s+/g, ' ').replace(/[.]/g, '');
+            
+            let wasInPrevious = false;
+            
+            // Check if student was in previous year
+            if (regNo && previousStudentIdentifiers.has(`REG:${regNo}`)) {
+                wasInPrevious = true;
+            } else if (studentName && fatherName && course && 
+                       previousStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`)) {
+                wasInPrevious = true;
+            } else if (studentName && fatherName && 
+                       previousStudentIdentifiers.has(`${studentName}###${fatherName}`)) {
+                wasInPrevious = true;
+            } else if (studentName && course && 
+                       previousStudentIdentifiers.has(`${studentName}###${course}`)) {
+                wasInPrevious = true;
+            } else if (studentName && previousStudentIdentifiers.has(studentName)) {
+                wasInPrevious = true;
+            }
+            
+            if (!wasInPrevious) {
+                const key = `${year} Yr ${course}`;
+                if (!newAdmissions[key]) {
+                    newAdmissions[key] = 0;
+                }
+                newAdmissions[key]++;
+            }
+        }
+    });
+
+    // Generate summary text
+    let summaryPoints = [];
+    let pointNumber = 1;
+
+    // Get all unique keys and sort them
+    const allKeys = new Set([
+        ...Object.keys(groupedPrevious),
+        ...Object.keys(groupedCurrent),
+        ...Object.keys(groupedNotAdmitted),
+        ...Object.keys(newAdmissions)
+    ]);
+    
+    const sortedKeys = Array.from(allKeys).sort((a, b) => {
+        // Extract year and course for sorting
+        const yearA = a.match(/(\d+)/)?.[0] || '0';
+        const yearB = b.match(/(\d+)/)?.[0] || '0';
+        const courseA = a.split(' ').pop();
+        const courseB = b.split(' ').pop();
+        
+        if (yearA !== yearB) {
+            return parseInt(yearA) - parseInt(yearB);
+        }
+        return courseA.localeCompare(courseB);
+    });
+
+    sortedKeys.forEach(key => {
+        const previousCount = groupedPrevious[key] ? groupedPrevious[key].length : 0;
+        const currentCount = groupedCurrent[key] || 0;
+        const notAdmittedCount = groupedNotAdmitted[key] || 0;
+        const newCount = newAdmissions[key] || 0;
+        
+        if (previousCount > 0) {
+            let point = `${pointNumber}. Of the total ${previousCount} students admitted to ${key} from Previous Year, ${currentCount} students have admitted to current year for ${key}`;
+            
+            if (notAdmittedCount > 0) {
+                point += ` and ${notAdmittedCount} students are yet to be admitted.`;
+            } else {
+                point += '.';
+            }
+            
+            if (newCount > 0) {
+                point += ` From the current year's admission report, I observe that ${newCount} ${newCount === 1 ? 'student has' : 'students have'} got admission who ${newCount === 1 ? 'is' : 'are'} not in the previous year's admission list.`;
+            }
+            
+            summaryPoints.push(point);
+            pointNumber++;
+        } else if (newCount > 0) {
+            // Handle case where there are new admissions but no previous year students for this category
+            summaryPoints.push(`${pointNumber}. For ${key}, ${newCount} ${newCount === 1 ? 'student has' : 'students have'} got admission who ${newCount === 1 ? 'is' : 'are'} not in the previous year's admission list.`);
+            pointNumber++;
+        }
+    });
+
+    if (summaryPoints.length === 0) {
+        summaryPoints.push('No significant changes observed in admissions between previous year and current year for the eligible categories (excluding 1st Year and LTRL students from 2nd Year).');
+    }
+
+    showSummaryPopup(summaryPoints);
+}
+
+function showSummaryPopup(summaryPoints) {
+    // Check if mobile device
+    const isMobile = window.innerWidth <= 768;
+    
+    // Create popup overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'summaryPopupOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: ${isMobile ? '5px' : '10px'};
+        box-sizing: border-box;
+    `;
+
+    // Create popup content
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+        background-color: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        max-width: ${isMobile ? '95vw' : 'min(90vw, 600px)'};
+        max-height: ${isMobile ? '90vh' : 'min(85vh, 700px)'};
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+    `;
+
+    // Create header
+    const header = document.createElement('div');
+    header.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: ${isMobile ? '12px 15px' : '15px 20px'};
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        flex-shrink: 0;
+    `;
+
+    const title = document.createElement('h2');
+    title.textContent = '📊 Admission Comparison Summary';
+    title.style.cssText = `
+        margin: 0;
+        color: var(--primary-color);
+        font-size: ${isMobile ? '1.1em' : '1.2em'};
+        font-weight: 600;
+        flex: 1;
+    `;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = `
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--text-primary);
+        padding: 5px;
+        width: ${isMobile ? '32px' : '28px'};
+        height: ${isMobile ? '32px' : '28px'};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+        flex-shrink: 0;
+        margin-left: 10px;
+    `;
+    closeBtn.onmouseover = () => closeBtn.style.backgroundColor = 'var(--hover-bg)';
+    closeBtn.onmouseout = () => closeBtn.style.backgroundColor = 'transparent';
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    // Create content
+    const content = document.createElement('div');
+    content.style.cssText = `
+        padding: ${isMobile ? '12px 15px' : '15px 20px'};
+        overflow-y: auto;
+        flex: 1;
+    `;
+    
+    const description = document.createElement('p');
+    description.textContent = 'Comparison between Previous Year (2024-25) and Current Year (2025-26) admissions (excluding 1st Year and LTRL students from 2nd Year):';
+    description.style.cssText = `
+        margin-bottom: 15px;
+        color: var(--text-secondary);
+        font-style: italic;
+        font-size: ${isMobile ? '0.8em' : '0.9em'};
+        line-height: 1.4;
+    `;
+
+    const summaryList = document.createElement('ol');
+    summaryList.style.cssText = `
+        line-height: 1.4;
+        padding-left: 18px;
+        margin: 0;
+        font-size: ${isMobile ? '0.8em' : '0.85em'};
+    `;
+
+    summaryPoints.forEach(point => {
+        const listItem = document.createElement('li');
+        listItem.textContent = point.replace(/^\d+\.\s*/, ''); // Remove numbering since <ol> handles it
+        listItem.style.cssText = `
+            margin-bottom: ${isMobile ? '8px' : '10px'};
+            text-align: justify;
+            color: var(--text-primary);
+        `;
+        summaryList.appendChild(listItem);
+    });
+
+    content.appendChild(description);
+    content.appendChild(summaryList);
+
+    // Create footer with timestamp
+    const footer = document.createElement('div');
+    footer.style.cssText = `
+        padding: ${isMobile ? '8px 15px' : '10px 20px'};
+        border-top: 1px solid var(--border-color);
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.75em;
+        background-color: var(--bg-card);
+        flex-shrink: 0;
+    `;
+    footer.textContent = `Summary generated on: ${new Date().toLocaleString()}`;
+
+    popup.appendChild(header);
+    popup.appendChild(content);
+    popup.appendChild(footer);
+    overlay.appendChild(popup);
+
+    // Close functionality
+    const closePopup = () => {
+        document.body.removeChild(overlay);
+    };
+
+    closeBtn.onclick = closePopup;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            closePopup();
+        }
+    };
+
+    // Add escape key handler
+    const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+            closePopup();
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    document.body.appendChild(overlay);
+}

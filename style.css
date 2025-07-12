@@ -1339,6 +1339,16 @@ select:focus, input:focus {
     box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
 }
 
+.btn-summary {
+    background: var(--primary-color);
+    margin-left: 10px;
+}
+
+.btn-summary:hover {
+    background: #2d5a8b;
+    box-shadow: 0 4px 12px rgba(52, 107, 171, 0.4);
+}
+
 .btn-theme-toggle {
     background: #6c757d;
     margin: 20px auto;
