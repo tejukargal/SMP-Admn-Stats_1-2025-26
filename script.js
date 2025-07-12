@@ -2770,19 +2770,25 @@ async function loadNotAdmittedData() {
         
         const results = { data };
         
-        // Create a set of current students for comparison using composite keys
-        // Use combination of Student Name + Father Name + Course for accurate matching
+        // Create a set of current students for comparison using Reg No as primary identifier
+        // Reg No is unique and most reliable for matching students across years
         const currentStudentIdentifiers = new Set();
         
         allStudentsData.forEach(s => {
             if (s['Student Name'] && s['Student Name'] !== 'ABC') {
+                const regNo = (s['Reg No'] || '').toString().trim();
                 const studentName = (s['Student Name'] || '').toLowerCase().trim()
                     .replace(/\s+/g, ' ').replace(/[.]/g, '');
                 const fatherName = (s['Father Name'] || '').toLowerCase().trim()
                     .replace(/\s+/g, ' ').replace(/[.]/g, '');
                 const course = (s['Course'] || '').toUpperCase().trim();
                 
-                // Add multiple combinations for robust matching
+                // Add Reg No as primary identifier (most reliable)
+                if (regNo) {
+                    currentStudentIdentifiers.add(`REG:${regNo}`);
+                }
+                
+                // Add backup identifiers for robustness
                 // Skip father name if it's "ABC" (placeholder in current year data)
                 if (studentName && fatherName && fatherName !== 'abc' && course) {
                     currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
@@ -2815,32 +2821,38 @@ async function loadNotAdmittedData() {
             // Skip students with "OUT" status (they have completed their studies)
             if (student['Year'] === 'OUT') return false;
             
-            // Create composite keys for the previous student
+            // Create identifiers for the previous student
+            const regNo = (student['Reg No'] || '').toString().trim();
             const studentName = (student['Student Name'] || '').toLowerCase().trim()
                 .replace(/\s+/g, ' ').replace(/[.]/g, '');
             const fatherName = (student['Father Name'] || '').toLowerCase().trim()
                 .replace(/\s+/g, ' ').replace(/[.]/g, '');
             const course = (student['Course'] || '').toUpperCase().trim();
             
-            // Check if this student appears in current data using composite matching
+            // Check if this student appears in current data using hierarchical matching
             let isInCurrentData = false;
             
-            // Try most specific match first: name + father + course (only if father name is not ABC)
-            if (studentName && fatherName && course) {
+            // PRIORITY 1: Try Reg No match first (most reliable and unique)
+            if (!isInCurrentData && regNo) {
+                isInCurrentData = currentStudentIdentifiers.has(`REG:${regNo}`);
+            }
+            
+            // PRIORITY 2: Try most specific name match: name + father + course
+            if (!isInCurrentData && studentName && fatherName && course) {
                 isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`);
             }
             
-            // If not found, try name + father (only if father name is not ABC)
+            // PRIORITY 3: Try name + father
             if (!isInCurrentData && studentName && fatherName) {
                 isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}`);
             }
             
-            // Try name + course combination (important since father names may be placeholders)
+            // PRIORITY 4: Try name + course combination
             if (!isInCurrentData && studentName && course) {
                 isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${course}`);
             }
             
-            // Last resort: just name (least reliable but handles edge cases)
+            // PRIORITY 5: Last resort - just name (least reliable)
             if (!isInCurrentData && studentName) {
                 isInCurrentData = currentStudentIdentifiers.has(studentName);
             }
