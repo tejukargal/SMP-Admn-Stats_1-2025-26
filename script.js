@@ -2770,45 +2770,23 @@ async function loadNotAdmittedData() {
         
         const results = { data };
         
-        // Create a set of current students for comparison using Reg No as primary identifier
+        // Create a set of current students for comparison using ONLY Reg No as unique identifier
         // Reg No is unique and most reliable for matching students across years
-        const currentStudentIdentifiers = new Set();
+        const currentStudentRegNumbers = new Set();
         
         allStudentsData.forEach(s => {
             if (s['Student Name'] && s['Student Name'] !== 'ABC') {
                 const regNo = (s['Reg No'] || '').toString().trim();
-                const studentName = (s['Student Name'] || '').toLowerCase().trim()
-                    .replace(/\s+/g, ' ').replace(/[.]/g, '');
-                const fatherName = (s['Father Name'] || '').toLowerCase().trim()
-                    .replace(/\s+/g, ' ').replace(/[.]/g, '');
-                const course = (s['Course'] || '').toUpperCase().trim();
                 
-                // Add Reg No as primary identifier (most reliable)
+                // Add only Reg No as the unique identifier
                 if (regNo) {
-                    currentStudentIdentifiers.add(`REG:${regNo}`);
-                }
-                
-                // Add backup identifiers for robustness
-                // Skip father name if it's "ABC" (placeholder in current year data)
-                if (studentName && fatherName && fatherName !== 'abc' && course) {
-                    currentStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
-                }
-                if (studentName && fatherName && fatherName !== 'abc') {
-                    currentStudentIdentifiers.add(`${studentName}###${fatherName}`);
-                }
-                // Add name + course combination (important for matching across years)
-                if (studentName && course) {
-                    currentStudentIdentifiers.add(`${studentName}###${course}`);
-                }
-                // Fallback to just name (least reliable but handles edge cases)
-                if (studentName) {
-                    currentStudentIdentifiers.add(studentName);
+                    currentStudentRegNumbers.add(regNo);
                 }
             }
         });
         
-        console.log('Current student identifiers count:', currentStudentIdentifiers.size);
-        console.log('Sample identifiers:', Array.from(currentStudentIdentifiers).slice(0, 3));
+        console.log('Current student reg numbers count:', currentStudentRegNumbers.size);
+        console.log('Sample reg numbers:', Array.from(currentStudentRegNumbers).slice(0, 3));
         
         // Filter students from 2024-25 who are NOT in current 2025-26 data
         notAdmittedData = results.data.filter(student => {
@@ -2821,44 +2799,20 @@ async function loadNotAdmittedData() {
             // Skip students with "OUT" status (they have completed their studies)
             if (student['Year'] === 'OUT') return false;
             
-            // Create identifiers for the previous student
+            // Check if this student appears in current data using ONLY Reg No
             const regNo = (student['Reg No'] || '').toString().trim();
-            const studentName = (student['Student Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
-            const fatherName = (student['Father Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
-            const course = (student['Course'] || '').toUpperCase().trim();
-            
-            // Check if this student appears in current data using hierarchical matching
             let isInCurrentData = false;
             
-            // PRIORITY 1: Try Reg No match first (most reliable and unique)
-            if (!isInCurrentData && regNo) {
-                isInCurrentData = currentStudentIdentifiers.has(`REG:${regNo}`);
+            // Use ONLY Registration Number for comparison (most reliable and unique)
+            // If student doesn't have a Reg No, we cannot reliably match them, so skip them
+            if (regNo) {
+                isInCurrentData = currentStudentRegNumbers.has(regNo);
+                // Return true if NOT in current data (i.e., not admitted)
+                return !isInCurrentData;
+            } else {
+                // Skip students without Registration Number as we cannot reliably match them
+                return false;
             }
-            
-            // PRIORITY 2: Try most specific name match: name + father + course
-            if (!isInCurrentData && studentName && fatherName && course) {
-                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`);
-            }
-            
-            // PRIORITY 3: Try name + father
-            if (!isInCurrentData && studentName && fatherName) {
-                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${fatherName}`);
-            }
-            
-            // PRIORITY 4: Try name + course combination
-            if (!isInCurrentData && studentName && course) {
-                isInCurrentData = currentStudentIdentifiers.has(`${studentName}###${course}`);
-            }
-            
-            // PRIORITY 5: Last resort - just name (least reliable)
-            if (!isInCurrentData && studentName) {
-                isInCurrentData = currentStudentIdentifiers.has(studentName);
-            }
-            
-            // Return true if NOT in current data (i.e., not admitted)
-            return !isInCurrentData;
         });
         
         console.log(`=== NOT ADMITTED ANALYSIS ===`);
@@ -2867,6 +2821,7 @@ async function loadNotAdmittedData() {
         console.log(`Previous students (2024-25): ${results.data.filter(s => s['Acdmc Year'] === '2024-25').length}`);
         console.log(`Previous students with OUT status: ${results.data.filter(s => s['Acdmc Year'] === '2024-25' && s['Year'] === 'OUT').length}`);
         console.log(`Previous students eligible for re-admission: ${results.data.filter(s => s['Acdmc Year'] === '2024-25' && s['Year'] !== 'OUT').length}`);
+        console.log(`Previous students with valid Reg No: ${results.data.filter(s => s['Acdmc Year'] === '2024-25' && s['Year'] !== 'OUT' && s['Reg No'] && s['Reg No'].toString().trim()).length}`);
         console.log(`Not admitted students: ${notAdmittedData.length}`);
         console.log('Sample current student reg nos:', allStudentsData.slice(0, 5).map(s => s['Reg No']));
         console.log('Sample previous student reg nos:', results.data.slice(0, 5).map(s => s['Reg No']));
@@ -3026,7 +2981,7 @@ function generateSummaryReport(previousYearStudents) {
     });
 
     // Find new admissions (students in current year who were not in previous year)
-    const previousStudentIdentifiers = new Set();
+    const previousStudentRegNumbers = new Set();
     previousYearStudents.forEach(s => {
         const year = (s['Year'] || '').trim();
         const admType = (s['Adm Type'] || '').toUpperCase().trim();
@@ -3038,26 +2993,10 @@ function generateSummaryReport(previousYearStudents) {
         }
         
         const regNo = (s['Reg No'] || '').toString().trim();
-        const studentName = (s['Student Name'] || '').toLowerCase().trim()
-            .replace(/\s+/g, ' ').replace(/[.]/g, '');
-        const fatherName = (s['Father Name'] || '').toLowerCase().trim()
-            .replace(/\s+/g, ' ').replace(/[.]/g, '');
-        const course = (s['Course'] || '').toUpperCase().trim();
         
+        // Add only Reg No as the unique identifier
         if (regNo) {
-            previousStudentIdentifiers.add(`REG:${regNo}`);
-        }
-        if (studentName && fatherName && course) {
-            previousStudentIdentifiers.add(`${studentName}###${fatherName}###${course}`);
-        }
-        if (studentName && fatherName) {
-            previousStudentIdentifiers.add(`${studentName}###${fatherName}`);
-        }
-        if (studentName && course) {
-            previousStudentIdentifiers.add(`${studentName}###${course}`);
-        }
-        if (studentName) {
-            previousStudentIdentifiers.add(studentName);
+            previousStudentRegNumbers.add(regNo);
         }
     });
 
@@ -3075,35 +3014,21 @@ function generateSummaryReport(previousYearStudents) {
         
         if (student['Student Name'] && student['Student Name'] !== 'ABC') {
             const regNo = (student['Reg No'] || '').toString().trim();
-            const studentName = (student['Student Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
-            const fatherName = (student['Father Name'] || '').toLowerCase().trim()
-                .replace(/\s+/g, ' ').replace(/[.]/g, '');
             
             let wasInPrevious = false;
             
-            // Check if student was in previous year
-            if (regNo && previousStudentIdentifiers.has(`REG:${regNo}`)) {
-                wasInPrevious = true;
-            } else if (studentName && fatherName && course && 
-                       previousStudentIdentifiers.has(`${studentName}###${fatherName}###${course}`)) {
-                wasInPrevious = true;
-            } else if (studentName && fatherName && 
-                       previousStudentIdentifiers.has(`${studentName}###${fatherName}`)) {
-                wasInPrevious = true;
-            } else if (studentName && course && 
-                       previousStudentIdentifiers.has(`${studentName}###${course}`)) {
-                wasInPrevious = true;
-            } else if (studentName && previousStudentIdentifiers.has(studentName)) {
-                wasInPrevious = true;
-            }
-            
-            if (!wasInPrevious) {
-                const key = `${year} ${course}`;
-                if (!newAdmissions[key]) {
-                    newAdmissions[key] = 0;
+            // Check if student was in previous year using ONLY Reg No
+            // Only count as new admission if we have a Reg No to compare
+            if (regNo) {
+                wasInPrevious = previousStudentRegNumbers.has(regNo);
+                
+                if (!wasInPrevious) {
+                    const key = `${year} ${course}`;
+                    if (!newAdmissions[key]) {
+                        newAdmissions[key] = 0;
+                    }
+                    newAdmissions[key]++;
                 }
-                newAdmissions[key]++;
             }
         }
     });
@@ -3140,29 +3065,29 @@ function generateSummaryReport(previousYearStudents) {
         const newCount = newAdmissions[key] || 0;
         
         if (previousCount > 0) {
-            let point = `${pointNumber}. Of the total ${previousCount} students admitted to ${key} from Previous Year, ${currentCount} students have admitted to current year for ${key}`;
+            let point = `${pointNumber}. Of the ${previousCount} students who were enrolled in ${key} during the previous year, ${currentCount} ${currentCount === 1 ? 'student has' : 'students have'} been admitted to the current year`;
             
             if (notAdmittedCount > 0) {
-                point += ` and ${notAdmittedCount} students are yet to be admitted.`;
+                point += `, while ${notAdmittedCount} ${notAdmittedCount === 1 ? 'student is' : 'students are'} yet to be admitted.`;
             } else {
                 point += '.';
             }
             
             if (newCount > 0) {
-                point += ` From the current year's admission report, I observe that ${newCount} ${newCount === 1 ? 'student has' : 'students have'} got admission who ${newCount === 1 ? 'is' : 'are'} not in the previous year's admission list.`;
+                point += ` Additionally, ${newCount} new ${newCount === 1 ? 'student has' : 'students have'} been admitted to ${key} who ${newCount === 1 ? 'was' : 'were'} not enrolled in the previous year.`;
             }
             
             summaryPoints.push(point);
             pointNumber++;
         } else if (newCount > 0) {
             // Handle case where there are new admissions but no previous year students for this category
-            summaryPoints.push(`${pointNumber}. For ${key}, ${newCount} ${newCount === 1 ? 'student has' : 'students have'} got admission who ${newCount === 1 ? 'is' : 'are'} not in the previous year's admission list.`);
+            summaryPoints.push(`${pointNumber}. For ${key}, ${newCount} new ${newCount === 1 ? 'student has' : 'students have'} been admitted who ${newCount === 1 ? 'was' : 'were'} not enrolled in the previous year.`);
             pointNumber++;
         }
     });
 
     if (summaryPoints.length === 0) {
-        summaryPoints.push('No significant changes observed in admissions between previous year and current year for the eligible categories (excluding 1st Year and LTRL students from 2nd Year).');
+        summaryPoints.push('No significant changes have been observed in admissions between the previous year and current year for the eligible categories (excluding 1st Year and LTRL students from 2nd Year).');
     }
 
     showSummaryPopup(summaryPoints);
