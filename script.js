@@ -3090,10 +3090,30 @@ function generateSummaryReport(previousYearStudents) {
         summaryPoints.push('No significant changes have been observed in admissions between the previous year and current year for the eligible categories (excluding 1st Year and LTRL students from 2nd Year).');
     }
 
-    showSummaryPopup(summaryPoints);
+    // Calculate overall statistics for final summary
+    const overallStats = {
+        totalPreviousStudents: 0,
+        totalCurrentStudents: 0,
+        totalNotAdmitted: 0,
+        totalNewAdmissions: 0
+    };
+
+    // Sum up all categories
+    sortedKeys.forEach(key => {
+        overallStats.totalPreviousStudents += groupedPrevious[key] ? groupedPrevious[key].length : 0;
+        overallStats.totalCurrentStudents += groupedCurrent[key] || 0;
+        overallStats.totalNotAdmitted += groupedNotAdmitted[key] || 0;
+        overallStats.totalNewAdmissions += newAdmissions[key] || 0;
+    });
+
+    // Calculate readmission rate
+    overallStats.readmissionRate = overallStats.totalPreviousStudents > 0 ? 
+        ((overallStats.totalCurrentStudents / overallStats.totalPreviousStudents) * 100).toFixed(1) : '0.0';
+
+    showSummaryPopup(summaryPoints, overallStats);
 }
 
-function showSummaryPopup(summaryPoints) {
+function showSummaryPopup(summaryPoints, overallStats = null) {
     // Check if mobile device
     const isMobile = window.innerWidth <= 768;
     
@@ -3121,7 +3141,7 @@ function showSummaryPopup(summaryPoints) {
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        max-width: ${isMobile ? '95vw' : 'min(90vw, 600px)'};
+        max-width: ${isMobile ? '95vw' : 'min(90vw, 700px)'};
         max-height: ${isMobile ? '90vh' : 'min(85vh, 700px)'};
         overflow: hidden;
         box-shadow: var(--shadow);
@@ -3219,6 +3239,99 @@ function showSummaryPopup(summaryPoints) {
 
     content.appendChild(description);
     content.appendChild(summaryList);
+
+    // Add overall summary section if statistics are provided
+    if (overallStats) {
+        const overallSummarySection = document.createElement('div');
+        overallSummarySection.style.cssText = `
+            margin-top: 20px;
+            padding: ${isMobile ? '12px' : '15px'};
+            background-color: var(--hover-bg);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        `;
+
+        const overallTitle = document.createElement('h4');
+        overallTitle.textContent = '📊 Overall Summary';
+        overallTitle.style.cssText = `
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            font-size: ${isMobile ? '0.9em' : '1em'};
+            font-weight: 600;
+        `;
+
+        const statsGrid = document.createElement('div');
+        statsGrid.style.cssText = `
+            display: grid;
+            grid-template-columns: ${isMobile ? '1fr' : '1fr 1fr'};
+            gap: ${isMobile ? '8px' : '10px'};
+            margin-bottom: 12px;
+        `;
+
+        const statItems = [
+            { label: 'Previous Year Students', value: overallStats.totalPreviousStudents, color: '#6366f1' },
+            { label: 'Re-admitted Students', value: overallStats.totalCurrentStudents, color: '#10b981' },
+            { label: 'Not Yet Admitted', value: overallStats.totalNotAdmitted, color: '#f59e0b' },
+            { label: 'New Admissions', value: overallStats.totalNewAdmissions, color: '#8b5cf6' }
+        ];
+
+        statItems.forEach(item => {
+            const statItem = document.createElement('div');
+            statItem.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: ${isMobile ? '6px 8px' : '8px 10px'};
+                background-color: var(--bg-card);
+                border-radius: 4px;
+                font-size: ${isMobile ? '0.75em' : '0.8em'};
+            `;
+
+            const label = document.createElement('span');
+            label.textContent = item.label;
+            label.style.cssText = `
+                color: var(--text-primary);
+                font-weight: 500;
+            `;
+
+            const value = document.createElement('span');
+            value.textContent = item.value;
+            value.style.cssText = `
+                color: ${item.color};
+                font-weight: 600;
+                font-size: 1.1em;
+            `;
+
+            statItem.appendChild(label);
+            statItem.appendChild(value);
+            statsGrid.appendChild(statItem);
+        });
+
+        const observations = document.createElement('div');
+        observations.style.cssText = `
+            font-size: ${isMobile ? '0.75em' : '0.8em'};
+            line-height: 1.4;
+            color: var(--text-primary);
+        `;
+
+        const readmissionText = `Re-admission Rate: ${overallStats.readmissionRate}%`;
+        const totalCurrentYear = overallStats.totalCurrentStudents + overallStats.totalNewAdmissions;
+        const growthRate = overallStats.totalPreviousStudents > 0 ? 
+            (((totalCurrentYear / overallStats.totalPreviousStudents) - 1) * 100).toFixed(1) : '0.0';
+        
+        observations.innerHTML = `
+            <strong>Key Observations:</strong><br>
+            • ${readmissionText} of previous year students have been re-admitted<br>
+            • ${overallStats.totalNotAdmitted > 0 ? `${overallStats.totalNotAdmitted} students are yet to be admitted` : 'All eligible previous year students have been re-admitted'}<br>
+            • ${overallStats.totalNewAdmissions > 0 ? `${overallStats.totalNewAdmissions} new students have been admitted` : 'No new admissions recorded'}<br>
+            • Overall growth: ${growthRate >= 0 ? '+' : ''}${growthRate}% compared to previous year enrollment
+        `;
+
+        overallSummarySection.appendChild(overallTitle);
+        overallSummarySection.appendChild(statsGrid);
+        overallSummarySection.appendChild(observations);
+        content.appendChild(overallSummarySection);
+    }
 
     // Create footer with timestamp
     const footer = document.createElement('div');
