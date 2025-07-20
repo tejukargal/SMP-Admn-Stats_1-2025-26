@@ -141,13 +141,17 @@
                             <input type="text" id="nameFilter" placeholder="Enter student name or reg no...">
                         </div>
                         <button class="btn" onclick="clearFilters()">Clear Filters</button>
-                        <button class="btn btn-export" onclick="exportToCSV()">📥 Export CSV</button>
-                        <button class="btn btn-pdf" onclick="saveToPDF()">📄 Save PDF</button>
+                        <button class="btn btn-export" onclick="exportToCSV()" id="exportAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveToPDF()" id="saveAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearSelection()" id="clearSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedToCSV()" id="exportSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedToPDF()" id="saveSelectedBtn" disabled>📄 Save Selected PDF</button>
                     </div>
                     <div class="table-container scrollable-students">
                         <table id="studentTable">
                             <thead>
                                 <tr>
+                                    <th>Select</th>
                                     <th>Sl No</th>
                                     <th>Student Name</th>
                                     <th>Father Name</th>
@@ -200,13 +204,17 @@
                             <input type="text" id="duesNameFilter" placeholder="Enter student name or reg no...">
                         </div>
                         <button class="btn" onclick="clearDuesFilters()">Clear Filters</button>
-                        <button class="btn btn-export" onclick="exportDuesToCSV()">📥 Export CSV</button>
-                        <button class="btn btn-pdf" onclick="saveDuesToPDF()">📄 Save PDF</button>
+                        <button class="btn btn-export" onclick="exportDuesToCSV()" id="exportDuesAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveDuesToPDF()" id="saveDuesAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearDuesSelection()" id="clearDuesSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedDuesToCSV()" id="exportDuesSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedDuesToPDF()" id="saveDuesSelectedBtn" disabled>📄 Save Selected PDF</button>
                     </div>
                     <div class="table-container scrollable-dues">
                         <table id="duesTable">
                             <thead>
                                 <tr>
+                                    <th>Select</th>
                                     <th>Sl No</th>
                                     <th>Student Name</th>
                                     <th>Father Name</th>
@@ -270,14 +278,18 @@
                             <input type="text" id="notAdmittedNameFilter" placeholder="Enter student name or reg no...">
                         </div>
                         <button class="btn" onclick="clearNotAdmittedFilters()">Clear Filters</button>
-                        <button class="btn btn-export" onclick="exportNotAdmittedToCSV()">📥 Export CSV</button>
-                        <button class="btn btn-pdf" onclick="saveNotAdmittedToPDF()">📄 Save PDF</button>
+                        <button class="btn btn-export" onclick="exportNotAdmittedToCSV()" id="exportNotAdmittedAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveNotAdmittedToPDF()" id="saveNotAdmittedAllBtn">📄 Save PDF</button>
                         <button class="btn btn-summary" onclick="generateAdmissionSummary()">📊 Summary</button>
+                        <button class="btn btn-clear" onclick="clearNotAdmittedSelection()" id="clearNotAdmittedSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedNotAdmittedToCSV()" id="exportNotAdmittedSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedNotAdmittedToPDF()" id="saveNotAdmittedSelectedBtn" disabled>📄 Save Selected PDF</button>
                     </div>
                     <div class="table-container scrollable-notadmitted">
                         <table id="notAdmittedTable">
                             <thead>
                                 <tr>
+                                    <th>Select</th>
                                     <th>Sl No</th>
                                     <th>Student Name</th>
                                     <th>Father Name</th>

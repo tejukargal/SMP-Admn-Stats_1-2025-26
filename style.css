@@ -2091,3 +2091,88 @@ select:focus, input:focus {
         font-size: 1.2rem;
     }
 }
+
+/* Custom selection buttons */
+.btn-custom {
+    background: #4361ee;
+    color: white !important;
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    border: none;
+}
+
+.btn-custom:hover:not(:disabled) {
+    background: #3651d4 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+.btn-custom:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background: #6c757d;
+}
+
+.btn-custom:not(:disabled) {
+    opacity: 1;
+}
+
+/* Clear selection button */
+.btn-clear {
+    background: #dc3545 !important;
+    color: white !important;
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    border: none;
+}
+
+.btn-clear:hover:not(:disabled) {
+    background: #c82333 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+.btn-clear:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background: #6c757d !important;
+}
+
+.btn-clear:not(:disabled) {
+    opacity: 1;
+}
+
+/* Checkbox styling in table */
+.student-checkbox, .dues-checkbox, .notadmitted-checkbox {
+    cursor: pointer;
+    transform: scale(1.4);
+    border-radius: 4px;
+    width: 16px;
+    height: 16px;
+}
+
+
+/* Mobile button layout - 2 columns */
+@media screen and (max-width: 768px) {
+    .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        align-items: start;
+    }
+    
+    .filter-group {
+        grid-column: span 2;
+    }
+    
+    .filters .btn {
+        grid-column: span 1;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 8px 4px;
+    }
+}

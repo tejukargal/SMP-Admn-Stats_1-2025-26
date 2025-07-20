@@ -1454,7 +1454,7 @@ function displayStudentList() {
     tbody.innerHTML = '';
 
     if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="no-data">No students found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="no-data">No students found</td></tr>';
         return;
     }
 
@@ -1478,6 +1478,7 @@ function displayStudentList() {
         
         const row = document.createElement('tr');
         row.innerHTML = `
+            <td><input type="checkbox" class="student-checkbox" data-index="${index}" onchange="updateSelectedButtons()"></td>
             <td>${serialNumber}</td>
             <td>${student['Student Name'] || ''}</td>
             <td>${student['Father Name'] || ''}</td>
@@ -1490,6 +1491,8 @@ function displayStudentList() {
         `;
         tbody.appendChild(row);
     });
+    
+    updateSelectedButtons();
 }
 
 function generateDuesMetrics() {
@@ -1582,7 +1585,7 @@ function displayDuesList() {
     tbody.innerHTML = '';
 
     if (filteredDuesData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="18" class="no-data">No students with outstanding dues found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="19" class="no-data">No students with outstanding dues found</td></tr>';
         return;
     }
 
@@ -1616,6 +1619,7 @@ function displayDuesList() {
         totalDues += student['Total Dues'];
         
         row.innerHTML = `
+            <td><input type="checkbox" class="dues-checkbox" data-index="${index}" onchange="updateDuesSelectedButtons()"></td>
             <td>${serialNumber}</td>
             <td>${student['Student Name'] || ''}</td>
             <td>${student['Father Name'] || ''}</td>
@@ -1643,7 +1647,7 @@ function displayDuesList() {
         const grandTotalRow = document.createElement('tr');
         grandTotalRow.className = 'grand-total-row';
         grandTotalRow.innerHTML = `
-            <td colspan="9"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
+            <td colspan="10"><strong>GRAND TOTAL (${filteredDuesData.length} Students)</strong></td>
             <td><strong>₹${totalSMPAlloted.toLocaleString('en-IN')}</strong></td>
             <td><strong>₹${totalSVKAlloted.toLocaleString('en-IN')}</strong></td>
             <td><strong>₹${totalSMPPaid.toLocaleString('en-IN')}</strong></td>
@@ -1656,6 +1660,8 @@ function displayDuesList() {
         `;
         tbody.appendChild(grandTotalRow);
     }
+    
+    updateDuesSelectedButtons();
 }
 
 function applyFilters() {
@@ -2547,7 +2553,7 @@ function displayNotAdmittedStudents() {
 
     if (filteredNotAdmittedData.length === 0) {
         console.log('No filtered data - showing no data message');
-        tableBody.innerHTML = '<tr><td colspan="10" class="no-data">No students found matching the current filters</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="11" class="no-data">No students found matching the current filters</td></tr>';
         return;
     }
     
@@ -2555,6 +2561,7 @@ function displayNotAdmittedStudents() {
 
     tableBody.innerHTML = filteredNotAdmittedData.map((student, index) => `
         <tr>
+            <td><input type="checkbox" class="notadmitted-checkbox" data-index="${index}" onchange="updateNotAdmittedSelectedButtons()"></td>
             <td>${index + 1}</td>
             <td>${student['Student Name'] || ''}</td>
             <td>${student['Father Name'] || ''}</td>
@@ -2567,6 +2574,8 @@ function displayNotAdmittedStudents() {
             <td>${student['In/Out'] || 'Not Admitted'}</td>
         </tr>
     `).join('');
+    
+    updateNotAdmittedSelectedButtons();
 }
 
 // Clear all not admitted filters
@@ -3373,4 +3382,507 @@ function showSummaryPopup(summaryPoints, overallStats = null) {
     document.addEventListener('keydown', handleKeyDown);
 
     document.body.appendChild(overlay);
+}
+
+// Student selection functionality
+function clearSelection() {
+    const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+    
+    studentCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    updateSelectedButtons();
+}
+
+function updateSelectedButtons() {
+    const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+    const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    const saveSelectedBtn = document.getElementById('saveSelectedBtn');
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    const saveAllBtn = document.getElementById('saveAllBtn');
+    
+    const hasSelected = selectedCheckboxes.length > 0;
+    
+    // Enable/disable selected buttons
+    exportSelectedBtn.disabled = !hasSelected;
+    saveSelectedBtn.disabled = !hasSelected;
+    clearSelectionBtn.disabled = !hasSelected;
+    
+    // Disable/enable regular export buttons when selection is active
+    exportAllBtn.disabled = hasSelected;
+    saveAllBtn.disabled = hasSelected;
+    
+    // Update opacity for visual feedback
+    if (hasSelected) {
+        exportAllBtn.style.opacity = '0.4';
+        saveAllBtn.style.opacity = '0.4';
+    } else {
+        exportAllBtn.style.opacity = '1';
+        saveAllBtn.style.opacity = '1';
+    }
+}
+
+function getSelectedStudents() {
+    const selectedCheckboxes = document.querySelectorAll('.student-checkbox:checked');
+    const selectedStudents = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        const index = parseInt(checkbox.getAttribute('data-index'));
+        if (index >= 0 && index < filteredData.length) {
+            selectedStudents.push(filteredData[index]);
+        }
+    });
+    
+    return selectedStudents;
+}
+
+function exportSelectedToCSV() {
+    const selectedStudents = getSelectedStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const csvContent = [
+        headers.join(','),
+        ...selectedStudents.map((student, index) => {
+            const serialNumber = String(index + 1).padStart(2, '0');
+            
+            // Determine displayed admission type using mixed logic
+            let displayedAdmType;
+            const admCat = student['Adm Cat'] || '';
+            const admTypeCol = student['Adm Type'] || '';
+            
+            if (admCat.trim() === 'SNQ') {
+                displayedAdmType = 'SNQ';
+            } else {
+                if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                    displayedAdmType = admTypeCol;
+                } else {
+                    displayedAdmType = 'REGULAR';
+                }
+            }
+            
+            return [
+                serialNumber,
+                `"${student['Student Name'] || ''}"`,
+                `"${student['Father Name'] || ''}"`,
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                displayedAdmType,
+                student['Adm Cat'] || '',
+                student['In/Out'] || ''
+            ].join(',');
+        })
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `SMP_Selected_Students_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function saveSelectedToPDF() {
+    const selectedStudents = getSelectedStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const courseFilter = document.getElementById('courseFilter').value || 'All Courses';
+    const yearFilter = document.getElementById('yearFilter').value || 'All Years';
+    const nameFilter = document.getElementById('nameFilter').value || 'No Name Filter';
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Selected Student Directory Report', 105, 30, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 105, 40, { align: 'center' });
+    doc.text(`Selected Students: ${selectedStudents.length}`, 105, 46, { align: 'center' });
+    
+    // Filter info
+    doc.setFontSize(8);
+    doc.text(`Course: ${courseFilter} | Year: ${yearFilter} | Search: ${nameFilter}`, 105, 52, { align: 'center' });
+    
+    // Table data
+    const tableData = selectedStudents.map((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        
+        // Determine displayed admission type using mixed logic
+        let displayedAdmType;
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            displayedAdmType = 'SNQ';
+        } else {
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                displayedAdmType = admTypeCol;
+            } else {
+                displayedAdmType = 'REGULAR';
+            }
+        }
+        
+        return [
+            serialNumber,
+            student['Student Name'] || '',
+            student['Father Name'] || '',
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            displayedAdmType,
+            student['Adm Cat'] || '',
+            student['In/Out'] || ''
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status']],
+        body: tableData,
+        startY: 60,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 60, right: 10, bottom: 20, left: 10 },
+        theme: 'striped'
+    });
+    
+    doc.save(`SMP_Selected_Students_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// ===== FEE DUES SELECTION FUNCTIONS =====
+
+function clearDuesSelection() {
+    const duesCheckboxes = document.querySelectorAll('.dues-checkbox');
+    
+    duesCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    updateDuesSelectedButtons();
+}
+
+function updateDuesSelectedButtons() {
+    const selectedCheckboxes = document.querySelectorAll('.dues-checkbox:checked');
+    const exportSelectedBtn = document.getElementById('exportDuesSelectedBtn');
+    const saveSelectedBtn = document.getElementById('saveDuesSelectedBtn');
+    const clearSelectionBtn = document.getElementById('clearDuesSelectionBtn');
+    const exportAllBtn = document.getElementById('exportDuesAllBtn');
+    const saveAllBtn = document.getElementById('saveDuesAllBtn');
+    
+    const hasSelected = selectedCheckboxes.length > 0;
+    
+    // Enable/disable selected buttons
+    exportSelectedBtn.disabled = !hasSelected;
+    saveSelectedBtn.disabled = !hasSelected;
+    clearSelectionBtn.disabled = !hasSelected;
+    
+    // Disable/enable regular export buttons when selection is active
+    exportAllBtn.disabled = hasSelected;
+    saveAllBtn.disabled = hasSelected;
+    
+    // Update opacity for visual feedback
+    if (hasSelected) {
+        exportAllBtn.style.opacity = '0.4';
+        saveAllBtn.style.opacity = '0.4';
+    } else {
+        exportAllBtn.style.opacity = '1';
+        saveAllBtn.style.opacity = '1';
+    }
+}
+
+function getSelectedDuesStudents() {
+    const selectedCheckboxes = document.querySelectorAll('.dues-checkbox:checked');
+    const selectedStudents = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        const index = parseInt(checkbox.getAttribute('data-index'));
+        if (index >= 0 && index < filteredDuesData.length) {
+            selectedStudents.push(filteredDuesData[index]);
+        }
+    });
+    
+    return selectedStudents;
+}
+
+function exportSelectedDuesToCSV() {
+    const selectedStudents = getSelectedDuesStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Alloted', 'Total Paid', 'Total Dues'];
+    const csvContent = [
+        headers.join(','),
+        ...selectedStudents.map((student, index) => {
+            const serialNumber = String(index + 1).padStart(2, '0');
+            
+            return [
+                serialNumber,
+                `"${student['Student Name'] || ''}"`,
+                `"${student['Father Name'] || ''}"`,
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                student['Adm Type'] || '',
+                student['Adm Cat'] || '',
+                student['In/Out'] || '',
+                student['SMP Alloted'] || 0,
+                student['SVK Alloted'] || 0,
+                student['SMP Paid'] || 0,
+                student['SVK Paid'] || 0,
+                student['SMP Due'] || 0,
+                student['SVK Due'] || 0,
+                student['Total Alloted'] || 0,
+                student['Total Paid'] || 0,
+                student['Total Dues'] || 0
+            ].join(',');
+        })
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `SMP_Selected_Dues_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function saveSelectedDuesToPDF() {
+    const selectedStudents = getSelectedDuesStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for better fit
+    
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Selected Fee Dues Report', 148, 30, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 40, { align: 'center' });
+    doc.text(`Selected Students: ${selectedStudents.length}`, 148, 46, { align: 'center' });
+    
+    // Table data
+    const tableData = selectedStudents.map((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        
+        return [
+            serialNumber,
+            student['Student Name'] || '',
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            '₹' + (student['SMP Alloted'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['SVK Alloted'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['SMP Paid'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['SVK Paid'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['SMP Due'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['SVK Due'] || 0).toLocaleString('en-IN'),
+            '₹' + (student['Total Dues'] || 0).toLocaleString('en-IN')
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Sl No', 'Student Name', 'Year', 'Course', 'Reg No', 'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Total Dues']],
+        body: tableData,
+        startY: 60,
+        styles: { fontSize: 6, cellPadding: 1 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 60, right: 10, bottom: 20, left: 10 },
+        theme: 'striped'
+    });
+    
+    doc.save(`SMP_Selected_Dues_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// ===== NOT ADMITTED SELECTION FUNCTIONS =====
+
+function clearNotAdmittedSelection() {
+    const notAdmittedCheckboxes = document.querySelectorAll('.notadmitted-checkbox');
+    
+    notAdmittedCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    updateNotAdmittedSelectedButtons();
+}
+
+function updateNotAdmittedSelectedButtons() {
+    const selectedCheckboxes = document.querySelectorAll('.notadmitted-checkbox:checked');
+    const exportSelectedBtn = document.getElementById('exportNotAdmittedSelectedBtn');
+    const saveSelectedBtn = document.getElementById('saveNotAdmittedSelectedBtn');
+    const clearSelectionBtn = document.getElementById('clearNotAdmittedSelectionBtn');
+    const exportAllBtn = document.getElementById('exportNotAdmittedAllBtn');
+    const saveAllBtn = document.getElementById('saveNotAdmittedAllBtn');
+    
+    const hasSelected = selectedCheckboxes.length > 0;
+    
+    // Enable/disable selected buttons
+    exportSelectedBtn.disabled = !hasSelected;
+    saveSelectedBtn.disabled = !hasSelected;
+    clearSelectionBtn.disabled = !hasSelected;
+    
+    // Disable/enable regular export buttons when selection is active
+    exportAllBtn.disabled = hasSelected;
+    saveAllBtn.disabled = hasSelected;
+    
+    // Update opacity for visual feedback
+    if (hasSelected) {
+        exportAllBtn.style.opacity = '0.4';
+        saveAllBtn.style.opacity = '0.4';
+    } else {
+        exportAllBtn.style.opacity = '1';
+        saveAllBtn.style.opacity = '1';
+    }
+}
+
+function getSelectedNotAdmittedStudents() {
+    const selectedCheckboxes = document.querySelectorAll('.notadmitted-checkbox:checked');
+    const selectedStudents = [];
+    
+    selectedCheckboxes.forEach(checkbox => {
+        const index = parseInt(checkbox.getAttribute('data-index'));
+        if (index >= 0 && index < filteredNotAdmittedData.length) {
+            selectedStudents.push(filteredNotAdmittedData[index]);
+        }
+    });
+    
+    return selectedStudents;
+}
+
+function exportSelectedNotAdmittedToCSV() {
+    const selectedStudents = getSelectedNotAdmittedStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Academic Year', 'Status'];
+    const csvContent = [
+        headers.join(','),
+        ...selectedStudents.map((student, index) => {
+            const serialNumber = String(index + 1).padStart(2, '0');
+            
+            return [
+                serialNumber,
+                `"${student['Student Name'] || ''}"`,
+                `"${student['Father Name'] || ''}"`,
+                student['Year'] || '',
+                student['Course'] || '',
+                student['Reg No'] || '',
+                student['Adm Type'] || '',
+                student['Adm Cat'] || student['Admn Cat'] || '',
+                student['Acdmc Year'] || '',
+                student['In/Out'] || 'Not Admitted'
+            ].join(',');
+        })
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `SMP_Selected_NotAdmitted_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function saveSelectedNotAdmittedToPDF() {
+    const selectedStudents = getSelectedNotAdmittedStudents();
+    
+    if (selectedStudents.length === 0) {
+        alert('No students selected');
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Selected Not Admitted Students Report', 105, 30, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 105, 40, { align: 'center' });
+    doc.text(`Selected Students: ${selectedStudents.length}`, 105, 46, { align: 'center' });
+    
+    // Table data
+    const tableData = selectedStudents.map((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        
+        return [
+            serialNumber,
+            student['Student Name'] || '',
+            student['Father Name'] || '',
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            student['Adm Type'] || '',
+            student['Adm Cat'] || student['Admn Cat'] || '',
+            student['Acdmc Year'] || '',
+            student['In/Out'] || 'Not Admitted'
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Academic Year', 'Status']],
+        body: tableData,
+        startY: 60,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 60, right: 10, bottom: 20, left: 10 },
+        theme: 'striped'
+    });
+    
+    doc.save(`SMP_Selected_NotAdmitted_${new Date().toISOString().split('T')[0]}.pdf`);
 }
