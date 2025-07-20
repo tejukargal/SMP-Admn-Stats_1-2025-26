@@ -1301,7 +1301,7 @@ select:focus, input:focus {
     background: var(--primary-color);
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 12px 16px;
     border-radius: var(--border-radius);
     cursor: pointer;
     font-size: 14px;
@@ -1311,6 +1311,8 @@ select:focus, input:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-width: 140px;
+    height: 44px;
 }
 
 .btn:hover {
@@ -1320,28 +1322,41 @@ select:focus, input:focus {
 }
 
 .btn-export {
-    background: var(--success-color);
+    background: #28a745 !important;
+    color: white !important;
     margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
 }
 
 .btn-export:hover {
-    background: #3bb3d9;
-    box-shadow: 0 4px 12px rgba(76, 179, 240, 0.4);
+    background: #218838 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
 .btn-pdf {
-    background: var(--warning-color);
+    background: #fd7e14 !important;
+    color: white !important;
     margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
 }
 
 .btn-pdf:hover {
-    background: #dc1a68;
-    box-shadow: 0 4px 12px rgba(247, 37, 133, 0.4);
+    background: #e96500 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
 }
 
 .btn-summary {
     background: var(--primary-color);
     margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
 }
 
 .btn-summary:hover {
@@ -1410,14 +1425,23 @@ select:focus, input:focus {
 .dues-amount {
     font-weight: bold;
     color: var(--warning-color);
+    text-align: right;
 }
 
 .positive-amount {
     color: var(--success-color);
+    text-align: right;
 }
 
 .negative-amount {
     color: var(--warning-color);
+    text-align: right;
+}
+
+/* Fee Dues table - align all amount columns to the right */
+#duesTable th:nth-child(n+11):nth-child(-n+19),
+#duesTable td:nth-child(n+11):nth-child(-n+19) {
+    text-align: right;
 }
 
 /* Course Breakdown Popup Styles */
@@ -2092,18 +2116,37 @@ select:focus, input:focus {
     }
 }
 
-/* Custom selection buttons */
+/* Custom selection buttons - matching export/PDF colors */
 .btn-custom {
-    background: #4361ee;
-    color: white !important;
     margin-left: 10px;
     opacity: 0.6;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     border: none;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
 }
 
-.btn-custom:hover:not(:disabled) {
-    background: #3651d4 !important;
+/* Export Selected CSV - matches regular export green */
+.btn-custom[onclick*="exportSelected"] {
+    background: #28a745 !important;
+    color: white !important;
+}
+
+.btn-custom[onclick*="exportSelected"]:hover:not(:disabled) {
+    background: #218838 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+/* Save Selected PDF - matches regular PDF orange */
+.btn-custom[onclick*="saveSelected"] {
+    background: #fd7e14 !important;
+    color: white !important;
+}
+
+.btn-custom[onclick*="saveSelected"]:hover:not(:disabled) {
+    background: #e96500 !important;
     color: white !important;
     opacity: 1;
 }
@@ -2111,7 +2154,7 @@ select:focus, input:focus {
 .btn-custom:disabled {
     cursor: not-allowed;
     opacity: 0.4;
-    background: #6c757d;
+    background: #6c757d !important;
 }
 
 .btn-custom:not(:disabled) {
@@ -2126,6 +2169,9 @@ select:focus, input:focus {
     opacity: 0.6;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     border: none;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
 }
 
 .btn-clear:hover:not(:disabled) {
@@ -2151,6 +2197,31 @@ select:focus, input:focus {
     border-radius: 4px;
     width: 16px;
     height: 16px;
+    display: block;
+    margin: 0 auto;
+    accent-color: #4361ee;
+}
+
+/* Dark mode checkbox styling */
+[data-theme="dark"] .student-checkbox, 
+[data-theme="dark"] .dues-checkbox, 
+[data-theme="dark"] .notadmitted-checkbox {
+    accent-color: #6c8aff;
+    filter: brightness(1.2);
+}
+
+/* Select column styling */
+th:first-child, td:first-child {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    text-align: center;
+    padding: 14px 8px;
+}
+
+/* Override for table cells containing checkboxes */
+td:first-child {
+    vertical-align: middle;
 }
 
 
@@ -2173,6 +2244,8 @@ select:focus, input:focus {
         width: 100%;
         text-align: center;
         font-size: 0.85rem;
-        padding: 8px 4px;
+        padding: 10px 8px;
+        min-width: auto;
+        height: 40px;
     }
 }
