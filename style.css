@@ -5,6 +5,8 @@
     --accent-color: #4895ef;
     --success-color: #4cc9f0;
     --warning-color: #f72585;
+    --error-color: #dc3545;
+    --info-color: #17a2b8;
     
     /* Light mode variables */
     --bg-color: #f0f2f5;
@@ -1053,15 +1055,20 @@ body {
     overflow-y: auto;
 }
 
+.table-container.scrollable-feelist {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
 /* Smooth scrolling for better UX */
-.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-notadmitted, .scrollable-summary {
+.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-feelist, .scrollable-notadmitted, .scrollable-summary {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
 /* Subtle scroll indicator */
-.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-notadmitted::after, .scrollable-summary::after {
+.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-feelist::after, .scrollable-notadmitted::after, .scrollable-summary::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -1076,13 +1083,14 @@ body {
 [data-theme="dark"] .scrollable-datewise::after, 
 [data-theme="dark"] .scrollable-students::after,
 [data-theme="dark"] .scrollable-dues::after,
+[data-theme="dark"] .scrollable-feelist::after,
 [data-theme="dark"] .scrollable-notadmitted::after,
 [data-theme="dark"] .scrollable-summary::after {
     background: linear-gradient(transparent, rgba(255,255,255,0.1));
 }
 
 /* Enhanced sticky headers for scrollable tables */
-.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-notadmitted th, .scrollable-summary th {
+.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-feelist th, .scrollable-notadmitted th, .scrollable-summary th {
     position: sticky;
     top: 0;
     z-index: 20;
@@ -1113,6 +1121,10 @@ table {
 
 #duesTable {
     min-width: 1500px; /* Wider minimum width for dues table with additional Adm Cat column */
+}
+
+#feeListTable {
+    min-width: 1800px; /* Wider minimum width for fee list table with all fee columns */
 }
 
 th, td {
@@ -1196,6 +1208,37 @@ tr:hover {
 
 [data-theme="dark"] .grand-total-row,
 [data-theme="dark"] .grand-total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Total row styling for Fee List */
+.total-row {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.total-row td {
+    color: white !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.total-amount {
+    font-size: 0.95rem !important;
+}
+
+/* Ensure visibility in both light and dark modes for total row */
+[data-theme="light"] .total-row,
+[data-theme="light"] .total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .total-row,
+[data-theme="dark"] .total-row td {
     color: white !important;
     background-color: var(--primary-color) !important;
 }
@@ -1442,6 +1485,40 @@ select:focus, input:focus {
 #duesTable th:nth-child(n+11):nth-child(-n+19),
 #duesTable td:nth-child(n+11):nth-child(-n+19) {
     text-align: right;
+}
+
+/* Fee List table - align all amount columns to the right */
+#feeListTable th:nth-child(n+11):nth-child(-n+28),
+#feeListTable td:nth-child(n+11):nth-child(-n+28) {
+    text-align: right;
+}
+
+/* Payment status styling */
+.payment-status.paid {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.payment-status.partial {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.payment-status.due {
+    color: var(--error-color);
+    font-weight: 600;
+}
+
+/* Due amount styling */
+.due-amount {
+    color: var(--error-color) !important;
+    font-weight: 600 !important;
+}
+
+/* Amount column styling */
+.amount {
+    font-family: monospace;
+    font-weight: 500;
 }
 
 /* Course Breakdown Popup Styles */
@@ -1852,7 +1929,7 @@ select:focus, input:focus {
         max-height: 280px;
     }
 
-    .table-container.scrollable-students, .table-container.scrollable-dues, .table-container.scrollable-notadmitted {
+    .table-container.scrollable-students, .table-container.scrollable-dues, .table-container.scrollable-feelist, .table-container.scrollable-notadmitted {
         max-height: 400px;
     }
 
@@ -1862,6 +1939,10 @@ select:focus, input:focus {
 
     #duesTable {
         min-width: 1300px; /* Wider minimum width for mobile dues table with additional column */
+    }
+
+    #feeListTable {
+        min-width: 1600px; /* Wider minimum width for mobile fee list table */
     }
 
     .section-title {

@@ -317,6 +317,21 @@ function showSection(sectionName) {
     // Add active class to clicked tab
     event.target.classList.add('active');
     
+    // If switching to fee list section, check access control first
+    if (sectionName === 'feelist') {
+        const accessKey = prompt('🔐 Enter access key to view Fee List:');
+        if (accessKey !== 'teju2015') {
+            alert('❌ Access denied. Invalid access key.');
+            // Stay on current section, don't switch
+            return;
+        }
+        
+        // Access granted, proceed with loading data
+        if (feeListData.length === 0 && allStudentsData.length > 0) {
+            populateFeeList();
+        }
+    }
+    
     // If switching to not admitted section, ensure data is loaded and displayed
     if (sectionName === 'notadmitted') {
         
@@ -3885,4 +3900,671 @@ function saveSelectedNotAdmittedToPDF() {
     });
     
     doc.save(`SMP_Selected_NotAdmitted_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// ============================================
+// FEE LIST FUNCTIONALITY
+// ============================================
+
+let feeListData = [];
+let filteredFeeListData = [];
+
+// Populate Fee List with all students data using same aggregation logic as Fee Dues List
+function populateFeeList() {
+    console.log('=== POPULATING FEE LIST ===');
+    
+    // Use the same grouping logic as processDuesData() but include ALL students
+    const studentGroups = {};
+    
+    allStudentsData.forEach(student => {
+        const regNo = student['Reg No'] || student['Registration No'] || '';
+        const course = student['Course'] || '';
+        
+        if (!regNo || !course) return;
+        
+        // For EE course, use Reg No + Course as unique key to avoid conflicts
+        // For other courses (CE, ME, EC, CS), use only Reg No
+        let uniqueKey;
+        if (course.toUpperCase() === 'EE') {
+            uniqueKey = `${regNo}_${course}`; // EE students grouped by Reg No + Course
+        } else {
+            uniqueKey = regNo; // Other courses grouped by Reg No only
+        }
+        
+        if (!studentGroups[uniqueKey]) {
+            studentGroups[uniqueKey] = [];
+        }
+        studentGroups[uniqueKey].push(student);
+    });
+    
+    console.log(`Found ${Object.keys(studentGroups).length} unique student groups for Fee List`);
+    
+    feeListData = [];
+    
+    Object.entries(studentGroups).forEach(([uniqueKey, records]) => {
+        if (records.length === 0) return;
+        
+        // Use the first record for basic student info (should be same across installments)
+        const baseStudent = records[0];
+        const course = baseStudent['Course'] || '';
+        const regNo = baseStudent['Reg No'] || '';
+        
+        // Parse financial fields with robust number extraction (same logic as processDuesData)
+        const parseAmount = (value) => {
+            if (!value || value === '') return 0;
+            // Handle both string and number inputs
+            const cleanValue = value.toString().replace(/[^\d.-]/g, '');
+            const num = parseFloat(cleanValue);
+            return isNaN(num) ? 0 : Math.abs(num); // Use absolute value to handle any negative signs
+        };
+        
+        // Aggregate all payments across multiple installment records for this unique key
+        let totalPaidSMP = 0;
+        let totalPaidSVK = 0;
+        
+        // Sum all installment payments for this unique identifier
+        records.forEach(record => {
+            totalPaidSMP += parseAmount(record['SMP Paid']);
+            totalPaidSVK += parseAmount(record['SVK Paid']);
+        });
+        
+        // Get allotted amounts (should be same across all records for same student)
+        const allotedSMP = parseAmount(baseStudent['Alloted Fee SMP']);
+        const allotedSVK = parseAmount(baseStudent['Alloted Fee SVK']);
+        
+        // Calculate dues for each fee type
+        const duesSMP = Math.max(0, allotedSMP - totalPaidSMP);
+        const duesSVK = Math.max(0, allotedSVK - totalPaidSVK);
+        
+        const totalAlloted = allotedSMP + allotedSVK;
+        const totalPaid = totalPaidSMP + totalPaidSVK;
+        const totalDues = duesSMP + duesSVK;
+        
+        // Determine payment status
+        let paymentStatus = 'Paid';
+        if (totalDues > 0) {
+            paymentStatus = totalPaid > 0 ? 'Partial' : 'Due';
+        }
+        
+        // Mixed admission type logic (same as processDuesData)
+        let normalizedAdmType;
+        const admCat = baseStudent['Adm Cat'] || '';
+        const admTypeCol = baseStudent['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            normalizedAdmType = 'SNQ';
+        } else {
+            // Use Adm Type for Regular, LTRL, RPTR
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                normalizedAdmType = admTypeCol;
+            } else {
+                normalizedAdmType = 'REGULAR';
+            }
+        }
+        
+        const feeListStudent = {
+            'Student Name': baseStudent['Student Name'] || '',
+            'Father Name': baseStudent['Father Name'] || '',
+            'Year': baseStudent['Year'] || '',
+            'Course': course,
+            'Reg No': regNo,
+            'Adm Type': normalizedAdmType,
+            'Adm Cat': baseStudent['Adm Cat'] || '',
+            'In/Out': baseStudent['In/Out'] || 'In',
+            'Date': baseStudent['Date'] || '',
+            'Rpt': baseStudent['Rpt'] || '',
+            'SMP Alloted': allotedSMP,
+            'SVK Alloted': allotedSVK,
+            'SMP Paid': totalPaidSMP,
+            'SVK Paid': totalPaidSVK,
+            'SMP Due': duesSMP,
+            'SVK Due': duesSVK,
+            'Total Alloted': totalAlloted,
+            'Total Paid': totalPaid,
+            'Total Dues': totalDues,
+            'Payment Status': paymentStatus,
+            'Payment Records': records.length,
+            'Unique Key': uniqueKey
+        };
+        
+        // Include ALL students (both with and without dues) - this is the key difference from processDuesData
+        feeListData.push(feeListStudent);
+    });
+    
+    // Sort by course first, then by student name (same as processDuesData)
+    feeListData.sort((a, b) => {
+        const courseCompare = a['Course'].localeCompare(b['Course']);
+        if (courseCompare !== 0) return courseCompare;
+        
+        const nameA = (a['Student Name'] || '').toLowerCase();
+        const nameB = (b['Student Name'] || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    filteredFeeListData = [...feeListData];
+    console.log('Fee List populated with', feeListData.length, 'students (aggregated from', allStudentsData.length, 'records)');
+    console.log('Students with dues:', feeListData.filter(s => s['Total Dues'] > 0).length);
+    console.log('Students fully paid:', feeListData.filter(s => s['Total Dues'] === 0).length);
+    
+    populateFeeListFilters();
+    displayFeeList();
+    generateFeeListMetrics();
+}
+
+// Populate filters for Fee List
+function populateFeeListFilters() {
+    const courses = [...new Set(feeListData.map(s => s['Course']))].sort();
+    const years = [...new Set(feeListData.map(s => s['Year']))].sort();
+    const admTypes = [...new Set(feeListData.map(s => s['Adm Type']).filter(type => type))].sort();
+
+    const courseFilter = document.getElementById('feeListCourseFilter');
+    const yearFilter = document.getElementById('feeListYearFilter');
+    const admTypeFilter = document.getElementById('feeListAdmTypeFilter');
+
+    courseFilter.innerHTML = '<option value="">All Courses</option>';
+    courses.forEach(course => {
+        courseFilter.innerHTML += `<option value="${course}">${course}</option>`;
+    });
+
+    yearFilter.innerHTML = '<option value="">All Years</option>';
+    years.forEach(year => {
+        yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
+    });
+
+    admTypeFilter.innerHTML = '<option value="">All Types</option>';
+    admTypes.forEach(admType => {
+        admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
+    });
+}
+
+// Apply filters for Fee List
+function applyFeeListFilters() {
+    const courseFilter = document.getElementById('feeListCourseFilter').value;
+    const yearFilter = document.getElementById('feeListYearFilter').value;
+    const admTypeFilter = document.getElementById('feeListAdmTypeFilter').value;
+    const statusFilter = document.getElementById('feeListStatusFilter').value;
+    const nameFilter = document.getElementById('feeListNameFilter').value.toLowerCase();
+
+    filteredFeeListData = feeListData.filter(student => {
+        const matchesCourse = !courseFilter || student['Course'] === courseFilter;
+        const matchesYear = !yearFilter || student['Year'] === yearFilter;
+        const matchesAdmType = !admTypeFilter || student['Adm Type'] === admTypeFilter;
+        const matchesStatus = !statusFilter || student['Payment Status'] === statusFilter;
+        const matchesName = !nameFilter || 
+            student['Student Name']?.toLowerCase().includes(nameFilter) ||
+            student['Father Name']?.toLowerCase().includes(nameFilter) ||
+            student['Reg No']?.toLowerCase().includes(nameFilter);
+
+        return matchesCourse && matchesYear && matchesAdmType && matchesStatus && matchesName;
+    });
+
+    displayFeeList();
+    generateFeeListMetrics();
+}
+
+// Display Fee List
+function displayFeeList() {
+    const tbody = document.querySelector('#feeListTable tbody');
+    tbody.innerHTML = '';
+
+    if (filteredFeeListData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="21" class="no-data">No students found</td></tr>';
+        return;
+    }
+
+    filteredFeeListData.forEach((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        const row = document.createElement('tr');
+        
+        const formatAmount = (amount) => {
+            return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        };
+
+        row.innerHTML = `
+            <td class="checkbox-cell">
+                <input type="checkbox" class="student-checkbox" data-student-id="${index}" 
+                       onchange="updateFeeListSelectionButtons()">
+            </td>
+            <td>${serialNumber}</td>
+            <td>${student['Student Name'] || ''}</td>
+            <td>${student['Father Name'] || ''}</td>
+            <td>${student['Year'] || ''}</td>
+            <td class="${getCourseColorClass(student['Course'] || '')}">${student['Course'] || ''}</td>
+            <td>${student['Reg No'] || ''}</td>
+            <td class="admission-type ${getAdmissionTypeClass(student['Adm Type'])}">${student['Adm Type'] || ''}</td>
+            <td>${student['Adm Cat'] || ''}</td>
+            <td>${student['In/Out'] || ''}</td>
+            <td>${student['Date'] || ''}</td>
+            <td>${student['Rpt'] || ''}</td>
+            <td class="amount">${formatAmount(student['SMP Alloted'])}</td>
+            <td class="amount">${formatAmount(student['SVK Alloted'])}</td>
+            <td class="amount">${formatAmount(student['SMP Paid'])}</td>
+            <td class="amount">${formatAmount(student['SVK Paid'])}</td>
+            <td class="amount ${student['SMP Due'] > 0 ? 'due-amount' : ''}">${formatAmount(student['SMP Due'])}</td>
+            <td class="amount ${student['SVK Due'] > 0 ? 'due-amount' : ''}">${formatAmount(student['SVK Due'])}</td>
+            <td class="amount">${formatAmount(student['Total Alloted'])}</td>
+            <td class="amount">${formatAmount(student['Total Paid'])}</td>
+            <td class="amount ${student['Total Dues'] > 0 ? 'due-amount' : ''}">${formatAmount(student['Total Dues'])}</td>
+        `;
+
+        tbody.appendChild(row);
+    });
+    
+    // Add total row
+    if (filteredFeeListData.length > 0) {
+        const formatAmount = (amount) => {
+            return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        };
+        
+        // Calculate totals
+        const totals = {
+            smpAlloted: filteredFeeListData.reduce((sum, s) => sum + s['SMP Alloted'], 0),
+            svkAlloted: filteredFeeListData.reduce((sum, s) => sum + s['SVK Alloted'], 0),
+            smpPaid: filteredFeeListData.reduce((sum, s) => sum + s['SMP Paid'], 0),
+            svkPaid: filteredFeeListData.reduce((sum, s) => sum + s['SVK Paid'], 0),
+            smpDue: filteredFeeListData.reduce((sum, s) => sum + s['SMP Due'], 0),
+            svkDue: filteredFeeListData.reduce((sum, s) => sum + s['SVK Due'], 0),
+            totalAlloted: filteredFeeListData.reduce((sum, s) => sum + s['Total Alloted'], 0),
+            totalPaid: filteredFeeListData.reduce((sum, s) => sum + s['Total Paid'], 0),
+            totalDues: filteredFeeListData.reduce((sum, s) => sum + s['Total Dues'], 0)
+        };
+        
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td class="checkbox-cell"></td>
+            <td><strong>TOTAL</strong></td>
+            <td colspan="10"><strong>Students: ${filteredFeeListData.length}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.smpAlloted)}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.svkAlloted)}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.smpPaid)}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.svkPaid)}</strong></td>
+            <td class="amount total-amount ${totals.smpDue > 0 ? 'due-amount' : ''}"><strong>${formatAmount(totals.smpDue)}</strong></td>
+            <td class="amount total-amount ${totals.svkDue > 0 ? 'due-amount' : ''}"><strong>${formatAmount(totals.svkDue)}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.totalAlloted)}</strong></td>
+            <td class="amount total-amount"><strong>${formatAmount(totals.totalPaid)}</strong></td>
+            <td class="amount total-amount ${totals.totalDues > 0 ? 'due-amount' : ''}"><strong>${formatAmount(totals.totalDues)}</strong></td>
+        `;
+        
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Generate metrics for Fee List
+function generateFeeListMetrics() {
+    const metricsGrid = document.getElementById('feeListMetricsGrid');
+    metricsGrid.innerHTML = '';
+
+    const totalStudents = filteredFeeListData.length;
+    const fullyPaidStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Paid').length;
+    const partiallyPaidStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Partial').length;
+    const dueStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Due').length;
+    
+    const totalAlloted = filteredFeeListData.reduce((sum, s) => sum + s['Total Alloted'], 0);
+    const totalPaid = filteredFeeListData.reduce((sum, s) => sum + s['Total Paid'], 0);
+    const totalDues = filteredFeeListData.reduce((sum, s) => sum + s['Total Dues'], 0);
+
+    const formatAmount = (amount) => {
+        return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    };
+
+    const metrics = [
+        { label: 'Total Students', value: totalStudents, color: 'var(--primary-color)' },
+        { label: 'Fully Paid', value: fullyPaidStudents, color: 'var(--success-color)' },
+        { label: 'Partially Paid', value: partiallyPaidStudents, color: 'var(--warning-color)' },
+        { label: 'Dues Pending', value: dueStudents, color: 'var(--error-color)' },
+        { label: 'Total Alloted', value: formatAmount(totalAlloted), color: 'var(--info-color)' },
+        { label: 'Total Paid', value: formatAmount(totalPaid), color: 'var(--success-color)' },
+        { label: 'Total Dues', value: formatAmount(totalDues), color: 'var(--error-color)' }
+    ];
+
+    metrics.forEach(metric => {
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.innerHTML = `
+            <h3 style="color: ${metric.color};">${metric.value}</h3>
+            <p>${metric.label}</p>
+        `;
+        metricsGrid.appendChild(card);
+    });
+}
+
+// Clear Fee List filters
+function clearFeeListFilters() {
+    document.getElementById('feeListCourseFilter').value = '';
+    document.getElementById('feeListYearFilter').value = '';
+    document.getElementById('feeListAdmTypeFilter').value = '';
+    document.getElementById('feeListStatusFilter').value = '';
+    document.getElementById('feeListNameFilter').value = '';
+    filteredFeeListData = [...feeListData];
+    displayFeeList();
+    generateFeeListMetrics();
+}
+
+// Update selection buttons for Fee List
+function updateFeeListSelectionButtons() {
+    const checkboxes = document.querySelectorAll('#feeListTable .student-checkbox');
+    const checkedBoxes = document.querySelectorAll('#feeListTable .student-checkbox:checked');
+    
+    const clearBtn = document.getElementById('clearFeeListSelectionBtn');
+    const exportSelectedBtn = document.getElementById('exportFeeListSelectedBtn');
+    const saveSelectedBtn = document.getElementById('saveFeeListSelectedBtn');
+    
+    const hasSelection = checkedBoxes.length > 0;
+    
+    clearBtn.disabled = !hasSelection;
+    exportSelectedBtn.disabled = !hasSelection;
+    saveSelectedBtn.disabled = !hasSelection;
+}
+
+// Clear Fee List selection
+function clearFeeListSelection() {
+    const checkboxes = document.querySelectorAll('#feeListTable .student-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    updateFeeListSelectionButtons();
+}
+
+// Export Fee List to CSV
+function exportFeeListToCSV() {
+    if (!confirm('📥 Export Fee List to CSV?')) return;
+    
+    const headers = [
+        'Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status', 'Date', 'Rpt',
+        'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due',
+        'Total Alloted', 'Total Paid', 'Total Dues'
+    ];
+    
+    const csvContent = [headers.join(',')];
+    
+    filteredFeeListData.forEach((student, index) => {
+        const row = [
+            String(index + 1).padStart(2, '0'),
+            `"${student['Student Name'] || ''}"`,
+            `"${student['Father Name'] || ''}"`,
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            student['Adm Type'] || '',
+            student['Adm Cat'] || '',
+            student['In/Out'] || '',
+            student['Date'] || '',
+            student['Rpt'] || '',
+            student['SMP Alloted'] || 0,
+            student['SVK Alloted'] || 0,
+            student['SMP Paid'] || 0,
+            student['SVK Paid'] || 0,
+            student['SMP Due'] || 0,
+            student['SVK Due'] || 0,
+            student['Total Alloted'] || 0,
+            student['Total Paid'] || 0,
+            student['Total Dues'] || 0
+        ];
+        csvContent.push(row.join(','));
+    });
+    
+    const blob = new Blob([csvContent.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SMP_Fee_List_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Export selected Fee List to CSV
+function exportSelectedFeeListToCSV() {
+    const checkedBoxes = document.querySelectorAll('#feeListTable .student-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('Please select students to export.');
+        return;
+    }
+    
+    if (!confirm(`📥 Export ${checkedBoxes.length} selected students to CSV?`)) return;
+    
+    const selectedStudents = Array.from(checkedBoxes).map(cb => {
+        const index = parseInt(cb.getAttribute('data-student-id'));
+        return filteredFeeListData[index];
+    });
+    
+    const headers = [
+        'Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status', 'Date', 'Rpt',
+        'SMP Alloted', 'SVK Alloted', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due',
+        'Total Alloted', 'Total Paid', 'Total Dues'
+    ];
+    
+    const csvContent = [headers.join(',')];
+    
+    selectedStudents.forEach((student, index) => {
+        const row = [
+            String(index + 1).padStart(2, '0'),
+            `"${student['Student Name'] || ''}"`,
+            `"${student['Father Name'] || ''}"`,
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            student['Adm Type'] || '',
+            student['Adm Cat'] || '',
+            student['In/Out'] || '',
+            student['Date'] || '',
+            student['Rpt'] || '',
+            student['SMP Alloted'] || 0,
+            student['SVK Alloted'] || 0,
+            student['SMP Paid'] || 0,
+            student['SVK Paid'] || 0,
+            student['SMP Due'] || 0,
+            student['SVK Due'] || 0,
+            student['Total Alloted'] || 0,
+            student['Total Paid'] || 0,
+            student['Total Dues'] || 0
+        ];
+        csvContent.push(row.join(','));
+    });
+    
+    const blob = new Blob([csvContent.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SMP_Selected_Fee_List_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Save Fee List to PDF
+function saveFeeListToPDF() {
+    if (!confirm('📄 Save Fee List as PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4 mode
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Fee List - Consolidated View', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Total Students: ${filteredFeeListData.length}`, 148, 38, { align: 'center' });
+    
+    // Table data
+    const tableData = filteredFeeListData.map((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        const formatAmount = (amount) => '₹' + amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        
+        return [
+            serialNumber,
+            student['Student Name'] || '',
+            student['Father Name'] || '',
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            student['Adm Type'] || '',
+            student['Adm Cat'] || '',
+            student['In/Out'] || '',
+            student['Date'] || '',
+            student['Rpt'] || '',
+            formatAmount(student['Total Alloted']),
+            formatAmount(student['Total Paid']),
+            formatAmount(student['Total Dues'])
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Sl', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Type', 'Cat', 'Status', 'Date', 'Rpt', 'Total Alloted', 'Total Paid', 'Total Dues']],
+        body: tableData,
+        startY: 45,
+        styles: { 
+            fontSize: 7, 
+            cellPadding: 2,
+            overflow: 'ellipsize',
+            cellWidth: 'wrap'
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 7
+        },
+        columnStyles: {
+            0: { cellWidth: 10 },  // Sl No
+            1: { cellWidth: 35 },  // Student Name (increased)
+            2: { cellWidth: 25 },  // Father Name (increased)
+            3: { cellWidth: 15 },  // Year (increased)
+            4: { cellWidth: 12 },  // Course (increased)
+            5: { cellWidth: 20 },  // Reg No (increased)
+            6: { cellWidth: 15 },  // Adm Type (increased)
+            7: { cellWidth: 12 },  // Adm Cat (increased)
+            8: { cellWidth: 12 },  // Status (increased)
+            9: { cellWidth: 20 },  // Date (increased)
+            10: { cellWidth: 10 }, // Rpt (increased)
+            11: { cellWidth: 28, halign: 'left' }, // Total Alloted (left aligned)
+            12: { cellWidth: 28, halign: 'left' }, // Total Paid (left aligned)
+            13: { cellWidth: 28, halign: 'left' }  // Total Dues (left aligned)
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 45, right: 5, bottom: 15, left: 5 },
+        theme: 'striped'
+    });
+    
+    doc.save(`SMP_Fee_List_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// Save selected Fee List to PDF
+function saveSelectedFeeListToPDF() {
+    const checkedBoxes = document.querySelectorAll('#feeListTable .student-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('Please select students to save as PDF.');
+        return;
+    }
+    
+    if (!confirm(`📄 Save ${checkedBoxes.length} selected students as PDF?`)) return;
+    
+    const selectedStudents = Array.from(checkedBoxes).map(cb => {
+        const index = parseInt(cb.getAttribute('data-student-id'));
+        return filteredFeeListData[index];
+    });
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4 mode
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Selected Fee List Report', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Selected Students: ${selectedStudents.length}`, 148, 38, { align: 'center' });
+    
+    // Table data
+    const tableData = selectedStudents.map((student, index) => {
+        const serialNumber = String(index + 1).padStart(2, '0');
+        const formatAmount = (amount) => '₹' + amount.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+        
+        return [
+            serialNumber,
+            student['Student Name'] || '',
+            student['Father Name'] || '',
+            student['Year'] || '',
+            student['Course'] || '',
+            student['Reg No'] || '',
+            student['Adm Type'] || '',
+            student['Adm Cat'] || '',
+            student['In/Out'] || '',
+            student['Date'] || '',
+            student['Rpt'] || '',
+            formatAmount(student['Total Alloted']),
+            formatAmount(student['Total Paid']),
+            formatAmount(student['Total Dues'])
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Sl', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Type', 'Cat', 'Status', 'Date', 'Rpt', 'Total Alloted', 'Total Paid', 'Total Dues']],
+        body: tableData,
+        startY: 45,
+        styles: { 
+            fontSize: 7, 
+            cellPadding: 2,
+            overflow: 'ellipsize',
+            cellWidth: 'wrap'
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 7
+        },
+        columnStyles: {
+            0: { cellWidth: 10 },  // Sl No
+            1: { cellWidth: 35 },  // Student Name (increased)
+            2: { cellWidth: 25 },  // Father Name (increased)
+            3: { cellWidth: 15 },  // Year (increased)
+            4: { cellWidth: 12 },  // Course (increased)
+            5: { cellWidth: 20 },  // Reg No (increased)
+            6: { cellWidth: 15 },  // Adm Type (increased)
+            7: { cellWidth: 12 },  // Adm Cat (increased)
+            8: { cellWidth: 12 },  // Status (increased)
+            9: { cellWidth: 20 },  // Date (increased)
+            10: { cellWidth: 10 }, // Rpt (increased)
+            11: { cellWidth: 28, halign: 'left' }, // Total Alloted (left aligned)
+            12: { cellWidth: 28, halign: 'left' }, // Total Paid (left aligned)
+            13: { cellWidth: 28, halign: 'left' }  // Total Dues (left aligned)
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { top: 45, right: 5, bottom: 15, left: 5 },
+        theme: 'striped'
+    });
+    
+    doc.save(`SMP_Selected_Fee_List_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// Event listeners for Fee List
+document.getElementById('feeListNameFilter').addEventListener('input', applyFeeListFilters);
+document.getElementById('feeListCourseFilter').addEventListener('change', applyFeeListFilters);
+document.getElementById('feeListYearFilter').addEventListener('change', applyFeeListFilters);
+document.getElementById('feeListAdmTypeFilter').addEventListener('change', applyFeeListFilters);
+document.getElementById('feeListStatusFilter').addEventListener('change', applyFeeListFilters);
+
+// Apply uppercase conversion to Fee List search input
+makeUppercaseOnInput(document.getElementById('feeListNameFilter'));
+
+// Helper functions for styling
+function getCourseColorClass(course) {
+    if (!course) return '';
+    return course.toLowerCase();
+}
+
+function getAdmissionTypeClass(admType) {
+    if (!admType) return '';
+    return 'admtype-' + admType.toLowerCase();
 }

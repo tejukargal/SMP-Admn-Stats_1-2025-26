@@ -52,6 +52,7 @@
                 <button class="nav-tab active" onclick="showSection('statistics')">📊 Statistics</button>
                 <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
                 <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
+                <button class="nav-tab" onclick="showSection('feelist')">📋 Fee List</button>
                 <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
             </div>
 
@@ -237,6 +238,92 @@
                             </thead>
                             <tbody>
                                 <!-- Dues data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feelist" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">📋 Fee List - Consolidated View</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Complete list of all students with detailed fee payment information
+                    </p>
+                    
+                    <!-- Fee List Metrics Grid -->
+                    <div class="metrics-grid" id="feeListMetricsGrid">
+                        <!-- Fee list metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="feeListCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="feeListYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="feeListAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Payment Status</label>
+                            <select id="feeListStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="Paid">Fully Paid</option>
+                                <option value="Partial">Partially Paid</option>
+                                <option value="Due">Dues Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="feeListNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearFeeListFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportFeeListToCSV()" id="exportFeeListAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveFeeListToPDF()" id="saveFeeListAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearFeeListSelection()" id="clearFeeListSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedFeeListToCSV()" id="exportFeeListSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedFeeListToPDF()" id="saveFeeListSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feelist">
+                        <table id="feeListTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Rpt</th>
+                                    <th>SMP Alloted</th>
+                                    <th>SVK Alloted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Alloted</th>
+                                    <th>Total Paid</th>
+                                    <th>Total Dues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Fee list data will be populated here -->
                             </tbody>
                         </table>
                     </div>
