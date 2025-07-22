@@ -301,6 +301,16 @@ function loadTheme() {
 
 // Section navigation
 function showSection(sectionName) {
+    // If switching to fee list section, check access control FIRST
+    if (sectionName === 'feelist') {
+        const accessKey = prompt('🔐 Enter access key to view Fee List:');
+        if (accessKey === null || accessKey === '' || accessKey !== 'teju2015') {
+            alert('❌ Access denied. Invalid access key.');
+            // Don't switch sections, exit immediately
+            return;
+        }
+    }
+    
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
@@ -317,16 +327,9 @@ function showSection(sectionName) {
     // Add active class to clicked tab
     event.target.classList.add('active');
     
-    // If switching to fee list section, check access control first
+    // If switching to fee list section, load data
     if (sectionName === 'feelist') {
-        const accessKey = prompt('🔐 Enter access key to view Fee List:');
-        if (accessKey !== 'teju2015') {
-            alert('❌ Access denied. Invalid access key.');
-            // Stay on current section, don't switch
-            return;
-        }
-        
-        // Access granted, proceed with loading data
+        // Access already granted above, proceed with loading data
         if (feeListData.length === 0 && allStudentsData.length > 0) {
             populateFeeList();
         }
