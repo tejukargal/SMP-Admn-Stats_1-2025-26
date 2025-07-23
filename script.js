@@ -4201,7 +4201,6 @@ function generateFeeListMetrics() {
     const totalStudents = filteredFeeListData.length;
     const fullyPaidStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Paid').length;
     const partiallyPaidStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Partial').length;
-    const dueStudents = filteredFeeListData.filter(s => s['Payment Status'] === 'Due').length;
     
     const totalAlloted = filteredFeeListData.reduce((sum, s) => sum + s['Total Alloted'], 0);
     const totalPaid = filteredFeeListData.reduce((sum, s) => sum + s['Total Paid'], 0);
@@ -4215,7 +4214,6 @@ function generateFeeListMetrics() {
         { label: 'Total Students', value: totalStudents, color: 'var(--primary-color)' },
         { label: 'Fully Paid', value: fullyPaidStudents, color: 'var(--success-color)' },
         { label: 'Partially Paid', value: partiallyPaidStudents, color: 'var(--warning-color)' },
-        { label: 'Dues Pending', value: dueStudents, color: 'var(--error-color)' },
         { label: 'Total Alloted', value: formatAmount(totalAlloted), color: 'var(--info-color)' },
         { label: 'Total Paid', value: formatAmount(totalPaid), color: 'var(--success-color)' },
         { label: 'Total Dues', value: formatAmount(totalDues), color: 'var(--error-color)' }
@@ -4246,7 +4244,6 @@ function clearFeeListFilters() {
 
 // Update selection buttons for Fee List
 function updateFeeListSelectionButtons() {
-    const checkboxes = document.querySelectorAll('#feeListTable .student-checkbox');
     const checkedBoxes = document.querySelectorAll('#feeListTable .student-checkbox:checked');
     
     const clearBtn = document.getElementById('clearFeeListSelectionBtn');

@@ -1127,6 +1127,64 @@ table {
     min-width: 1800px; /* Wider minimum width for fee list table with all fee columns */
 }
 
+/* Summary table column widths optimization */
+#summaryTable {
+    min-width: 900px; /* Slightly wider minimum for better column spacing */
+}
+
+#summaryTable th:nth-child(1), #summaryTable td:nth-child(1) {
+    width: 120px; /* Fixed width for Year column */
+    min-width: 120px;
+}
+
+#summaryTable th:nth-child(2), #summaryTable td:nth-child(2) {
+    width: 100px; /* Fixed width for Course column */
+    min-width: 100px;
+}
+
+#summaryTable th:nth-child(3), #summaryTable td:nth-child(3),
+#summaryTable th:nth-child(4), #summaryTable td:nth-child(4),
+#summaryTable th:nth-child(5), #summaryTable td:nth-child(5),
+#summaryTable th:nth-child(6), #summaryTable td:nth-child(6) {
+    width: 90px; /* Fixed width for admission type columns */
+    min-width: 90px;
+    text-align: center;
+}
+
+#summaryTable th:nth-child(7), #summaryTable td:nth-child(7) {
+    width: 100px; /* Fixed width for Total column */
+    min-width: 100px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Date-wise table column widths optimization */
+#datewiseTable {
+    min-width: 850px; /* Minimum width for better column spacing */
+}
+
+#datewiseTable th:nth-child(1), #datewiseTable td:nth-child(1) {
+    width: 140px; /* Fixed width for Date column */
+    min-width: 140px;
+}
+
+#datewiseTable th:nth-child(2), #datewiseTable td:nth-child(2),
+#datewiseTable th:nth-child(3), #datewiseTable td:nth-child(3),
+#datewiseTable th:nth-child(4), #datewiseTable td:nth-child(4),
+#datewiseTable th:nth-child(5), #datewiseTable td:nth-child(5),
+#datewiseTable th:nth-child(6), #datewiseTable td:nth-child(6) {
+    width: 100px; /* Fixed width for course columns */
+    min-width: 100px;
+    text-align: center;
+}
+
+#datewiseTable th:nth-child(7), #datewiseTable td:nth-child(7) {
+    width: 100px; /* Fixed width for Total column */
+    min-width: 100px;
+    text-align: center;
+    font-weight: bold;
+}
+
 th, td {
     padding: 14px 16px;
     text-align: left;
@@ -1838,6 +1896,26 @@ select:focus, input:focus {
         min-height: 110px;
     }
 
+    /* Specific styling for fee list metrics grid on mobile to show 2 per row */
+    #feeListMetricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    #feeListMetricsGrid .metric-card {
+        min-width: auto;
+        padding: 12px 14px;
+        min-height: 110px;
+    }
+
+    #feeListMetricsGrid .metric-card h3 {
+        font-size: 1.6rem;
+    }
+
+    #feeListMetricsGrid .metric-card p {
+        font-size: 0.8rem;
+    }
+
     #duesMetricsGrid .metric-number {
         font-size: 1.6rem;
     }
@@ -1943,6 +2021,58 @@ select:focus, input:focus {
 
     #feeListTable {
         min-width: 1600px; /* Wider minimum width for mobile fee list table */
+    }
+
+    /* Summary table mobile optimization */
+    #summaryTable {
+        min-width: 800px; /* Minimum width for mobile summary table */
+    }
+
+    #summaryTable th:nth-child(1), #summaryTable td:nth-child(1) {
+        width: 100px; /* Slightly smaller Year column on mobile */
+        min-width: 100px;
+    }
+
+    #summaryTable th:nth-child(2), #summaryTable td:nth-child(2) {
+        width: 80px; /* Smaller Course column on mobile */
+        min-width: 80px;
+    }
+
+    #summaryTable th:nth-child(3), #summaryTable td:nth-child(3),
+    #summaryTable th:nth-child(4), #summaryTable td:nth-child(4),
+    #summaryTable th:nth-child(5), #summaryTable td:nth-child(5),
+    #summaryTable th:nth-child(6), #summaryTable td:nth-child(6) {
+        width: 70px; /* Smaller admission type columns on mobile */
+        min-width: 70px;
+    }
+
+    #summaryTable th:nth-child(7), #summaryTable td:nth-child(7) {
+        width: 80px; /* Smaller Total column on mobile */
+        min-width: 80px;
+    }
+
+    /* Date-wise table mobile optimization */
+    #datewiseTable {
+        min-width: 750px; /* Minimum width for mobile datewise table */
+    }
+
+    #datewiseTable th:nth-child(1), #datewiseTable td:nth-child(1) {
+        width: 120px; /* Smaller Date column on mobile */
+        min-width: 120px;
+    }
+
+    #datewiseTable th:nth-child(2), #datewiseTable td:nth-child(2),
+    #datewiseTable th:nth-child(3), #datewiseTable td:nth-child(3),
+    #datewiseTable th:nth-child(4), #datewiseTable td:nth-child(4),
+    #datewiseTable th:nth-child(5), #datewiseTable td:nth-child(5),
+    #datewiseTable th:nth-child(6), #datewiseTable td:nth-child(6) {
+        width: 80px; /* Smaller course columns on mobile */
+        min-width: 80px;
+    }
+
+    #datewiseTable th:nth-child(7), #datewiseTable td:nth-child(7) {
+        width: 90px; /* Smaller Total column on mobile */
+        min-width: 90px;
     }
 
     .section-title {
