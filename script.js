@@ -1948,7 +1948,6 @@ function exportSummaryToPDF() {
         }
         
         const cells = row.querySelectorAll('td');
-        const rowData = Array.from(cells).map(cell => cell.textContent.trim());
         
         // Check if this is a subtotal or grand total row
         const isSubtotal = row.classList.contains('subtotal-row');
@@ -1970,11 +1969,42 @@ function exportSummaryToPDF() {
         }
         
         xPos = 15;
-        rowData.forEach((data, i) => {
-            const text = String(data);
-            doc.text(text, xPos + 2, currentY + 2);
-            xPos += colWidths[i];
-        });
+        
+        // Handle Grand Total row special case with proper alignment
+        if (isGrandTotal) {
+            // For Grand Total row, manually construct the row data to match header alignment
+            const grandTotalText = cells[0].textContent.trim(); // "GRAND TOTAL"
+            const regularVal = cells[1].textContent.trim();
+            const ltrlVal = cells[2].textContent.trim();
+            const snqVal = cells[3].textContent.trim();
+            const rptrVal = cells[4].textContent.trim();
+            const totalVal = cells[5].textContent.trim();
+            
+            // Create properly aligned row data (7 columns to match headers)
+            const alignedRowData = [
+                '', // Year column - empty for grand total
+                grandTotalText, // Course column - contains "GRAND TOTAL"
+                regularVal,
+                ltrlVal, 
+                snqVal,
+                rptrVal,
+                totalVal
+            ];
+            
+            alignedRowData.forEach((data, i) => {
+                const text = String(data);
+                doc.text(text, xPos + 2, currentY + 2);
+                xPos += colWidths[i];
+            });
+        } else {
+            // Handle normal rows and subtotal rows
+            const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+            rowData.forEach((data, i) => {
+                const text = String(data);
+                doc.text(text, xPos + 2, currentY + 2);
+                xPos += colWidths[i];
+            });
+        }
         
         currentY += rowHeight;
     });
