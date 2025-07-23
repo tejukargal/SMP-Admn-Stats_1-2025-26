@@ -4279,12 +4279,28 @@ function updateFeeListSelectionButtons() {
     const clearBtn = document.getElementById('clearFeeListSelectionBtn');
     const exportSelectedBtn = document.getElementById('exportFeeListSelectedBtn');
     const saveSelectedBtn = document.getElementById('saveFeeListSelectedBtn');
+    const exportAllBtn = document.getElementById('exportFeeListAllBtn');
+    const saveAllBtn = document.getElementById('saveFeeListAllBtn');
     
     const hasSelection = checkedBoxes.length > 0;
     
+    // Enable/disable selected buttons
     clearBtn.disabled = !hasSelection;
     exportSelectedBtn.disabled = !hasSelection;
     saveSelectedBtn.disabled = !hasSelection;
+    
+    // Disable/enable regular export buttons when selection is active
+    exportAllBtn.disabled = hasSelection;
+    saveAllBtn.disabled = hasSelection;
+    
+    // Update opacity for visual feedback
+    if (hasSelection) {
+        exportAllBtn.style.opacity = '0.4';
+        saveAllBtn.style.opacity = '0.4';
+    } else {
+        exportAllBtn.style.opacity = '1';
+        saveAllBtn.style.opacity = '1';
+    }
 }
 
 // Clear Fee List selection
