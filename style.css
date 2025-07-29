@@ -1452,6 +1452,57 @@ select:focus, input:focus {
     box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
 }
 
+.btn-excel {
+    background: #0d7377 !important;
+    color: white !important;
+    margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-excel:hover {
+    background: #0a5d61 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(13, 115, 119, 0.4);
+}
+
+.section-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.btn-excel-small, .btn-pdf-small {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 80px;
+    height: 32px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-excel-small {
+    background: #0d7377 !important;
+    color: white !important;
+}
+
+.btn-excel-small:hover {
+    background: #0a5d61 !important;
+    box-shadow: 0 2px 8px rgba(13, 115, 119, 0.4);
+}
+
+.btn-pdf-small {
+    background: #fd7e14 !important;
+    color: white !important;
+}
+
+.btn-pdf-small:hover {
+    background: #e96500 !important;
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.4);
+}
+
 .btn-summary {
     background: var(--primary-color);
     margin-left: 10px;
@@ -2466,5 +2517,253 @@ td:first-child {
         padding: 10px 8px;
         min-width: auto;
         height: 40px;
+    }
+}
+
+/* ========================================== */
+/* FEE STATISTICS TABLE OPTIMIZATIONS */
+/* ========================================== */
+
+/* Fee Statistics Table first column optimization */
+#feeStatsSummaryTable th:first-child,
+#feeStatsYearwiseTable th:first-child,
+#feeStatsCoursewiseTable th:first-child,
+#feeStatsCombinedTable th:first-child,
+#feeStatsYearwiseFullyPaidTable th:first-child,
+#feeStatsCoursewiseFullyPaidTable th:first-child,
+#feeStatsCombinedFullyPaidTable th:first-child,
+#feeStatsYearwisePartiallyPaidTable th:first-child,
+#feeStatsCoursewisePartiallyPaidTable th:first-child,
+#feeStatsCombinedPartiallyPaidTable th:first-child {
+    min-width: 140px;
+    width: 140px;
+    text-align: left;
+}
+
+#feeStatsSummaryTable td:first-child,
+#feeStatsYearwiseTable td:first-child,
+#feeStatsCoursewiseTable td:first-child,
+#feeStatsCombinedTable td:first-child,
+#feeStatsYearwiseFullyPaidTable td:first-child,
+#feeStatsCoursewiseFullyPaidTable td:first-child,
+#feeStatsCombinedFullyPaidTable td:first-child,
+#feeStatsYearwisePartiallyPaidTable td:first-child,
+#feeStatsCoursewisePartiallyPaidTable td:first-child,
+#feeStatsCombinedPartiallyPaidTable td:first-child {
+    min-width: 140px;
+    width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    padding-left: 8px;
+}
+
+/* Combined table second column (Course) optimization */
+#feeStatsCombinedTable th:nth-child(2),
+#feeStatsCombinedTable td:nth-child(2) {
+    min-width: 80px;
+    width: 80px;
+    text-align: center;
+}
+
+/* Fee Statistics amount columns optimization */
+#feeStatsSummaryTable .amount,
+#feeStatsYearwiseTable .amount,
+#feeStatsCoursewiseTable .amount,
+#feeStatsCombinedTable .amount {
+    text-align: right;
+    min-width: 90px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    padding-right: 8px;
+}
+
+/* Students count column */
+#feeStatsSummaryTable th:nth-child(2),
+#feeStatsYearwiseTable th:nth-child(2),
+#feeStatsCoursewiseTable th:nth-child(2),
+#feeStatsCombinedTable th:nth-child(3) {
+    min-width: 70px;
+    width: 70px;
+    text-align: center;
+}
+
+#feeStatsSummaryTable td:nth-child(2),
+#feeStatsYearwiseTable td:nth-child(2),
+#feeStatsCoursewiseTable td:nth-child(2),
+#feeStatsCombinedTable td:nth-child(3) {
+    min-width: 70px;
+    width: 70px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Year subtotal row styling */
+.year-subtotal-row {
+    background-color: var(--table-hover) !important;
+    font-weight: 600;
+    border-top: 2px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.year-subtotal-row td {
+    padding: 8px 6px !important;
+    color: var(--primary-color) !important;
+}
+
+/* Grand total row enhanced styling */
+.grand-total-row {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+    color: white !important;
+    font-weight: 700;
+    border-top: 3px solid var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.grand-total-row td {
+    color: white !important;
+    padding: 10px 6px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Total row styling for consistency */
+.total-row {
+    background: linear-gradient(135deg, var(--info-color) 0%, var(--accent-color) 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    border-top: 2px solid var(--info-color);
+    border-bottom: 2px solid var(--info-color);
+}
+
+.total-row td {
+    color: white !important;
+    padding: 8px 6px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Fee Statistics specific scrollable containers */
+.table-container.scrollable-feestats {
+    max-height: 500px;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 15px;
+}
+
+/* Fee Statistics metrics grid enhancements */
+#feeStatsMetricsGrid .metric-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--hover-bg) 100%);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+#feeStatsMetricsGrid .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-color: var(--primary-color);
+}
+
+/* Due amounts highlighting in Fee Statistics */
+#feeStatsSummaryTable .due-amount,
+#feeStatsYearwiseTable .due-amount,
+#feeStatsCoursewiseTable .due-amount,
+#feeStatsCombinedTable .due-amount {
+    color: var(--error-color);
+    font-weight: 600;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+/* Collection percentage styling */
+#feeStatsSummaryTable td:last-child,
+#feeStatsYearwiseTable td:last-child,
+#feeStatsCoursewiseTable td:last-child,
+#feeStatsCombinedTable td:last-child {
+    font-weight: 600;
+    color: var(--success-color);
+    text-align: center;
+    min-width: 80px;
+    background-color: rgba(76, 201, 240, 0.1);
+    border-radius: 4px;
+}
+
+/* Subsection title styling for Fee Statistics */
+.subsection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 10px 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, var(--hover-bg) 0%, var(--table-header-bg) 100%);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Fee Statistics table headers */
+#feeStatsSummaryTable th,
+#feeStatsYearwiseTable th,
+#feeStatsCoursewiseTable th,
+#feeStatsCombinedTable th,
+#feeStatsYearwiseFullyPaidTable th,
+#feeStatsCoursewiseFullyPaidTable th,
+#feeStatsYearwisePartiallyPaidTable th,
+#feeStatsCoursewisePartiallyPaidTable th {
+    background: linear-gradient(135deg, var(--table-header-bg) 0%, var(--hover-bg) 100%);
+    color: var(--table-header-text);
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 6px;
+    border-bottom: 2px solid var(--primary-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Fee Statistics table body styling */
+#feeStatsSummaryTable tbody tr:hover,
+#feeStatsYearwiseTable tbody tr:hover,
+#feeStatsCoursewiseTable tbody tr:hover,
+#feeStatsCombinedTable tbody tr:hover,
+#feeStatsYearwiseFullyPaidTable tbody tr:hover,
+#feeStatsCoursewiseFullyPaidTable tbody tr:hover,
+#feeStatsYearwisePartiallyPaidTable tbody tr:hover,
+#feeStatsCoursewisePartiallyPaidTable tbody tr:hover {
+    background-color: var(--table-hover);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Responsive improvements for Fee Statistics */
+@media (max-width: 768px) {
+    #feeStatsSummaryTable,
+    #feeStatsYearwiseTable,
+    #feeStatsCoursewiseTable,
+    #feeStatsCombinedTable {
+        font-size: 0.8em;
+    }
+    
+    #feeStatsSummaryTable th:first-child,
+    #feeStatsYearwiseTable th:first-child,
+    #feeStatsCoursewiseTable th:first-child,
+    #feeStatsCombinedTable th:first-child,
+    #feeStatsSummaryTable td:first-child,
+    #feeStatsYearwiseTable td:first-child,
+    #feeStatsCoursewiseTable td:first-child,
+    #feeStatsCombinedTable td:first-child {
+        min-width: 100px;
+        width: 100px;
+    }
+    
+    .amount {
+        min-width: 70px !important;
+        font-size: 0.85em;
+    }
+    
+    .table-container.scrollable-feestats {
+        max-height: 400px;
     }
 }

@@ -311,6 +311,16 @@ function showSection(sectionName) {
         }
     }
     
+    // If switching to fee statistics section, check access control FIRST
+    if (sectionName === 'feestats') {
+        const accessKey = prompt('🔐 Enter access key to view Fee Statistics:');
+        if (accessKey === null || accessKey === '' || accessKey !== 'teju2015') {
+            alert('❌ Access denied. Invalid access key.');
+            // Don't switch sections, exit immediately
+            return;
+        }
+    }
+    
     // Hide all sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
@@ -1881,7 +1891,7 @@ function exportSummaryToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -1907,7 +1917,7 @@ function exportSummaryToPDF() {
     const startY = 55;
     
     doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     
     doc.setFillColor(240, 240, 240);
     doc.rect(15, startY - 2, 180, 8, 'F');
@@ -1933,7 +1943,7 @@ function exportSummaryToPDF() {
             currentY = 20;
             
             // Repeat headers on new page
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
             doc.rect(15, currentY - 2, 180, 8, 'F');
             
@@ -1957,7 +1967,7 @@ function exportSummaryToPDF() {
             doc.setFillColor(67, 97, 238);
             doc.rect(15, currentY - 2, 180, rowHeight, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
         } else if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
             doc.rect(15, currentY - 2, 180, rowHeight, 'F');
@@ -2035,7 +2045,7 @@ function exportDatewiseToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -2061,7 +2071,7 @@ function exportDatewiseToPDF() {
     const startY = 55;
     
     doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     
     doc.setFillColor(240, 240, 240);
     doc.rect(15, startY - 2, 180, 8, 'F');
@@ -2087,7 +2097,7 @@ function exportDatewiseToPDF() {
             currentY = 20;
             
             // Repeat headers on new page
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
             doc.rect(15, currentY - 2, 180, 8, 'F');
             
@@ -2111,7 +2121,7 @@ function exportDatewiseToPDF() {
             doc.setFillColor(67, 97, 238);
             doc.rect(15, currentY - 2, 180, rowHeight, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
         } else if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
             doc.rect(15, currentY - 2, 180, rowHeight, 'F');
@@ -2163,7 +2173,7 @@ function saveToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -2185,8 +2195,8 @@ function saveToPDF() {
     };
     
     if (courseFilter !== 'All Courses' && courseHeaders[courseFilter]) {
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
+        doc.setFontSize(10);
+        doc.setFont('times', 'bold');
         doc.text(courseHeaders[courseFilter], 105, 55, { align: 'center' });
     }
     
@@ -2195,7 +2205,7 @@ function saveToPDF() {
     const startY = courseFilter !== 'All Courses' ? 65 : 55;
     
     doc.setFontSize(9);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     
     doc.setFillColor(240, 240, 240);
     doc.rect(15, startY - 2, 180, 8, 'F');
@@ -2220,7 +2230,7 @@ function saveToPDF() {
             doc.addPage();
             currentY = 20;
             
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
             doc.rect(15, currentY - 2, 180, 8, 'F');
             
@@ -2307,7 +2317,7 @@ function saveDuesToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -2323,7 +2333,7 @@ function saveDuesToPDF() {
     // Calculate total dues amount
     const totalDuesAmount = filteredDuesData.reduce((sum, student) => sum + student['Total Dues'], 0);
     doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
     
     // Table headers
@@ -2331,7 +2341,7 @@ function saveDuesToPDF() {
     const startY = 65;
     
     doc.setFontSize(7);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     
     doc.setFillColor(240, 240, 240);
     doc.rect(15, startY - 2, 266, 8, 'F');
@@ -2356,7 +2366,7 @@ function saveDuesToPDF() {
             doc.addPage();
             currentY = 20;
             
-            doc.setFont(undefined, 'bold');
+            doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
             doc.rect(15, currentY - 2, 266, 8, 'F');
             
@@ -2724,7 +2734,7 @@ function saveNotAdmittedToPDF() {
     doc.setFontSize(16);
     doc.text('SMP Not Admitted Students List', 14, 15);
     
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 25);
     doc.text(`Total Students: ${filteredNotAdmittedData.length}`, 14, 32);
     
@@ -3558,7 +3568,7 @@ function saveSelectedToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -3737,7 +3747,7 @@ function saveSelectedDuesToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -3892,7 +3902,7 @@ function saveSelectedNotAdmittedToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 105, 20, { align: 'center' });
     
     doc.setFontSize(14);
@@ -4425,7 +4435,7 @@ function saveFeeListToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
     
     doc.setFontSize(14);
@@ -4464,8 +4474,8 @@ function saveFeeListToPDF() {
         body: tableData,
         startY: 45,
         styles: { 
-            fontSize: 7, 
-            cellPadding: 2,
+            fontSize: 6, 
+            cellPadding: 1.5,
             overflow: 'ellipsize',
             cellWidth: 'wrap'
         },
@@ -4520,7 +4530,7 @@ function saveSelectedFeeListToPDF() {
     
     // Header
     doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('times', 'bold');
     doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
     
     doc.setFontSize(14);
@@ -4559,8 +4569,8 @@ function saveSelectedFeeListToPDF() {
         body: tableData,
         startY: 45,
         styles: { 
-            fontSize: 7, 
-            cellPadding: 2,
+            fontSize: 6, 
+            cellPadding: 1.5,
             overflow: 'ellipsize',
             cellWidth: 'wrap'
         },
@@ -4600,6 +4610,2832 @@ document.getElementById('feeListCourseFilter').addEventListener('change', applyF
 document.getElementById('feeListYearFilter').addEventListener('change', applyFeeListFilters);
 document.getElementById('feeListAdmTypeFilter').addEventListener('change', applyFeeListFilters);
 document.getElementById('feeListStatusFilter').addEventListener('change', applyFeeListFilters);
+
+// ===========================================
+// FEE STATISTICS FUNCTIONALITY
+// ===========================================
+
+let feeStatsData = [];
+let filteredFeeStatsData = [];
+
+// Initialize Fee Statistics when section is accessed
+function initializeFeeStats() {
+    console.log('=== INITIALIZING FEE STATISTICS ===');
+    
+    // Always ensure we have the latest fee list data
+    if (feeListData.length === 0 && allStudentsData.length > 0) {
+        console.log('Populating Fee List for Statistics...');
+        populateFeeList();
+    }
+    
+    // Force refresh of fee stats data to ensure accuracy
+    populateFeeStats();
+    populateFeeStatsFilters();
+    displayFeeStats();
+    generateFeeStatsMetrics();
+}
+
+function populateFeeStats() {
+    console.log('Populating Fee Statistics from', feeListData.length, 'students');
+    
+    // Use EXACT same data as Fee List to ensure accuracy
+    feeStatsData = [...feeListData];
+    filteredFeeStatsData = [...feeStatsData];
+    
+    console.log('Fee Statistics populated with', feeStatsData.length, 'students');
+    console.log('Fee Stats - Students with dues:', feeStatsData.filter(s => s['Total Dues'] > 0).length);
+    console.log('Fee Stats - Students fully paid:', feeStatsData.filter(s => s['Total Dues'] === 0).length);
+}
+
+// Populate filters for Fee Statistics
+function populateFeeStatsFilters() {
+    if (feeStatsData.length === 0) return;
+    
+    const courses = [...new Set(feeStatsData.map(s => s['Course']))].sort();
+    const years = [...new Set(feeStatsData.map(s => s['Year']))].sort();
+    const admTypes = [...new Set(feeStatsData.map(s => s['Adm Type']).filter(type => type))].sort();
+
+    const courseFilter = document.getElementById('feeStatsCourseFilter');
+    const yearFilter = document.getElementById('feeStatsYearFilter');
+    const admTypeFilter = document.getElementById('feeStatsAdmTypeFilter');
+
+    // Clear existing options (except "All" option)
+    courseFilter.innerHTML = '<option value="">All Courses</option>';
+    yearFilter.innerHTML = '<option value="">All Years</option>';
+    admTypeFilter.innerHTML = '<option value="">All Types</option>';
+
+    // Populate course filter
+    courses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course;
+        option.textContent = course;
+        courseFilter.appendChild(option);
+    });
+
+    // Populate year filter
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearFilter.appendChild(option);
+    });
+
+    // Populate admission type filter
+    admTypes.forEach(admType => {
+        const option = document.createElement('option');
+        option.value = admType;
+        option.textContent = admType;
+        admTypeFilter.appendChild(option);
+    });
+}
+
+// Apply filters to fee statistics data
+function applyFeeStatsFilters() {
+    const courseFilter = document.getElementById('feeStatsCourseFilter').value.toLowerCase();
+    const yearFilter = document.getElementById('feeStatsYearFilter').value.toLowerCase();
+    const admTypeFilter = document.getElementById('feeStatsAdmTypeFilter').value.toLowerCase();
+    const tableFilter = document.getElementById('feeStatsTableFilter').value;
+
+    filteredFeeStatsData = feeStatsData.filter(student => {
+        const courseMatch = !courseFilter || student['Course'].toLowerCase().includes(courseFilter);
+        const yearMatch = !yearFilter || student['Year'].toString().toLowerCase().includes(yearFilter);
+        const admTypeMatch = !admTypeFilter || (student['Adm Type'] && student['Adm Type'].toLowerCase().includes(admTypeFilter));
+
+        return courseMatch && yearMatch && admTypeMatch;
+    });
+
+    console.log('Filtered Fee Stats:', filteredFeeStatsData.length, 'students');
+    
+    displayFeeStats();
+    generateFeeStatsMetrics();
+    
+    // Show/hide table sections based on filter
+    showHideFeeStatsTables(tableFilter);
+}
+
+// Show/hide fee stats table sections based on filter
+function showHideFeeStatsTables(tableFilter) {
+    const summarySection = document.getElementById('feeStatsSummarySection');
+    const yearwiseSection = document.getElementById('feeStatsYearwiseSection');
+    const coursewiseSection = document.getElementById('feeStatsCoursewiseSection');
+    const combinedSection = document.getElementById('feeStatsCombinedSection');
+    const fullyPaidSection = document.getElementById('feeStatsFullyPaidSection');
+    const partiallyPaidSection = document.getElementById('feeStatsPartiallyPaidSection');
+    
+    // Hide all sections first
+    [summarySection, yearwiseSection, coursewiseSection, combinedSection, fullyPaidSection, partiallyPaidSection].forEach(section => {
+        if (section) section.style.display = 'none';
+    });
+    
+    // Show sections based on filter
+    switch(tableFilter) {
+        case 'summary':
+            if (summarySection) summarySection.style.display = 'block';
+            break;
+        case 'yearwise':
+            if (yearwiseSection) yearwiseSection.style.display = 'block';
+            break;
+        case 'coursewise':
+            if (coursewiseSection) coursewiseSection.style.display = 'block';
+            break;
+        case 'combined':
+            if (combinedSection) combinedSection.style.display = 'block';
+            break;
+        case 'fullypaid':
+            if (fullyPaidSection) fullyPaidSection.style.display = 'block';
+            break;
+        case 'partiallypaid':
+            if (partiallyPaidSection) partiallyPaidSection.style.display = 'block';
+            break;
+        default: // 'all'
+            [summarySection, yearwiseSection, coursewiseSection, combinedSection, fullyPaidSection, partiallyPaidSection].forEach(section => {
+                if (section) section.style.display = 'block';
+            });
+    }
+}
+
+// Clear all fee statistics filters
+function clearFeeStatsFilters() {
+    document.getElementById('feeStatsCourseFilter').value = '';
+    document.getElementById('feeStatsYearFilter').value = '';
+    document.getElementById('feeStatsAdmTypeFilter').value = '';
+    document.getElementById('feeStatsTableFilter').value = 'all';
+    
+    filteredFeeStatsData = [...feeStatsData];
+    displayFeeStats();
+    generateFeeStatsMetrics();
+    showHideFeeStatsTables('all');
+}
+
+// Display fee statistics tables
+function displayFeeStats() {
+    displayFeeStatsSummary();
+    displayFeeStatsYearwise();
+    displayFeeStatsCoursewise();
+    displayFeeStatsCombined();
+    displayFeeStatsFullyPaid();
+    displayFeeStatsPartiallyPaid();
+}
+
+// Display Fee Summary Table
+function displayFeeStatsSummary() {
+    const tbody = document.querySelector('#feeStatsSummaryTable tbody');
+    tbody.innerHTML = '';
+
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const paidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length;
+    const partialStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length;
+    const dueStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length;
+    
+    const summaryData = [
+        {
+            category: 'All Students',
+            students: filteredFeeStatsData.length,
+            ...totalStats
+        },
+        {
+            category: 'Fully Paid',
+            students: paidStudents,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))
+        },
+        {
+            category: 'Partially Paid',
+            students: partialStudents,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))
+        },
+        {
+            category: 'Dues Pending',
+            students: dueStudents,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))
+        }
+    ];
+
+    summaryData.forEach((data, index) => {
+        const row = document.createElement('tr');
+        if (index === 0) row.className = 'total-row';
+        
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        row.innerHTML = `
+            <td><strong>${data.category}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Display Year-wise Fee Statistics
+function displayFeeStatsYearwise() {
+    const tbody = document.querySelector('#feeStatsYearwiseTable tbody');
+    tbody.innerHTML = '';
+
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    const yearData = [];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        yearData.push({
+            year: year,
+            students: yearStudents.length,
+            ...stats
+        });
+    });
+
+    yearData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        row.innerHTML = `
+            <td><strong>${data.year}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (yearData.length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${filteredFeeStatsData.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Course-wise Fee Statistics
+function displayFeeStatsCoursewise() {
+    const tbody = document.querySelector('#feeStatsCoursewiseTable tbody');
+    tbody.innerHTML = '';
+
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    const courseData = [];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        courseData.push({
+            course: course,
+            students: courseStudents.length,
+            ...stats
+        });
+    });
+
+    courseData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        row.innerHTML = `
+            <td><strong>${data.course}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (courseData.length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${filteredFeeStatsData.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Combined Year & Course-wise Fee Statistics
+function displayFeeStatsCombined() {
+    const tbody = document.querySelector('#feeStatsCombinedTable tbody');
+    tbody.innerHTML = '';
+
+    const combinedGroups = {};
+    
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+
+    const combinedData = [];
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        combinedData.push({
+            year: year,
+            course: course,
+            students: students.length,
+            ...stats
+        });
+    });
+
+    // Group by year for subtotals
+    const yearSubtotals = {};
+    combinedData.forEach(data => {
+        if (!yearSubtotals[data.year]) {
+            yearSubtotals[data.year] = [];
+        }
+        yearSubtotals[data.year].push(data);
+    });
+
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearData = yearSubtotals[year];
+        
+        yearData.forEach(data => {
+            const row = document.createElement('tr');
+            const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+            
+            row.innerHTML = `
+                <td>${data.year}</td>
+                <td><strong>${data.course}</strong></td>
+                <td>${data.students}</td>
+                <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+                <td class="amount">${collectionPercentage}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add year subtotal if there are multiple courses
+        if (yearData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const subtotalRow = document.createElement('tr');
+            subtotalRow.className = 'year-subtotal-row';
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+            
+            subtotalRow.innerHTML = `
+                <td><strong>${year} SUBTOTAL</strong></td>
+                <td><strong>All Courses</strong></td>
+                <td><strong>${filteredFeeStatsData.filter(s => s['Year'] === year).length}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>${yearCollectionPercentage}%</strong></td>
+            `;
+            tbody.appendChild(subtotalRow);
+        }
+    });
+
+    // Add grand total row
+    if (combinedData.length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>GRAND TOTAL</strong></td>
+            <td><strong>All Years & Courses</strong></td>
+            <td><strong>${filteredFeeStatsData.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Fully Paid Students Tables
+function displayFeeStatsFullyPaid() {
+    displayFeeStatsYearwiseFullyPaid();
+    displayFeeStatsCoursewiseFullyPaid();
+    displayFeeStatsCombinedFullyPaid();
+}
+
+// Display Year-wise Fully Paid Students
+function displayFeeStatsYearwiseFullyPaid() {
+    const tbody = document.querySelector('#feeStatsYearwiseFullyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    const yearGroups = groupDataBy(fullyPaidStudents, 'Year');
+    const yearData = [];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        yearData.push({
+            year: year,
+            students: yearStudents.length,
+            ...stats
+        });
+    });
+
+    yearData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = '100.0'; // Always 100% for fully paid
+        
+        row.innerHTML = `
+            <td><strong>${data.year}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (yearData.length > 1) {
+        const totalStats = calculateFeeStats(fullyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${fullyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>100.0%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Course-wise Fully Paid Students
+function displayFeeStatsCoursewiseFullyPaid() {
+    const tbody = document.querySelector('#feeStatsCoursewiseFullyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    const courseGroups = groupDataBy(fullyPaidStudents, 'Course');
+    const courseData = [];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        courseData.push({
+            course: course,
+            students: courseStudents.length,
+            ...stats
+        });
+    });
+
+    courseData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = '100.0'; // Always 100% for fully paid
+        
+        row.innerHTML = `
+            <td><strong>${data.course}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (courseData.length > 1) {
+        const totalStats = calculateFeeStats(fullyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${fullyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>100.0%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Partially Paid Students Tables
+function displayFeeStatsPartiallyPaid() {
+    displayFeeStatsYearwisePartiallyPaid();
+    displayFeeStatsCoursewisePartiallyPaid();
+    displayFeeStatsCombinedPartiallyPaid();
+}
+
+// Display Year-wise Partially Paid Students
+function displayFeeStatsYearwisePartiallyPaid() {
+    const tbody = document.querySelector('#feeStatsYearwisePartiallyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    const yearGroups = groupDataBy(partiallyPaidStudents, 'Year');
+    const yearData = [];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        yearData.push({
+            year: year,
+            students: yearStudents.length,
+            ...stats
+        });
+    });
+
+    yearData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        row.innerHTML = `
+            <td><strong>${data.year}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (yearData.length > 1) {
+        const totalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${partiallyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Course-wise Partially Paid Students
+function displayFeeStatsCoursewisePartiallyPaid() {
+    const tbody = document.querySelector('#feeStatsCoursewisePartiallyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    const courseGroups = groupDataBy(partiallyPaidStudents, 'Course');
+    const courseData = [];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        courseData.push({
+            course: course,
+            students: courseStudents.length,
+            ...stats
+        });
+    });
+
+    courseData.forEach(data => {
+        const row = document.createElement('tr');
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        row.innerHTML = `
+            <td><strong>${data.course}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+            <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+            <td class="amount">${collectionPercentage}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Add total row
+    if (courseData.length > 1) {
+        const totalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>TOTAL</strong></td>
+            <td><strong>${partiallyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Combined Year & Course-wise Fully Paid Students
+function displayFeeStatsCombinedFullyPaid() {
+    const tbody = document.querySelector('#feeStatsCombinedFullyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    const combinedGroups = {};
+    
+    fullyPaidStudents.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+
+    const combinedData = [];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats
+        });
+    });
+
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearData = yearSubtotals[year];
+        
+        yearData.forEach(data => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.year}</td>
+                <td><strong>${data.course}</strong></td>
+                <td>${data.students}</td>
+                <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">100.0%</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add year subtotal if there are multiple courses
+        if (yearData.length > 1) {
+            const yearTotalStats = calculateFeeStats(fullyPaidStudents.filter(s => s['Year'] === year));
+            const subtotalRow = document.createElement('tr');
+            subtotalRow.className = 'year-subtotal-row';
+            
+            subtotalRow.innerHTML = `
+                <td><strong>${year} SUBTOTAL</strong></td>
+                <td><strong>All Courses</strong></td>
+                <td><strong>${fullyPaidStudents.filter(s => s['Year'] === year).length}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>100.0%</strong></td>
+            `;
+            tbody.appendChild(subtotalRow);
+        }
+    });
+
+    // Add grand total row
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalStats = calculateFeeStats(fullyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        
+        totalRow.innerHTML = `
+            <td><strong>GRAND TOTAL</strong></td>
+            <td><strong>All Years & Courses</strong></td>
+            <td><strong>${fullyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>100.0%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Display Combined Year & Course-wise Partially Paid Students
+function displayFeeStatsCombinedPartiallyPaid() {
+    const tbody = document.querySelector('#feeStatsCombinedPartiallyPaidTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    const combinedGroups = {};
+    
+    partiallyPaidStudents.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+
+    const combinedData = [];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats
+        });
+    });
+
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearData = yearSubtotals[year];
+        
+        yearData.forEach(data => {
+            const row = document.createElement('tr');
+            const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+            
+            row.innerHTML = `
+                <td>${data.year}</td>
+                <td><strong>${data.course}</strong></td>
+                <td>${data.students}</td>
+                <td class="amount">₹${data.smpAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalAlloted.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.smpPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.svkPaid.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${data.totalPaid.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.smpDue > 0 ? 'due-amount' : ''}">₹${data.smpDue.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.svkDue > 0 ? 'due-amount' : ''}">₹${data.svkDue.toLocaleString('en-IN')}</td>
+                <td class="amount ${data.totalDue > 0 ? 'due-amount' : ''}">₹${data.totalDue.toLocaleString('en-IN')}</td>
+                <td class="amount">${collectionPercentage}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add year subtotal if there are multiple courses
+        if (yearData.length > 1) {
+            const yearTotalStats = calculateFeeStats(partiallyPaidStudents.filter(s => s['Year'] === year));
+            const subtotalRow = document.createElement('tr');
+            subtotalRow.className = 'year-subtotal-row';
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+            
+            subtotalRow.innerHTML = `
+                <td><strong>${year} SUBTOTAL</strong></td>
+                <td><strong>All Courses</strong></td>
+                <td><strong>${partiallyPaidStudents.filter(s => s['Year'] === year).length}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>₹${yearTotalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+                <td class="amount"><strong>${yearCollectionPercentage}%</strong></td>
+            `;
+            tbody.appendChild(subtotalRow);
+        }
+    });
+
+    // Add grand total row
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'grand-total-row';
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        totalRow.innerHTML = `
+            <td><strong>GRAND TOTAL</strong></td>
+            <td><strong>All Years & Courses</strong></td>
+            <td><strong>${partiallyPaidStudents.length}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalAlloted.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalPaid.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.smpDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.svkDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totalStats.totalDue.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>${totalCollectionPercentage}%</strong></td>
+        `;
+        tbody.appendChild(totalRow);
+    }
+}
+
+// Helper function to calculate fee statistics for a group of students
+function calculateFeeStats(students) {
+    return {
+        smpAlloted: students.reduce((sum, s) => sum + (s['SMP Alloted'] || 0), 0),
+        svkAlloted: students.reduce((sum, s) => sum + (s['SVK Alloted'] || 0), 0),
+        totalAlloted: students.reduce((sum, s) => sum + (s['Total Alloted'] || 0), 0),
+        smpPaid: students.reduce((sum, s) => sum + (s['SMP Paid'] || 0), 0),
+        svkPaid: students.reduce((sum, s) => sum + (s['SVK Paid'] || 0), 0),
+        totalPaid: students.reduce((sum, s) => sum + (s['Total Paid'] || 0), 0),
+        smpDue: students.reduce((sum, s) => sum + (s['SMP Due'] || 0), 0),
+        svkDue: students.reduce((sum, s) => sum + (s['SVK Due'] || 0), 0),
+        totalDue: students.reduce((sum, s) => sum + (s['Total Dues'] || 0), 0)
+    };
+}
+
+// Helper function to group data by a specific field
+function groupDataBy(data, field) {
+    return data.reduce((groups, item) => {
+        const key = item[field];
+        if (!groups[key]) {
+            groups[key] = [];
+        }
+        groups[key].push(item);
+        return groups;
+    }, {});
+}
+
+// Generate Fee Statistics Metrics
+function generateFeeStatsMetrics() {
+    const container = document.getElementById('feeStatsMetricsGrid');
+    container.innerHTML = '';
+    
+    const totalStudents = filteredFeeStatsData.length;
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length;
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length;
+    const dueStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length;
+    
+    const stats = calculateFeeStats(filteredFeeStatsData);
+    const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) : '0.0';
+    
+    const formatAmount = (amount) => '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    
+    const metrics = [
+        { label: 'Total Students', value: totalStudents, color: 'var(--primary-color)' },
+        { label: 'Fully Paid', value: fullyPaidStudents, color: 'var(--success-color)' },
+        { label: 'Partially Paid', value: partiallyPaidStudents, color: 'var(--warning-color)' },
+        { label: 'Dues Pending', value: dueStudents, color: 'var(--error-color)' },
+        { label: 'Total Allotted', value: formatAmount(stats.totalAlloted), color: 'var(--info-color)' },
+        { label: 'Total Collected', value: formatAmount(stats.totalPaid), color: 'var(--success-color)' },
+        { label: 'Total Outstanding', value: formatAmount(stats.totalDue), color: 'var(--error-color)' },
+        { label: 'Collection Rate', value: collectionPercentage + '%', color: 'var(--primary-color)' }
+    ];
+
+    metrics.forEach(metric => {
+        const card = document.createElement('div');
+        card.className = 'metric-card';
+        card.innerHTML = `
+            <div class="metric-value" style="color: ${metric.color}">${metric.value}</div>
+            <div class="metric-label">${metric.label}</div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Export and PDF functions for Fee Statistics
+function exportFeeStatsToCSV() {
+    if (!confirm('📥 Export Fee Statistics to CSV?')) return;
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    let csvContent = '';
+    
+    // === 1. SUMMARY TABLE ===
+    csvContent += 'FEE COLLECTION SUMMARY,,,,,,,,,,,,\n';
+    csvContent += 'Category,Students,SMP Allotted,SVK Allotted,Total Allotted,SMP Paid,SVK Paid,Total Paid,SMP Due,SVK Due,Total Due,Collection %\n';
+    
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const summaryData = [
+        {
+            category: 'All Students',
+            students: filteredFeeStatsData.length,
+            ...totalStats
+        },
+        {
+            category: 'Fully Paid',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))
+        },
+        {
+            category: 'Partially Paid',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))
+        },
+        {
+            category: 'Dues Pending',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))
+        }
+    ];
+    
+    summaryData.forEach(data => {
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `${data.category},${data.students},${data.smpAlloted},${data.svkAlloted},${data.totalAlloted},${data.smpPaid},${data.svkPaid},${data.totalPaid},${data.smpDue},${data.svkDue},${data.totalDue},${collectionPercentage}%\n`;
+    });
+    
+    csvContent += '\n\n';
+    
+    // === 2. YEAR-WISE TABLE ===
+    csvContent += 'YEAR-WISE FEE COLLECTION STATISTICS,,,,,,,,,,,,\n';
+    csvContent += 'Year,Students,SMP Allotted,SVK Allotted,Total Allotted,SMP Paid,SVK Paid,Total Paid,SMP Due,SVK Due,Total Due,Collection %\n';
+    
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `${year},${yearStudents.length},${stats.smpAlloted},${stats.svkAlloted},${stats.totalAlloted},${stats.smpPaid},${stats.svkPaid},${stats.totalPaid},${stats.smpDue},${stats.svkDue},${stats.totalDue},${collectionPercentage}%\n`;
+    });
+    
+    // Year-wise total
+    if (Object.keys(yearGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `TOTAL,${filteredFeeStatsData.length},${totalStats.smpAlloted},${totalStats.svkAlloted},${totalStats.totalAlloted},${totalStats.smpPaid},${totalStats.svkPaid},${totalStats.totalPaid},${totalStats.smpDue},${totalStats.svkDue},${totalStats.totalDue},${totalCollectionPercentage}%\n`;
+    }
+    
+    csvContent += '\n\n';
+    
+    // === 3. COURSE-WISE TABLE ===
+    csvContent += 'COURSE-WISE FEE COLLECTION STATISTICS,,,,,,,,,,,,\n';
+    csvContent += 'Course,Students,SMP Allotted,SVK Allotted,Total Allotted,SMP Paid,SVK Paid,Total Paid,SMP Due,SVK Due,Total Due,Collection %\n';
+    
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `${course},${courseStudents.length},${stats.smpAlloted},${stats.svkAlloted},${stats.totalAlloted},${stats.smpPaid},${stats.svkPaid},${stats.totalPaid},${stats.smpDue},${stats.svkDue},${stats.totalDue},${collectionPercentage}%\n`;
+    });
+    
+    // Course-wise total
+    if (Object.keys(courseGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `TOTAL,${filteredFeeStatsData.length},${totalStats.smpAlloted},${totalStats.svkAlloted},${totalStats.totalAlloted},${totalStats.smpPaid},${totalStats.svkPaid},${totalStats.totalPaid},${totalStats.smpDue},${totalStats.svkDue},${totalStats.totalDue},${totalCollectionPercentage}%\n`;
+    }
+    
+    csvContent += '\n\n';
+    
+    // === 4. COMBINED YEAR & COURSE-WISE TABLE ===
+    csvContent += 'COMBINED YEAR & COURSE-WISE FEE STATISTICS,,,,,,,,,,,,,\n';
+    csvContent += 'Year,Course,Students,SMP Allotted,SVK Allotted,Total Allotted,SMP Paid,SVK Paid,Total Paid,SMP Due,SVK Due,Total Due,Collection %\n';
+    
+    const combinedGroups = {};
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+    
+    // Group by year for subtotals
+    const yearSubtotals = {};
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) : '0.0';
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats, collectionPercentage
+        });
+    });
+    
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearData = yearSubtotals[year];
+        
+        yearData.forEach(data => {
+            csvContent += `${data.year},${data.course},${data.students},${data.smpAlloted},${data.svkAlloted},${data.totalAlloted},${data.smpPaid},${data.svkPaid},${data.totalPaid},${data.smpDue},${data.svkDue},${data.totalDue},${data.collectionPercentage}%\n`;
+        });
+        
+        // Add year subtotal if there are multiple courses
+        if (yearData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+            csvContent += `${year} SUBTOTAL,All Courses,${filteredFeeStatsData.filter(s => s['Year'] === year).length},${yearTotalStats.smpAlloted},${yearTotalStats.svkAlloted},${yearTotalStats.totalAlloted},${yearTotalStats.smpPaid},${yearTotalStats.svkPaid},${yearTotalStats.totalPaid},${yearTotalStats.smpDue},${yearTotalStats.svkDue},${yearTotalStats.totalDue},${yearCollectionPercentage}%\n`;
+        }
+    });
+    
+    // Add grand total
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) : '0.0';
+        csvContent += `GRAND TOTAL,All Years & Courses,${filteredFeeStatsData.length},${totalStats.smpAlloted},${totalStats.svkAlloted},${totalStats.totalAlloted},${totalStats.smpPaid},${totalStats.svkPaid},${totalStats.totalPaid},${totalStats.smpDue},${totalStats.svkDue},${totalStats.totalDue},${totalCollectionPercentage}%\n`;
+    }
+    
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `SMP_Fee_Statistics_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function saveFeeStatsToExcel() {
+    if (!confirm('📊 Save Complete Fee Statistics as Excel file with multiple sheets? This will include all tables in separate sheets.')) return;
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    // 1. Fee Collection Summary Sheet
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const summaryData = [
+        ['Category', 'Total Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %'],
+        [
+            'All Students', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            (totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%')
+        ],
+        [
+            'Fully Paid', filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))),
+            '100.0%'
+        ],
+        [
+            'Partially Paid', filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))),
+            ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalAlloted) * 100).toFixed(1) + '%'
+        ],
+        [
+            'Dues Pending', filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))),
+            ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalAlloted) * 100).toFixed(1) + '%'
+        ]
+    ];
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Fee Summary');
+    
+    // 2. Year-wise Fee Statistics Sheet
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    const yearData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    // Add year-wise total row
+    if (Object.keys(yearGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            'TOTAL', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const yearSheet = XLSX.utils.aoa_to_sheet(yearData);
+    XLSX.utils.book_append_sheet(workbook, yearSheet, 'Year-wise Statistics');
+    
+    // 3. Course-wise Fee Statistics Sheet
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    const courseData = [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            course, courseStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    // Add course-wise total row
+    if (Object.keys(courseGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            'TOTAL', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const courseSheet = XLSX.utils.aoa_to_sheet(courseData);
+    XLSX.utils.book_append_sheet(workbook, courseSheet, 'Course-wise Statistics');
+    
+    // 4. Combined Year & Course-wise Sheet
+    const combinedGroups = {};
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+    
+    const combinedData = [['Year', 'Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats, collectionPercentage
+        });
+    });
+    
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearCourseData = yearSubtotals[year];
+        
+        yearCourseData.forEach(data => {
+            combinedData.push([
+                data.year, data.course, data.students,
+                data.smpAlloted, data.svkAlloted, data.totalAlloted,
+                data.smpPaid, data.svkPaid, data.totalPaid,
+                data.smpDue, data.svkDue, data.totalDue,
+                data.collectionPercentage
+            ]);
+        });
+        
+        // Add year subtotal if there are multiple courses
+        if (yearCourseData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+            combinedData.push([
+                `${year} SUBTOTAL`, 'All Courses', filteredFeeStatsData.filter(s => s['Year'] === year).length,
+                yearTotalStats.smpAlloted, yearTotalStats.svkAlloted, yearTotalStats.totalAlloted,
+                yearTotalStats.smpPaid, yearTotalStats.svkPaid, yearTotalStats.totalPaid,
+                yearTotalStats.smpDue, yearTotalStats.svkDue, yearTotalStats.totalDue,
+                yearCollectionPercentage
+            ]);
+        }
+    });
+    
+    // Add grand total
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        combinedData.push([
+            'GRAND TOTAL', 'All Years & Courses', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const combinedSheet = XLSX.utils.aoa_to_sheet(combinedData);
+    XLSX.utils.book_append_sheet(workbook, combinedSheet, 'Combined Statistics');
+    
+    // 5. Fully Paid Students Sheet
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    const fullyPaidYearGroups = groupDataBy(fullyPaidStudents, 'Year');
+    const fullyPaidData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'Collection %']];
+    
+    Object.keys(fullyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = fullyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        fullyPaidData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            '100.0%'
+        ]);
+    });
+    
+    if (Object.keys(fullyPaidYearGroups).length > 1) {
+        const fullyPaidTotalStats = calculateFeeStats(fullyPaidStudents);
+        fullyPaidData.push([
+            'TOTAL', fullyPaidStudents.length,
+            fullyPaidTotalStats.smpAlloted, fullyPaidTotalStats.svkAlloted, fullyPaidTotalStats.totalAlloted,
+            fullyPaidTotalStats.smpPaid, fullyPaidTotalStats.svkPaid, fullyPaidTotalStats.totalPaid,
+            '100.0%'
+        ]);
+    }
+    
+    const fullyPaidSheet = XLSX.utils.aoa_to_sheet(fullyPaidData);
+    XLSX.utils.book_append_sheet(workbook, fullyPaidSheet, 'Fully Paid Students');
+    
+    // 6. Partially Paid Students Sheet
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    const partiallyPaidYearGroups = groupDataBy(partiallyPaidStudents, 'Year');
+    const partiallyPaidData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(partiallyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = partiallyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    if (Object.keys(partiallyPaidYearGroups).length > 1) {
+        const partiallyPaidTotalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalCollectionPercentage = partiallyPaidTotalStats.totalAlloted > 0 ? ((partiallyPaidTotalStats.totalPaid / partiallyPaidTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidData.push([
+            'TOTAL', partiallyPaidStudents.length,
+            partiallyPaidTotalStats.smpAlloted, partiallyPaidTotalStats.svkAlloted, partiallyPaidTotalStats.totalAlloted,
+            partiallyPaidTotalStats.smpPaid, partiallyPaidTotalStats.svkPaid, partiallyPaidTotalStats.totalPaid,
+            partiallyPaidTotalStats.smpDue, partiallyPaidTotalStats.svkDue, partiallyPaidTotalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const partiallyPaidSheet = XLSX.utils.aoa_to_sheet(partiallyPaidData);
+    XLSX.utils.book_append_sheet(workbook, partiallyPaidSheet, 'Partially Paid Students');
+    
+    // Save the workbook
+    XLSX.writeFile(workbook, `SMP_Complete_Fee_Statistics_${timestamp}.xlsx`);
+    showToast('✅ Excel file exported successfully with multiple sheets!', 'success');
+}
+
+// Individual Excel Export Functions for Fee Statistics Tables
+function exportFeeStatsSummaryToExcel() {
+    if (!confirm('📊 Export Fee Collection Summary to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const summaryData = [
+        ['Category', 'Total Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %'],
+        [
+            'All Students', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            (totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%')
+        ],
+        [
+            'Fully Paid', filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))),
+            '100.0%'
+        ],
+        [
+            'Partially Paid', filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))),
+            ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalAlloted) * 100).toFixed(1) + '%'
+        ],
+        [
+            'Dues Pending', filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length,
+            ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))),
+            ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalAlloted) * 100).toFixed(1) + '%'
+        ]
+    ];
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Fee Summary');
+    XLSX.writeFile(workbook, `SMP_Fee_Summary_${timestamp}.xlsx`);
+    showToast('✅ Fee Summary exported to Excel!', 'success');
+}
+
+function exportFeeStatsYearwiseToExcel() {
+    if (!confirm('📅 Export Year-wise Fee Statistics to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    const yearData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    if (Object.keys(yearGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            'TOTAL', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const yearSheet = XLSX.utils.aoa_to_sheet(yearData);
+    XLSX.utils.book_append_sheet(workbook, yearSheet, 'Year-wise Statistics');
+    XLSX.writeFile(workbook, `SMP_Year_wise_Fee_Statistics_${timestamp}.xlsx`);
+    showToast('✅ Year-wise Statistics exported to Excel!', 'success');
+}
+
+function exportFeeStatsCoursewiseToExcel() {
+    if (!confirm('🎓 Export Course-wise Fee Statistics to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    const courseData = [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            course, courseStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    if (Object.keys(courseGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            'TOTAL', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const courseSheet = XLSX.utils.aoa_to_sheet(courseData);
+    XLSX.utils.book_append_sheet(workbook, courseSheet, 'Course-wise Statistics');
+    XLSX.writeFile(workbook, `SMP_Course_wise_Fee_Statistics_${timestamp}.xlsx`);
+    showToast('✅ Course-wise Statistics exported to Excel!', 'success');
+}
+
+function exportFeeStatsCombinedToExcel() {
+    if (!confirm('🔢 Export Combined Year & Course-wise Fee Statistics to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const combinedGroups = {};
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+    
+    const combinedData = [['Year', 'Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats, collectionPercentage
+        });
+    });
+    
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearCourseData = yearSubtotals[year];
+        
+        yearCourseData.forEach(data => {
+            combinedData.push([
+                data.year, data.course, data.students,
+                data.smpAlloted, data.svkAlloted, data.totalAlloted,
+                data.smpPaid, data.svkPaid, data.totalPaid,
+                data.smpDue, data.svkDue, data.totalDue,
+                data.collectionPercentage
+            ]);
+        });
+        
+        if (yearCourseData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+            combinedData.push([
+                `${year} SUBTOTAL`, 'All Courses', filteredFeeStatsData.filter(s => s['Year'] === year).length,
+                yearTotalStats.smpAlloted, yearTotalStats.svkAlloted, yearTotalStats.totalAlloted,
+                yearTotalStats.smpPaid, yearTotalStats.svkPaid, yearTotalStats.totalPaid,
+                yearTotalStats.smpDue, yearTotalStats.svkDue, yearTotalStats.totalDue,
+                yearCollectionPercentage
+            ]);
+        }
+    });
+    
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        combinedData.push([
+            'GRAND TOTAL', 'All Years & Courses', filteredFeeStatsData.length,
+            totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted,
+            totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid,
+            totalStats.smpDue, totalStats.svkDue, totalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const combinedSheet = XLSX.utils.aoa_to_sheet(combinedData);
+    XLSX.utils.book_append_sheet(workbook, combinedSheet, 'Combined Statistics');
+    XLSX.writeFile(workbook, `SMP_Combined_Fee_Statistics_${timestamp}.xlsx`);
+    showToast('✅ Combined Statistics exported to Excel!', 'success');
+}
+
+function exportFeeStatsFullyPaidToExcel() {
+    if (!confirm('✅ Export Fully Paid Students Statistics to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    const fullyPaidYearGroups = groupDataBy(fullyPaidStudents, 'Year');
+    const fullyPaidData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'Collection %']];
+    
+    Object.keys(fullyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = fullyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        fullyPaidData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            '100.0%'
+        ]);
+    });
+    
+    if (Object.keys(fullyPaidYearGroups).length > 1) {
+        const fullyPaidTotalStats = calculateFeeStats(fullyPaidStudents);
+        fullyPaidData.push([
+            'TOTAL', fullyPaidStudents.length,
+            fullyPaidTotalStats.smpAlloted, fullyPaidTotalStats.svkAlloted, fullyPaidTotalStats.totalAlloted,
+            fullyPaidTotalStats.smpPaid, fullyPaidTotalStats.svkPaid, fullyPaidTotalStats.totalPaid,
+            '100.0%'
+        ]);
+    }
+    
+    const fullyPaidSheet = XLSX.utils.aoa_to_sheet(fullyPaidData);
+    XLSX.utils.book_append_sheet(workbook, fullyPaidSheet, 'Fully Paid Students');
+    XLSX.writeFile(workbook, `SMP_Fully_Paid_Students_${timestamp}.xlsx`);
+    showToast('✅ Fully Paid Students exported to Excel!', 'success');
+}
+
+function exportFeeStatsPartiallyPaidToExcel() {
+    if (!confirm('⚠️ Export Partially Paid Students Statistics to Excel?')) return;
+    
+    const workbook = XLSX.utils.book_new();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    const partiallyPaidYearGroups = groupDataBy(partiallyPaidStudents, 'Year');
+    const partiallyPaidData = [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']];
+    
+    Object.keys(partiallyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = partiallyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidData.push([
+            year, yearStudents.length,
+            stats.smpAlloted, stats.svkAlloted, stats.totalAlloted,
+            stats.smpPaid, stats.svkPaid, stats.totalPaid,
+            stats.smpDue, stats.svkDue, stats.totalDue,
+            collectionPercentage
+        ]);
+    });
+    
+    if (Object.keys(partiallyPaidYearGroups).length > 1) {
+        const partiallyPaidTotalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalCollectionPercentage = partiallyPaidTotalStats.totalAlloted > 0 ? ((partiallyPaidTotalStats.totalPaid / partiallyPaidTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidData.push([
+            'TOTAL', partiallyPaidStudents.length,
+            partiallyPaidTotalStats.smpAlloted, partiallyPaidTotalStats.svkAlloted, partiallyPaidTotalStats.totalAlloted,
+            partiallyPaidTotalStats.smpPaid, partiallyPaidTotalStats.svkPaid, partiallyPaidTotalStats.totalPaid,
+            partiallyPaidTotalStats.smpDue, partiallyPaidTotalStats.svkDue, partiallyPaidTotalStats.totalDue,
+            totalCollectionPercentage
+        ]);
+    }
+    
+    const partiallyPaidSheet = XLSX.utils.aoa_to_sheet(partiallyPaidData);
+    XLSX.utils.book_append_sheet(workbook, partiallyPaidSheet, 'Partially Paid Students');
+    XLSX.writeFile(workbook, `SMP_Partially_Paid_Students_${timestamp}.xlsx`);
+    showToast('✅ Partially Paid Students exported to Excel!', 'success');
+}
+
+// Individual PDF Export Functions for Fee Statistics Tables (Following Fee List Logic)
+function exportFeeStatsSummaryToPDF() {
+    if (!confirm('📊 Export Fee Collection Summary to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4 mode
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Fee Collection Summary', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Total Students: ${filteredFeeStatsData.length}`, 148, 38, { align: 'center' });
+    
+    // Table data
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const tableData = [
+        ['All Students', filteredFeeStatsData.length, totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted, totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid, totalStats.smpDue, totalStats.svkDue, totalStats.totalDue, (totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%')],
+        ['Fully Paid', filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length, ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))), '100.0%'],
+        ['Partially Paid', filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length, ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))), ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0)).totalAlloted) * 100).toFixed(1) + '%'],
+        ['Dues Pending', filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length, ...Object.values(calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))), ((calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalPaid / calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0)).totalAlloted) * 100).toFixed(1) + '%']
+    ];
+    
+    doc.autoTable({
+        head: [['Category', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8, cellPadding: 2, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { left: 10, right: 10 }
+    });
+    
+    doc.save(`SMP_Fee_Summary_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Fee Summary PDF saved!', 'success');
+}
+
+function exportFeeStatsYearwiseToPDF() {
+    if (!confirm('📅 Export Year-wise Fee Statistics to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Year-wise Fee Collection Statistics', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Total Students: ${filteredFeeStatsData.length}`, 148, 38, { align: 'center' });
+    
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    const tableData = [];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push([year, yearStudents.length, stats.smpAlloted, stats.svkAlloted, stats.totalAlloted, stats.smpPaid, stats.svkPaid, stats.totalPaid, stats.smpDue, stats.svkDue, stats.totalDue, collectionPercentage]);
+    });
+    
+    if (Object.keys(yearGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push(['TOTAL', filteredFeeStatsData.length, totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted, totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid, totalStats.smpDue, totalStats.svkDue, totalStats.totalDue, totalCollectionPercentage]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8, cellPadding: 2, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === tableData.length - 1 && tableData.length > 1 && data.cell.text[0] === 'TOTAL') {
+                data.cell.styles.fillColor = [41, 128, 185];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    doc.save(`SMP_Year_wise_Fee_Statistics_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Year-wise Statistics PDF saved!', 'success');
+}
+
+function exportFeeStatsCoursewiseToPDF() {
+    if (!confirm('🎓 Export Course-wise Fee Statistics to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Course-wise Fee Collection Statistics', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Total Students: ${filteredFeeStatsData.length}`, 148, 38, { align: 'center' });
+    
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    const tableData = [];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push([course, courseStudents.length, stats.smpAlloted, stats.svkAlloted, stats.totalAlloted, stats.smpPaid, stats.svkPaid, stats.totalPaid, stats.smpDue, stats.svkDue, stats.totalDue, collectionPercentage]);
+    });
+    
+    if (Object.keys(courseGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push(['TOTAL', filteredFeeStatsData.length, totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted, totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid, totalStats.smpDue, totalStats.svkDue, totalStats.totalDue, totalCollectionPercentage]);
+    }
+    
+    doc.autoTable({
+        head: [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8, cellPadding: 2, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === tableData.length - 1 && tableData.length > 1 && data.cell.text[0] === 'TOTAL') {
+                data.cell.styles.fillColor = [41, 128, 185];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    doc.save(`SMP_Course_wise_Fee_Statistics_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Course-wise Statistics PDF saved!', 'success');
+}
+
+function exportFeeStatsCombinedToPDF() {
+    if (!confirm('🔢 Export Combined Year & Course-wise Fee Statistics to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Combined Year & Course-wise Fee Statistics', 148, 25, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Total Students: ${filteredFeeStatsData.length}`, 148, 38, { align: 'center' });
+    
+    const combinedGroups = {};
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+    
+    const tableData = [];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats, collectionPercentage
+        });
+    });
+    
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearCourseData = yearSubtotals[year];
+        
+        yearCourseData.forEach(data => {
+            tableData.push([data.year, data.course, data.students, data.smpAlloted, data.svkAlloted, data.totalAlloted, data.smpPaid, data.svkPaid, data.totalPaid, data.smpDue, data.svkDue, data.totalDue, data.collectionPercentage]);
+        });
+        
+        if (yearCourseData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+            tableData.push([`${year} SUBTOTAL`, 'All Courses', filteredFeeStatsData.filter(s => s['Year'] === year).length, yearTotalStats.smpAlloted, yearTotalStats.svkAlloted, yearTotalStats.totalAlloted, yearTotalStats.smpPaid, yearTotalStats.svkPaid, yearTotalStats.totalPaid, yearTotalStats.smpDue, yearTotalStats.svkDue, yearTotalStats.totalDue, yearCollectionPercentage]);
+        }
+    });
+    
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalStats = calculateFeeStats(filteredFeeStatsData);
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push(['GRAND TOTAL', 'All Years & Courses', filteredFeeStatsData.length, totalStats.smpAlloted, totalStats.svkAlloted, totalStats.totalAlloted, totalStats.smpPaid, totalStats.svkPaid, totalStats.totalPaid, totalStats.smpDue, totalStats.svkDue, totalStats.totalDue, totalCollectionPercentage]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 7, cellPadding: 1.5, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [41, 128, 185], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            const cellText = data.cell.text[0];
+            if (cellText && (cellText.includes('SUBTOTAL') || cellText.includes('GRAND TOTAL'))) {
+                if (cellText.includes('GRAND TOTAL')) {
+                    data.cell.styles.fillColor = [41, 128, 185];
+                    data.cell.styles.textColor = [255, 255, 255];
+                } else {
+                    data.cell.styles.fillColor = [76, 175, 80];
+                    data.cell.styles.textColor = [255, 255, 255];
+                }
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    doc.save(`SMP_Combined_Fee_Statistics_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Combined Statistics PDF saved!', 'success');
+}
+
+function exportFeeStatsFullyPaidToPDF() {
+    if (!confirm('✅ Export Fully Paid Students Statistics to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Fully Paid Students Statistics', 148, 25, { align: 'center' });
+    
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Fully Paid Students: ${fullyPaidStudents.length}`, 148, 38, { align: 'center' });
+    
+    const fullyPaidYearGroups = groupDataBy(fullyPaidStudents, 'Year');
+    const tableData = [];
+    
+    Object.keys(fullyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = fullyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        tableData.push([year, yearStudents.length, stats.smpAlloted, stats.svkAlloted, stats.totalAlloted, stats.smpPaid, stats.svkPaid, stats.totalPaid, '100.0%']);
+    });
+    
+    if (Object.keys(fullyPaidYearGroups).length > 1) {
+        const fullyPaidTotalStats = calculateFeeStats(fullyPaidStudents);
+        tableData.push(['TOTAL', fullyPaidStudents.length, fullyPaidTotalStats.smpAlloted, fullyPaidTotalStats.svkAlloted, fullyPaidTotalStats.totalAlloted, fullyPaidTotalStats.smpPaid, fullyPaidTotalStats.svkPaid, fullyPaidTotalStats.totalPaid, '100.0%']);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8, cellPadding: 2, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [76, 175, 80], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === tableData.length - 1 && tableData.length > 1 && data.cell.text[0] === 'TOTAL') {
+                data.cell.styles.fillColor = [76, 175, 80];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    doc.save(`SMP_Fully_Paid_Students_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Fully Paid Students PDF saved!', 'success');
+}
+
+function exportFeeStatsPartiallyPaidToPDF() {
+    if (!confirm('⚠️ Export Partially Paid Students Statistics to PDF?')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+    
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 15, { align: 'center' });
+    
+    doc.setFontSize(14);
+    doc.text('Partially Paid Students Statistics', 148, 25, { align: 'center' });
+    
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Generated on: ${currentDate}`, 148, 32, { align: 'center' });
+    doc.text(`Partially Paid Students: ${partiallyPaidStudents.length}`, 148, 38, { align: 'center' });
+    
+    const partiallyPaidYearGroups = groupDataBy(partiallyPaidStudents, 'Year');
+    const tableData = [];
+    
+    Object.keys(partiallyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = partiallyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push([year, yearStudents.length, stats.smpAlloted, stats.svkAlloted, stats.totalAlloted, stats.smpPaid, stats.svkPaid, stats.totalPaid, stats.smpDue, stats.svkDue, stats.totalDue, collectionPercentage]);
+    });
+    
+    if (Object.keys(partiallyPaidYearGroups).length > 1) {
+        const partiallyPaidTotalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalCollectionPercentage = partiallyPaidTotalStats.totalAlloted > 0 ? ((partiallyPaidTotalStats.totalPaid / partiallyPaidTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        tableData.push(['TOTAL', partiallyPaidStudents.length, partiallyPaidTotalStats.smpAlloted, partiallyPaidTotalStats.svkAlloted, partiallyPaidTotalStats.totalAlloted, partiallyPaidTotalStats.smpPaid, partiallyPaidTotalStats.svkPaid, partiallyPaidTotalStats.totalPaid, partiallyPaidTotalStats.smpDue, partiallyPaidTotalStats.svkDue, partiallyPaidTotalStats.totalDue, totalCollectionPercentage]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: tableData,
+        startY: 45,
+        styles: { fontSize: 8, cellPadding: 2, font: 'times', textColor: [0, 0, 0] },
+        headStyles: { fillColor: [255, 152, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === tableData.length - 1 && tableData.length > 1 && data.cell.text[0] === 'TOTAL') {
+                data.cell.styles.fillColor = [255, 152, 0];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    doc.save(`SMP_Partially_Paid_Students_${new Date().toISOString().split('T')[0]}.pdf`);
+    showToast('✅ Partially Paid Students PDF saved!', 'success');
+}
+
+function saveFeeStatsToPDF() {
+    if (!confirm('📄 Save Complete Fee Statistics Report as PDF? This will include all tables with detailed analytics.')) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+    });
+    
+    // Set default font to Times for better space utilization
+    doc.setFont('times', 'normal');
+    
+    // Available width calculation: 297mm - 28mm margins = 269mm usable width
+    
+    // Helper function to add page header
+    function addPageHeader(doc, title, pageNum) {
+        doc.setFontSize(10);
+        doc.setFont('times', 'bold');
+        doc.text('SMP Fee Collection Statistics Report - 2025-26', 148, 15, { align: 'center' });
+        
+        doc.setFontSize(8);
+        doc.setFont('times', 'normal');
+        const currentDate = new Date().toLocaleDateString();
+        doc.text(`Generated on: ${currentDate}`, 148, 22, { align: 'center' });
+        
+        if (title) {
+            doc.setFontSize(9);
+            doc.setFont('times', 'bold');
+            doc.text(title, 148, 30, { align: 'center' });
+        }
+        
+        // Page number
+        doc.setFontSize(7);
+        doc.setFont('times', 'normal');
+        doc.text(`Page ${pageNum}`, 280, 200, { align: 'right' });
+        
+        return 35;
+    }
+    
+    // Helper function to format currency for PDF
+    function formatCurrency(amount) {
+        return '₹' + amount.toLocaleString('en-IN');
+    }
+    
+    // Helper function to check if new page is needed with improved spacing
+    function checkPageSpace(doc, currentY, requiredSpace = 60) {
+        if (currentY > 190 - requiredSpace) {
+            doc.addPage();
+            return addPageHeader(doc, '', doc.internal.getNumberOfPages());
+        }
+        return currentY;
+    }
+    
+    // Helper function to ensure table fits with subtotals on same page
+    function checkTablePageSpace(doc, currentY, estimatedTableHeight = 80) {
+        if (currentY > 190 - estimatedTableHeight) {
+            doc.addPage();
+            return addPageHeader(doc, '', doc.internal.getNumberOfPages());
+        }
+        return currentY;
+    }
+    
+    let pageNum = 1;
+    let currentY = addPageHeader(doc, 'Complete Fee Analytics Report', pageNum);
+    
+    // =====================================
+    // 1. FEE COLLECTION SUMMARY TABLE
+    // =====================================
+    currentY = checkTablePageSpace(doc, currentY, 100);
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('1. Fee Collection Summary', 14, currentY);
+    currentY += 8;
+    
+    const totalStats = calculateFeeStats(filteredFeeStatsData);
+    const summaryData = [
+        {
+            category: 'All Students',
+            students: filteredFeeStatsData.length,
+            ...totalStats
+        },
+        {
+            category: 'Fully Paid',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] === 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] === 0))
+        },
+        {
+            category: 'Partially Paid',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0))
+        },
+        {
+            category: 'Dues Pending',
+            students: filteredFeeStatsData.filter(s => s['Total Dues'] > 0).length,
+            ...calculateFeeStats(filteredFeeStatsData.filter(s => s['Total Dues'] > 0))
+        }
+    ].map(data => {
+        const collectionPercentage = data.totalAlloted > 0 ? ((data.totalPaid / data.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        return [
+            data.category, data.students.toString(),
+            formatCurrency(data.smpAlloted), formatCurrency(data.svkAlloted), formatCurrency(data.totalAlloted),
+            formatCurrency(data.smpPaid), formatCurrency(data.svkPaid), formatCurrency(data.totalPaid),
+            formatCurrency(data.smpDue), formatCurrency(data.svkDue), formatCurrency(data.totalDue),
+            collectionPercentage
+        ];
+    });
+    
+    doc.autoTable({
+        head: [['Category', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: summaryData,
+        startY: currentY,
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 2,
+            halign: 'center',
+            minCellHeight: 8,
+            font: 'times',
+            textColor: [0, 0, 0]
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            fontSize: 8,
+            minCellHeight: 9
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 28 },     // Category
+            1: { halign: 'center', cellWidth: 22 },   // Students
+            2: { halign: 'center', cellWidth: 26 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 26 },   // SVK Allotted  
+            4: { halign: 'center', cellWidth: 28 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 26 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 26 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 28 },   // Total Paid
+            8: { halign: 'center', cellWidth: 26 },   // SMP Due
+            9: { halign: 'center', cellWidth: 26 },   // SVK Due
+            10: { halign: 'center', cellWidth: 28 },  // Total Due
+            11: { halign: 'center', cellWidth: 24 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { left: 10, right: 10 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // =====================================
+    // 2. YEAR-WISE FEE STATISTICS  
+    // =====================================
+    currentY = checkTablePageSpace(doc, currentY, 90);
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('2. Year-wise Fee Collection Statistics', 14, currentY);
+    currentY += 8;
+    
+    const yearGroups = groupDataBy(filteredFeeStatsData, 'Year');
+    const yearData = [];
+    
+    Object.keys(yearGroups).sort().forEach(year => {
+        const yearStudents = yearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            year, yearStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            formatCurrency(stats.smpDue), formatCurrency(stats.svkDue), formatCurrency(stats.totalDue),
+            collectionPercentage
+        ]);
+    });
+    
+    // Add year-wise total row
+    if (Object.keys(yearGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        yearData.push([
+            'TOTAL', filteredFeeStatsData.length.toString(),
+            formatCurrency(totalStats.smpAlloted), formatCurrency(totalStats.svkAlloted), formatCurrency(totalStats.totalAlloted),
+            formatCurrency(totalStats.smpPaid), formatCurrency(totalStats.svkPaid), formatCurrency(totalStats.totalPaid),
+            formatCurrency(totalStats.smpDue), formatCurrency(totalStats.svkDue), formatCurrency(totalStats.totalDue),
+            totalCollectionPercentage
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: yearData,
+        startY: currentY,
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 2,
+            halign: 'center',
+            minCellHeight: 8,
+            font: 'times',
+            textColor: [0, 0, 0]
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            fontSize: 8,
+            minCellHeight: 9
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 28 },     // Year
+            1: { halign: 'center', cellWidth: 22 },   // Students
+            2: { halign: 'center', cellWidth: 26 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 26 },   // SVK Allotted  
+            4: { halign: 'center', cellWidth: 28 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 26 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 26 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 28 },   // Total Paid
+            8: { halign: 'center', cellWidth: 26 },   // SMP Due
+            9: { halign: 'center', cellWidth: 26 },   // SVK Due
+            10: { halign: 'center', cellWidth: 28 },  // Total Due
+            11: { halign: 'center', cellWidth: 24 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            // Highlight total row
+            if (data.row.index === yearData.length - 1 && yearData.length > 1) {
+                data.cell.styles.fillColor = [41, 128, 185];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // =====================================
+    // 3. COURSE-WISE FEE STATISTICS
+    // =====================================
+    currentY = checkTablePageSpace(doc, currentY, 90);
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('3. Course-wise Fee Collection Statistics', 14, currentY);
+    currentY += 8;
+    
+    const courseGroups = groupDataBy(filteredFeeStatsData, 'Course');
+    const courseData = [];
+    
+    Object.keys(courseGroups).sort().forEach(course => {
+        const courseStudents = courseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            course, courseStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            formatCurrency(stats.smpDue), formatCurrency(stats.svkDue), formatCurrency(stats.totalDue),
+            collectionPercentage
+        ]);
+    });
+    
+    // Add course-wise total row
+    if (Object.keys(courseGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        courseData.push([
+            'TOTAL', filteredFeeStatsData.length.toString(),
+            formatCurrency(totalStats.smpAlloted), formatCurrency(totalStats.svkAlloted), formatCurrency(totalStats.totalAlloted),
+            formatCurrency(totalStats.smpPaid), formatCurrency(totalStats.svkPaid), formatCurrency(totalStats.totalPaid),
+            formatCurrency(totalStats.smpDue), formatCurrency(totalStats.svkDue), formatCurrency(totalStats.totalDue),
+            totalCollectionPercentage
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: courseData,
+        startY: currentY,
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 2,
+            halign: 'center',
+            minCellHeight: 8,
+            font: 'times',
+            textColor: [0, 0, 0]
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            fontSize: 8,
+            minCellHeight: 9
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 28 },     // Course
+            1: { halign: 'center', cellWidth: 22 },   // Students
+            2: { halign: 'center', cellWidth: 26 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 26 },   // SVK Allotted  
+            4: { halign: 'center', cellWidth: 28 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 26 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 26 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 28 },   // Total Paid
+            8: { halign: 'center', cellWidth: 26 },   // SMP Due
+            9: { halign: 'center', cellWidth: 26 },   // SVK Due
+            10: { halign: 'center', cellWidth: 28 },  // Total Due
+            11: { halign: 'center', cellWidth: 24 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            // Highlight total row
+            if (data.row.index === courseData.length - 1 && courseData.length > 1) {
+                data.cell.styles.fillColor = [41, 128, 185];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 10, right: 10 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // =====================================
+    // 4. COMBINED YEAR & COURSE-WISE STATISTICS
+    // =====================================
+    currentY = checkTablePageSpace(doc, currentY, 120); // Larger space for complex table
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('4. Combined Year & Course-wise Fee Statistics', 14, currentY);
+    currentY += 8;
+    
+    const combinedGroups = {};
+    filteredFeeStatsData.forEach(student => {
+        const key = `${student['Year']}-${student['Course']}`;
+        if (!combinedGroups[key]) {
+            combinedGroups[key] = [];
+        }
+        combinedGroups[key].push(student);
+    });
+    
+    const combinedData = [];
+    const yearSubtotals = {};
+    
+    Object.keys(combinedGroups).sort().forEach(key => {
+        const [year, course] = key.split('-');
+        const students = combinedGroups[key];
+        const stats = calculateFeeStats(students);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        
+        if (!yearSubtotals[year]) {
+            yearSubtotals[year] = [];
+        }
+        yearSubtotals[year].push({
+            year, course, students: students.length, ...stats, collectionPercentage
+        });
+    });
+    
+    Object.keys(yearSubtotals).sort().forEach(year => {
+        const yearData = yearSubtotals[year];
+        
+        yearData.forEach(data => {
+            combinedData.push([
+                data.year, data.course, data.students.toString(),
+                formatCurrency(data.smpAlloted), formatCurrency(data.svkAlloted), formatCurrency(data.totalAlloted),
+                formatCurrency(data.smpPaid), formatCurrency(data.svkPaid), formatCurrency(data.totalPaid),
+                formatCurrency(data.smpDue), formatCurrency(data.svkDue), formatCurrency(data.totalDue),
+                data.collectionPercentage
+            ]);
+        });
+        
+        // Add year subtotal if there are multiple courses
+        if (yearData.length > 1) {
+            const yearTotalStats = calculateFeeStats(filteredFeeStatsData.filter(s => s['Year'] === year));
+            const yearCollectionPercentage = yearTotalStats.totalAlloted > 0 ? ((yearTotalStats.totalPaid / yearTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+            combinedData.push([
+                `${year} SUBTOTAL`, 'All Courses', filteredFeeStatsData.filter(s => s['Year'] === year).length.toString(),
+                formatCurrency(yearTotalStats.smpAlloted), formatCurrency(yearTotalStats.svkAlloted), formatCurrency(yearTotalStats.totalAlloted),
+                formatCurrency(yearTotalStats.smpPaid), formatCurrency(yearTotalStats.svkPaid), formatCurrency(yearTotalStats.totalPaid),
+                formatCurrency(yearTotalStats.smpDue), formatCurrency(yearTotalStats.svkDue), formatCurrency(yearTotalStats.totalDue),
+                yearCollectionPercentage
+            ]);
+        }
+    });
+    
+    // Add grand total
+    if (Object.keys(combinedGroups).length > 1) {
+        const totalCollectionPercentage = totalStats.totalAlloted > 0 ? ((totalStats.totalPaid / totalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        combinedData.push([
+            'GRAND TOTAL', 'All Years & Courses', filteredFeeStatsData.length.toString(),
+            formatCurrency(totalStats.smpAlloted), formatCurrency(totalStats.svkAlloted), formatCurrency(totalStats.totalAlloted),
+            formatCurrency(totalStats.smpPaid), formatCurrency(totalStats.svkPaid), formatCurrency(totalStats.totalPaid),
+            formatCurrency(totalStats.smpDue), formatCurrency(totalStats.svkDue), formatCurrency(totalStats.totalDue),
+            totalCollectionPercentage
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: combinedData,
+        startY: currentY,
+        styles: { 
+            fontSize: 7, 
+            cellPadding: 1.5,
+            halign: 'center',
+            minCellHeight: 7,
+            font: 'times',
+            textColor: [0, 0, 0]
+        },
+        headStyles: { 
+            fillColor: [41, 128, 185], 
+            textColor: [255, 255, 255], 
+            fontStyle: 'bold',
+            fontSize: 7,
+            minCellHeight: 8
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 22 },     // Year
+            1: { halign: 'center', cellWidth: 20 },   // Course
+            2: { halign: 'center', cellWidth: 18 },   // Students
+            3: { halign: 'center', cellWidth: 22 },   // SMP Allotted
+            4: { halign: 'center', cellWidth: 22 },   // SVK Allotted
+            5: { halign: 'center', cellWidth: 24 },   // Total Allotted
+            6: { halign: 'center', cellWidth: 22 },   // SMP Paid
+            7: { halign: 'center', cellWidth: 22 },   // SVK Paid
+            8: { halign: 'center', cellWidth: 24 },   // Total Paid
+            9: { halign: 'center', cellWidth: 22 },   // SMP Due
+            10: { halign: 'center', cellWidth: 22 },  // SVK Due
+            11: { halign: 'center', cellWidth: 24 },  // Total Due
+            12: { halign: 'center', cellWidth: 20 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            // Highlight subtotal and grand total rows
+            const cellText = data.cell.text[0];
+            if (cellText && (cellText.includes('SUBTOTAL') || cellText.includes('GRAND TOTAL'))) {
+                if (cellText.includes('GRAND TOTAL')) {
+                    data.cell.styles.fillColor = [41, 128, 185];
+                    data.cell.styles.textColor = [255, 255, 255];
+                } else {
+                    data.cell.styles.fillColor = [100, 150, 200];
+                    data.cell.styles.textColor = [255, 255, 255];
+                }
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // =====================================
+    // 5. FULLY PAID STUDENTS STATISTICS
+    // =====================================
+    doc.addPage();
+    pageNum++;
+    currentY = addPageHeader(doc, 'Fully Paid Students Analysis', pageNum);
+    
+    const fullyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] === 0);
+    
+    // Year-wise Fully Paid
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('5A. Year-wise Fully Paid Students', 14, currentY);
+    currentY += 8;
+    
+    const fullyPaidYearGroups = groupDataBy(fullyPaidStudents, 'Year');
+    const fullyPaidYearData = [];
+    
+    Object.keys(fullyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = fullyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        fullyPaidYearData.push([
+            year, yearStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            '100.0%'
+        ]);
+    });
+    
+    // Add total row for fully paid
+    if (Object.keys(fullyPaidYearGroups).length > 1) {
+        const fullyPaidTotalStats = calculateFeeStats(fullyPaidStudents);
+        fullyPaidYearData.push([
+            'TOTAL', fullyPaidStudents.length.toString(),
+            formatCurrency(fullyPaidTotalStats.smpAlloted), formatCurrency(fullyPaidTotalStats.svkAlloted), formatCurrency(fullyPaidTotalStats.totalAlloted),
+            formatCurrency(fullyPaidTotalStats.smpPaid), formatCurrency(fullyPaidTotalStats.svkPaid), formatCurrency(fullyPaidTotalStats.totalPaid),
+            '100.0%'
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'Collection %']],
+        body: fullyPaidYearData,
+        startY: currentY,
+        styles: { 
+            fontSize: 6, 
+            cellPadding: 1.5,
+            halign: 'center',
+            minCellHeight: 6,
+            font: 'times'
+        },
+        headStyles: { 
+            fillColor: [76, 175, 80], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 6,
+            minCellHeight: 7
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 30 },     // Year
+            1: { halign: 'center', cellWidth: 24 },   // Students
+            2: { halign: 'center', cellWidth: 32 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 32 },   // SVK Allotted
+            4: { halign: 'center', cellWidth: 36 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 32 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 32 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 36 },   // Total Paid
+            8: { halign: 'center', cellWidth: 28 }    // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === fullyPaidYearData.length - 1 && fullyPaidYearData.length > 1) {
+                data.cell.styles.fillColor = [76, 175, 80];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // Course-wise Fully Paid
+    currentY = checkTablePageSpace(doc, currentY, 90);
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('5B. Course-wise Fully Paid Students', 14, currentY);
+    currentY += 8;
+    
+    const fullyPaidCourseGroups = groupDataBy(fullyPaidStudents, 'Course');
+    const fullyPaidCourseData = [];
+    
+    Object.keys(fullyPaidCourseGroups).sort().forEach(course => {
+        const courseStudents = fullyPaidCourseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        fullyPaidCourseData.push([
+            course, courseStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            '100.0%'
+        ]);
+    });
+    
+    // Add total row for fully paid courses
+    if (Object.keys(fullyPaidCourseGroups).length > 1) {
+        const fullyPaidTotalStats = calculateFeeStats(fullyPaidStudents);
+        fullyPaidCourseData.push([
+            'TOTAL', fullyPaidStudents.length.toString(),
+            formatCurrency(fullyPaidTotalStats.smpAlloted), formatCurrency(fullyPaidTotalStats.svkAlloted), formatCurrency(fullyPaidTotalStats.totalAlloted),
+            formatCurrency(fullyPaidTotalStats.smpPaid), formatCurrency(fullyPaidTotalStats.svkPaid), formatCurrency(fullyPaidTotalStats.totalPaid),
+            '100.0%'
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'Collection %']],
+        body: fullyPaidCourseData,
+        startY: currentY,
+        styles: { 
+            fontSize: 6, 
+            cellPadding: 1.5,
+            halign: 'center',
+            minCellHeight: 6,
+            font: 'times'
+        },
+        headStyles: { 
+            fillColor: [76, 175, 80], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 6,
+            minCellHeight: 7
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 26 },     // Course
+            1: { halign: 'center', cellWidth: 20 },   // Students
+            2: { halign: 'center', cellWidth: 26 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 26 },   // SVK Allotted
+            4: { halign: 'center', cellWidth: 30 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 26 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 26 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 30 },   // Total Paid
+            8: { halign: 'center', cellWidth: 22 }    // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === fullyPaidCourseData.length - 1 && fullyPaidCourseData.length > 1) {
+                data.cell.styles.fillColor = [76, 175, 80];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // =====================================
+    // 6. PARTIALLY PAID STUDENTS STATISTICS
+    // =====================================
+    currentY = checkPageSpace(doc, currentY, 70);
+    
+    const partiallyPaidStudents = filteredFeeStatsData.filter(s => s['Total Dues'] > 0 && s['Total Paid'] > 0);
+    
+    // Year-wise Partially Paid
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('6A. Year-wise Partially Paid Students', 14, currentY);
+    currentY += 8;
+    
+    const partiallyPaidYearGroups = groupDataBy(partiallyPaidStudents, 'Year');
+    const partiallyPaidYearData = [];
+    
+    Object.keys(partiallyPaidYearGroups).sort().forEach(year => {
+        const yearStudents = partiallyPaidYearGroups[year];
+        const stats = calculateFeeStats(yearStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidYearData.push([
+            year, yearStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            formatCurrency(stats.smpDue), formatCurrency(stats.svkDue), formatCurrency(stats.totalDue),
+            collectionPercentage
+        ]);
+    });
+    
+    // Add total row for partially paid
+    if (Object.keys(partiallyPaidYearGroups).length > 1) {
+        const partiallyPaidTotalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalCollectionPercentage = partiallyPaidTotalStats.totalAlloted > 0 ? ((partiallyPaidTotalStats.totalPaid / partiallyPaidTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidYearData.push([
+            'TOTAL', partiallyPaidStudents.length.toString(),
+            formatCurrency(partiallyPaidTotalStats.smpAlloted), formatCurrency(partiallyPaidTotalStats.svkAlloted), formatCurrency(partiallyPaidTotalStats.totalAlloted),
+            formatCurrency(partiallyPaidTotalStats.smpPaid), formatCurrency(partiallyPaidTotalStats.svkPaid), formatCurrency(partiallyPaidTotalStats.totalPaid),
+            formatCurrency(partiallyPaidTotalStats.smpDue), formatCurrency(partiallyPaidTotalStats.svkDue), formatCurrency(partiallyPaidTotalStats.totalDue),
+            totalCollectionPercentage
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Year', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: partiallyPaidYearData,
+        startY: currentY,
+        styles: { 
+            fontSize: 6, 
+            cellPadding: 1.5,
+            halign: 'center',
+            minCellHeight: 6,
+            font: 'times'
+        },
+        headStyles: { 
+            fillColor: [255, 152, 0], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 6,
+            minCellHeight: 7
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 22 },     // Year
+            1: { halign: 'center', cellWidth: 22 },   // Students
+            2: { halign: 'center', cellWidth: 20 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 20 },   // SVK Allotted
+            4: { halign: 'center', cellWidth: 22 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 20 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 20 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 22 },   // Total Paid
+            8: { halign: 'center', cellWidth: 20 },   // SMP Due
+            9: { halign: 'center', cellWidth: 20 },   // SVK Due
+            10: { halign: 'center', cellWidth: 22 },  // Total Due
+            11: { halign: 'center', cellWidth: 18 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === partiallyPaidYearData.length - 1 && partiallyPaidYearData.length > 1) {
+                data.cell.styles.fillColor = [255, 152, 0];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 15;
+    
+    // Course-wise Partially Paid  
+    currentY = checkTablePageSpace(doc, currentY, 90);
+    
+    doc.setFontSize(10);
+    doc.setFont('times', 'bold');
+    doc.text('6B. Course-wise Partially Paid Students', 14, currentY);
+    currentY += 8;
+    
+    const partiallyPaidCourseGroups = groupDataBy(partiallyPaidStudents, 'Course');
+    const partiallyPaidCourseData = [];
+    
+    Object.keys(partiallyPaidCourseGroups).sort().forEach(course => {
+        const courseStudents = partiallyPaidCourseGroups[course];
+        const stats = calculateFeeStats(courseStudents);
+        const collectionPercentage = stats.totalAlloted > 0 ? ((stats.totalPaid / stats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidCourseData.push([
+            course, courseStudents.length.toString(),
+            formatCurrency(stats.smpAlloted), formatCurrency(stats.svkAlloted), formatCurrency(stats.totalAlloted),
+            formatCurrency(stats.smpPaid), formatCurrency(stats.svkPaid), formatCurrency(stats.totalPaid),
+            formatCurrency(stats.smpDue), formatCurrency(stats.svkDue), formatCurrency(stats.totalDue),
+            collectionPercentage
+        ]);
+    });
+    
+    // Add total row for partially paid courses
+    if (Object.keys(partiallyPaidCourseGroups).length > 1) {
+        const partiallyPaidTotalStats = calculateFeeStats(partiallyPaidStudents);
+        const totalCollectionPercentage = partiallyPaidTotalStats.totalAlloted > 0 ? ((partiallyPaidTotalStats.totalPaid / partiallyPaidTotalStats.totalAlloted) * 100).toFixed(1) + '%' : '0.0%';
+        partiallyPaidCourseData.push([
+            'TOTAL', partiallyPaidStudents.length.toString(),
+            formatCurrency(partiallyPaidTotalStats.smpAlloted), formatCurrency(partiallyPaidTotalStats.svkAlloted), formatCurrency(partiallyPaidTotalStats.totalAlloted),
+            formatCurrency(partiallyPaidTotalStats.smpPaid), formatCurrency(partiallyPaidTotalStats.svkPaid), formatCurrency(partiallyPaidTotalStats.totalPaid),
+            formatCurrency(partiallyPaidTotalStats.smpDue), formatCurrency(partiallyPaidTotalStats.svkDue), formatCurrency(partiallyPaidTotalStats.totalDue),
+            totalCollectionPercentage
+        ]);
+    }
+    
+    doc.autoTable({
+        head: [['Course', 'Students', 'SMP Allotted', 'SVK Allotted', 'Total Allotted', 'SMP Paid', 'SVK Paid', 'Total Paid', 'SMP Due', 'SVK Due', 'Total Due', 'Collection %']],
+        body: partiallyPaidCourseData,
+        startY: currentY,
+        styles: { 
+            fontSize: 6, 
+            cellPadding: 1.5,
+            halign: 'center',
+            minCellHeight: 6,
+            font: 'times'
+        },
+        headStyles: { 
+            fillColor: [255, 152, 0], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            fontSize: 6,
+            minCellHeight: 7
+        },
+        columnStyles: {
+            0: { halign: 'left', cellWidth: 22 },     // Course
+            1: { halign: 'center', cellWidth: 22 },   // Students
+            2: { halign: 'center', cellWidth: 20 },   // SMP Allotted
+            3: { halign: 'center', cellWidth: 20 },   // SVK Allotted
+            4: { halign: 'center', cellWidth: 22 },   // Total Allotted
+            5: { halign: 'center', cellWidth: 20 },   // SMP Paid
+            6: { halign: 'center', cellWidth: 20 },   // SVK Paid
+            7: { halign: 'center', cellWidth: 22 },   // Total Paid
+            8: { halign: 'center', cellWidth: 20 },   // SMP Due
+            9: { halign: 'center', cellWidth: 20 },   // SVK Due
+            10: { halign: 'center', cellWidth: 22 },  // Total Due
+            11: { halign: 'center', cellWidth: 18 }   // Collection %
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didParseCell: function(data) {
+            if (data.row.index === partiallyPaidCourseData.length - 1 && partiallyPaidCourseData.length > 1) {
+                data.cell.styles.fillColor = [255, 152, 0];
+                data.cell.styles.textColor = [255, 255, 255];
+                data.cell.styles.fontStyle = 'bold';
+                data.cell.styles.fontSize = 9;
+            }
+        },
+        margin: { left: 8, right: 8 }
+    });
+    
+    // Save the comprehensive PDF
+    doc.save(`SMP_Complete_Fee_Statistics_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+// Update the main showSection function to handle fee statistics
+const originalShowSection = showSection;
+showSection = function(sectionName) {
+    // Call original function
+    originalShowSection.call(this, sectionName);
+    
+    // Initialize fee statistics when section is shown
+    if (sectionName === 'feestats') {
+        setTimeout(() => {
+            initializeFeeStats();
+        }, 100);
+    }
+};
+
+// Event listeners for Fee Statistics
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners after DOM is loaded
+    setTimeout(() => {
+        if (document.getElementById('feeStatsCourseFilter')) {
+            document.getElementById('feeStatsCourseFilter').addEventListener('change', applyFeeStatsFilters);
+            document.getElementById('feeStatsYearFilter').addEventListener('change', applyFeeStatsFilters);
+            document.getElementById('feeStatsAdmTypeFilter').addEventListener('change', applyFeeStatsFilters);
+            document.getElementById('feeStatsTableFilter').addEventListener('change', applyFeeStatsFilters);
+        }
+    }, 1000);
+});
 
 // Apply uppercase conversion to Fee List search input
 makeUppercaseOnInput(document.getElementById('feeListNameFilter'));

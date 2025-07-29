@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -53,6 +54,7 @@
                 <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
                 <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
                 <button class="nav-tab" onclick="showSection('feelist')">📋 Fee List</button>
+                <button class="nav-tab" onclick="showSection('feestats')">💹 Fee Statistics</button>
                 <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
             </div>
 
@@ -324,6 +326,353 @@
                             </thead>
                             <tbody>
                                 <!-- Fee list data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feestats" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">💹 Fee Statistics - Comprehensive Analysis</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Detailed fee collection statistics with year-wise and course-wise breakdowns
+                    </p>
+                    
+                    <!-- Fee Statistics Metrics Grid -->
+                    <div class="metrics-grid" id="feeStatsMetricsGrid">
+                        <!-- Fee statistics metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="feeStatsCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="feeStatsYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="feeStatsAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Table View</label>
+                            <select id="feeStatsTableFilter">
+                                <option value="all">All Tables</option>
+                                <option value="summary">Summary Only</option>
+                                <option value="yearwise">Year-wise Only</option>
+                                <option value="coursewise">Course-wise Only</option>
+                                <option value="combined">Combined Only</option>
+                                <option value="fullypaid">Fully Paid Only</option>
+                                <option value="partiallypaid">Partially Paid Only</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="clearFeeStatsFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportFeeStatsToCSV()" id="exportFeeStatsBtn">📥 Export CSV</button>
+                        <button class="btn btn-excel" onclick="saveFeeStatsToExcel()" id="saveFeeStatsExcelBtn">📊 Export Excel</button>
+                        <button class="btn btn-pdf" onclick="saveFeeStatsToPDF()" id="saveFeeStatsBtn">📄 Save PDF</button>
+                    </div>
+                </div>
+
+                <!-- Fee Summary Table -->
+                <div class="content-section" id="feeStatsSummarySection">
+                    <h2 class="section-title">📊 Fee Collection Summary</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsSummaryToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsSummaryToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsSummaryTable">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Fee summary data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Year-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsYearwiseSection">
+                    <h2 class="section-title">📅 Year-wise Fee Collection Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsYearwiseToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsYearwiseToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Year-wise fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Course-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsCoursewiseSection">
+                    <h2 class="section-title">🎓 Course-wise Fee Collection Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsCoursewiseToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsCoursewiseToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Course-wise fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Combined Year & Course-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsCombinedSection">
+                    <h2 class="section-title">🔢 Combined Year & Course-wise Fee Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsCombinedToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsCombinedToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Fully Paid Students Statistics -->
+                <div class="content-section" id="feeStatsFullyPaidSection">
+                    <h2 class="section-title">✅ Fully Paid Students - Year & Course-wise Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsFullyPaidToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsFullyPaidToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    
+                    <!-- Yearwise Fully Paid -->
+                    <h3 class="subsection-title">📅 Year-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwiseFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Fully Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Yearwise fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Coursewise Fully Paid -->
+                    <h3 class="subsection-title">🎓 Course-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewiseFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Fully Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Coursewise fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Combined Year & Coursewise Fully Paid -->
+                    <h3 class="subsection-title">🔢 Combined Year & Course-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Partially Paid Students Statistics -->
+                <div class="content-section" id="feeStatsPartiallyPaidSection">
+                    <h2 class="section-title">⚠️ Partially Paid Students - Year & Course-wise Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsPartiallyPaidToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsPartiallyPaidToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    
+                    <!-- Yearwise Partially Paid -->
+                    <h3 class="subsection-title">📅 Year-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwisePartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Partially Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Yearwise partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Coursewise Partially Paid -->
+                    <h3 class="subsection-title">🎓 Course-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewisePartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Partially Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Coursewise partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Combined Year & Coursewise Partially Paid -->
+                    <h3 class="subsection-title">🔢 Combined Year & Course-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedPartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined partially paid data will be populated here -->
                             </tbody>
                         </table>
                     </div>
