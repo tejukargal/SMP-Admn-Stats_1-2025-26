@@ -1,0 +1,3337 @@
+:root {
+    /* Primary color scheme */
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --accent-color: #4895ef;
+    --success-color: #4cc9f0;
+    --warning-color: #f72585;
+    --error-color: #dc3545;
+    --info-color: #17a2b8;
+    
+    /* Light mode variables */
+    --bg-color: #f0f2f5;
+    --bg-primary: linear-gradient(135deg, #4361ee 0%, #3f37c9 100%);
+    --bg-secondary: #f0f2f5;
+    --bg-card: #ffffff;
+    --text-primary: #212529;
+    --text-secondary: #555;
+    --text-light: #ffffff;
+    --border-color: #e9ecef;
+    --shadow: 0 4px 12px rgba(0,0,0,0.1);
+    --hover-bg: #f8f9fa;
+    --table-hover: #f8f9fa;
+    --table-header-bg: #f8f9fa;
+    --table-header-text: #212529;
+    --toggle-bg: #e9ecef;
+    
+    /* Button and UI colors */
+    --btn-reset-bg: #f1f3f5;
+    --btn-reset-color: #495057;
+    --btn-reset-hover-bg: #e9ecef;
+    
+    /* Course colors */
+    --cs-color: #4CAF50;
+    --ce-color: #2196F3;
+    --ec-color: #FF9800;
+    --me-color: #9C27B0;
+    --ee-color: #FF5722;
+    
+    /* Design system */
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --bg-primary: linear-gradient(135deg, #2c3e50 0%, #1a2639 100%);
+    --bg-secondary: #121212;
+    --bg-card: #1e1e1e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #aaaaaa;
+    --text-light: #ffffff;
+    --border-color: #333333;
+    --shadow: 0 4px 12px rgba(0,0,0,0.3);
+    --hover-bg: #2a2a2a;
+    --table-hover: #2a2a2a;
+    --table-header-bg: #272727;
+    --table-header-text: #e0e0e0;
+    --toggle-bg: #333333;
+    
+    --btn-reset-bg: #333333;
+    --btn-reset-color: #e0e0e0;
+    --btn-reset-hover-bg: #444444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: var(--bg-primary);
+    color: var(--text-light);
+    padding: 24px 0;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.header p {
+    text-align: center;
+    opacity: 0.9;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.header .year-info {
+    text-align: center;
+    opacity: 0.95;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.header .update-info {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.scrolling-message {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 25px;
+    padding: 8px 20px;
+    margin: 0 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.scrolling-text {
+    display: inline-block;
+    animation: scroll-left 15s linear infinite;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+.scrolling-message::before {
+    content: "📢";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    z-index: 2;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.scrolling-message::before:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Message Editor Popup */
+.message-editor-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.message-editor-popup.show {
+    display: flex;
+}
+
+.editor-content {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    border: 2px solid var(--border-color);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+[data-theme="dark"] .editor-content {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.editor-header {
+    text-align: center;
+    margin-bottom: 25px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 15px;
+}
+
+.editor-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.editor-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.editor-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.editor-close:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.message-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.message-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.message-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.message-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.message-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: flex-end;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-save {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-save:hover {
+    background: #3bb3d9;
+}
+
+.btn-delete {
+    background: var(--warning-color);
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc1a68;
+}
+
+.btn-add-message {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-add-message:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.auth-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2500;
+}
+
+.auth-popup.show {
+    display: flex;
+}
+
+.auth-content {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    border: 2px solid var(--border-color);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.auth-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.editor-setup-notice {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(67, 97, 238, 0.1));
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.editor-setup-notice h4 {
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.editor-setup-notice code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+}
+
+.setup-steps {
+    list-style: none;
+    padding-left: 0;
+    color: var(--text-secondary);
+}
+
+.setup-steps li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.setup-steps li::before {
+    content: counter(step-counter);
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #ffc107;
+    color: #000;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.setup-steps {
+    counter-reset: step-counter;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.nav-tabs {
+    display: flex;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 8px;
+    margin-bottom: 24px;
+    box-shadow: var(--box-shadow);
+    transition: all 0.3s ease;
+    overflow-x: auto;
+}
+
+.nav-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 150px;
+}
+
+.nav-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.nav-tab:hover:not(.active) {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.metric-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.metric-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.metric-label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.year-breakdown {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.year-item {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+}
+
+.year-item span {
+    font-weight: 600;
+}
+
+.cs { color: var(--cs-color); }
+.ce { color: var(--ce-color); }
+.ec { color: var(--ec-color); }
+.me { color: var(--me-color); }
+.ee { color: var(--ee-color); }
+
+.content-section {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.content-section:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.section-title {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+    font-weight: 700;
+}
+
+.section-title.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.section-title.clickable:hover {
+    color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.section-title.clickable:hover::after {
+    content: " 📄";
+    opacity: 0.7;
+}
+
+/* Year-wise Charts Horizontal Scrolling Container */
+.charts-scroll-container {
+    overflow-x: auto;
+    padding: 20px 0;
+    margin: 20px 0;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
+
+.charts-scroll-container::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+[data-theme="dark"] .charts-scroll-container::after {
+    background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+}
+
+.charts-wrapper {
+    display: flex;
+    gap: 30px;
+    min-width: max-content;
+    padding: 0 20px;
+}
+
+/* Individual Chart Styles */
+.year-chart-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px 25px;
+    border: 1px solid var(--border-color);
+    position: relative;
+    min-width: 500px;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .year-chart-container {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.year-chart-header {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.year-chart-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.year-chart-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.year-chart-stats {
+    font-size: 0.8rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.year-chart-wrapper {
+    position: relative;
+    height: 320px;
+    margin-bottom: 15px;
+}
+
+.year-chart {
+    display: flex;
+    align-items: end;
+    justify-content: space-around;
+    height: 100%;
+    padding: 30px 0 60px 0;
+    position: relative;
+}
+
+.year-course-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 80px;
+}
+
+.year-bar-container {
+    height: 220px;
+    display: flex;
+    align-items: end;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.year-bar {
+    width: 45px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    height: 0%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.year-bar.ce {
+    background: linear-gradient(135deg, var(--ce-color), #1976D2);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.year-bar.me {
+    background: linear-gradient(135deg, var(--me-color), #7B1FA2);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.year-bar.ec {
+    background: linear-gradient(135deg, var(--ec-color), #F57C00);
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.year-bar.cs {
+    background: linear-gradient(135deg, var(--cs-color), #388E3C);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.year-bar.ee {
+    background: linear-gradient(135deg, var(--ee-color), #D84315);
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+}
+
+.year-bar:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.year-bar-label {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: var(--bg-card);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.year-bar:hover .year-bar-label {
+    opacity: 1;
+}
+
+.year-course-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.year-course-stats {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.year-chart-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.year-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.year-legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.year-legend-text {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Original chart styles remain for backward compatibility */
+.chart-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 50px 30px 30px 30px;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+[data-theme="dark"] .chart-container {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.chart-header {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 10;
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.chart-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 380px;
+    margin-bottom: 0;
+    margin-top: 30px;
+}
+
+.chart {
+    display: flex;
+    align-items: end;
+    justify-content: space-around;
+    height: 100%;
+    padding: 40px 0 80px 0;
+    position: relative;
+}
+
+.course-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 180px;
+}
+
+.bars-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.course-main-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-top: 10px;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 50px;
+}
+
+.bar-container {
+    height: 250px;
+    display: flex;
+    align-items: end;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.bar {
+    width: 40px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    height: 0%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.bar.ce {
+    background: linear-gradient(135deg, var(--ce-color), #1976D2);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.bar.me {
+    background: linear-gradient(135deg, var(--me-color), #7B1FA2);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.bar.ec {
+    background: linear-gradient(135deg, var(--ec-color), #F57C00);
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.bar.cs {
+    background: linear-gradient(135deg, var(--cs-color), #388E3C);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.bar.ee {
+    background: linear-gradient(135deg, var(--ee-color), #D84315);
+    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+}
+
+.bar:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.bar-label {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: var(--bg-card);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.bar:hover .bar-label {
+    opacity: 1;
+}
+
+.year-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.stats {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-students {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.legend-text {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+}
+
+.table-container {
+    overflow-x: auto;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.table-container.scrollable-datewise {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.table-container.scrollable-summary {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.table-container.scrollable-students {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.table-container.scrollable-dues {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.table-container.scrollable-notadmitted {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.table-container.scrollable-feelist {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Smooth scrolling for better UX */
+.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-feelist, .scrollable-notadmitted, .scrollable-summary {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+}
+
+/* Subtle scroll indicator */
+.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-feelist::after, .scrollable-notadmitted::after, .scrollable-summary::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.1));
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+[data-theme="dark"] .scrollable-datewise::after, 
+[data-theme="dark"] .scrollable-students::after,
+[data-theme="dark"] .scrollable-dues::after,
+[data-theme="dark"] .scrollable-feelist::after,
+[data-theme="dark"] .scrollable-notadmitted::after,
+[data-theme="dark"] .scrollable-summary::after {
+    background: linear-gradient(transparent, rgba(255,255,255,0.1));
+}
+
+/* Enhanced sticky headers for scrollable tables */
+.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-feelist th, .scrollable-notadmitted th, .scrollable-summary th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: var(--table-header-bg);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Subtotal row styling */
+.subtotal-row {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.subtotal-row td {
+    font-weight: 600 !important;
+    color: white !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 15px;
+    min-width: 800px; /* Prevent table compression */
+}
+
+#duesTable {
+    min-width: 1500px; /* Wider minimum width for dues table with additional Adm Cat column */
+}
+
+#feeListTable {
+    min-width: 1800px; /* Wider minimum width for fee list table with all fee columns */
+}
+
+/* Summary table column widths optimization */
+#summaryTable {
+    min-width: 700px; /* Optimized minimum width for better readability */
+}
+
+#summaryTable th:nth-child(1), #summaryTable td:nth-child(1) {
+    width: 100px; /* Optimized width for Year column */
+    min-width: 100px;
+}
+
+#summaryTable th:nth-child(2), #summaryTable td:nth-child(2) {
+    width: 85px; /* Optimized width for Course column */
+    min-width: 85px;
+}
+
+#summaryTable th:nth-child(3), #summaryTable td:nth-child(3),
+#summaryTable th:nth-child(4), #summaryTable td:nth-child(4),
+#summaryTable th:nth-child(5), #summaryTable td:nth-child(5),
+#summaryTable th:nth-child(6), #summaryTable td:nth-child(6) {
+    width: 80px; /* Optimized width for admission type columns */
+    min-width: 80px;
+    text-align: center;
+}
+
+#summaryTable th:nth-child(7), #summaryTable td:nth-child(7) {
+    width: 90px; /* Optimized width for Total column */
+    min-width: 90px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Date-wise table column widths optimization */
+#datewiseTable {
+    min-width: 700px; /* Optimized minimum width for better readability */
+}
+
+#datewiseTable th:nth-child(1), #datewiseTable td:nth-child(1) {
+    width: 120px; /* Optimized width for Date column */
+    min-width: 120px;
+}
+
+#datewiseTable th:nth-child(2), #datewiseTable td:nth-child(2),
+#datewiseTable th:nth-child(3), #datewiseTable td:nth-child(3),
+#datewiseTable th:nth-child(4), #datewiseTable td:nth-child(4),
+#datewiseTable th:nth-child(5), #datewiseTable td:nth-child(5),
+#datewiseTable th:nth-child(6), #datewiseTable td:nth-child(6) {
+    width: 85px; /* Optimized width for course columns */
+    min-width: 85px;
+    text-align: center;
+}
+
+#datewiseTable th:nth-child(7), #datewiseTable td:nth-child(7) {
+    width: 90px; /* Optimized width for Total column */
+    min-width: 90px;
+    text-align: center;
+    font-weight: bold;
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+th {
+    background-color: var(--table-header-bg);
+    font-weight: 600;
+    color: var(--table-header-text);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+tr:nth-child(even) {
+    background-color: var(--table-hover);
+}
+
+tr:hover {
+    background-color: rgba(67, 97, 238, 0.1);
+    transition: background-color 0.2s ease;
+}
+
+/* Remove background colors for dues table */
+#duesTable tr {
+    background-color: transparent !important;
+}
+
+#duesTable tr:hover {
+    background-color: rgba(67, 97, 238, 0.1) !important;
+}
+
+/* Grand total row styling - ensure visibility in all modes */
+#duesTable .grand-total-row {
+    background-color: var(--primary-color) !important;
+}
+
+#duesTable .grand-total-row td {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+
+#duesTable .grand-total-row:hover {
+    background-color: var(--primary-color) !important;
+}
+
+#duesTable .grand-total-row:hover td {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.grand-total-row {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.grand-total-row td {
+    color: white !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Ensure visibility in both light and dark modes */
+[data-theme="light"] .grand-total-row,
+[data-theme="light"] .grand-total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .grand-total-row,
+[data-theme="dark"] .grand-total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Total row styling for Fee List */
+.total-row {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.total-row td {
+    color: white !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.total-amount {
+    font-size: 0.95rem !important;
+}
+
+/* Ensure visibility in both light and dark modes for total row */
+[data-theme="light"] .total-row,
+[data-theme="light"] .total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+[data-theme="dark"] .total-row,
+[data-theme="dark"] .total-row td {
+    color: white !important;
+    background-color: var(--primary-color) !important;
+}
+
+/* Compact metric cards for dues section */
+.compact-metric-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 16px 20px;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.compact-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.compact-metric-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.compact-course-name {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.compact-dues-info {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.compact-dues-amount {
+    font-size: 1rem;
+    color: var(--warning-color);
+    font-weight: 700;
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.filter-group:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+select, input {
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 140px;
+    height: 44px;
+}
+
+.btn:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+}
+
+.btn-export {
+    background: #28a745 !important;
+    color: white !important;
+    margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-export:hover {
+    background: #218838 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-pdf {
+    background: #fd7e14 !important;
+    color: white !important;
+    margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-pdf:hover {
+    background: #e96500 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4);
+}
+
+.btn-excel {
+    background: #0d7377 !important;
+    color: white !important;
+    margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-excel:hover {
+    background: #0a5d61 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(13, 115, 119, 0.4);
+}
+
+.section-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.btn-excel-small, .btn-pdf-small {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 80px;
+    height: 32px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-excel-small {
+    background: #0d7377 !important;
+    color: white !important;
+}
+
+.btn-excel-small:hover {
+    background: #0a5d61 !important;
+    box-shadow: 0 2px 8px rgba(13, 115, 119, 0.4);
+}
+
+.btn-pdf-small {
+    background: #fd7e14 !important;
+    color: white !important;
+}
+
+.btn-pdf-small:hover {
+    background: #e96500 !important;
+    box-shadow: 0 2px 8px rgba(253, 126, 20, 0.4);
+}
+
+.btn-summary {
+    background: var(--primary-color);
+    margin-left: 10px;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-summary:hover {
+    background: #2d5a8b;
+    box-shadow: 0 4px 12px rgba(52, 107, 171, 0.4);
+}
+
+.btn-theme-toggle {
+    background: #6c757d;
+    margin: 20px auto;
+    display: flex;
+    width: fit-content;
+}
+
+.btn-theme-toggle:hover {
+    background: #5a6268;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+[data-theme="dark"] .btn-theme-toggle {
+    background: #ffc107;
+    color: #212529;
+}
+
+[data-theme="dark"] .btn-theme-toggle:hover {
+    background: #e0a800;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.hidden {
+    display: none;
+}
+
+.no-data {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 40px;
+}
+
+.section {
+    display: none;
+}
+
+.section.active {
+    display: block;
+}
+
+.notice-section {
+    background: linear-gradient(135deg, rgba(247, 37, 133, 0.1), rgba(67, 97, 238, 0.1));
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.notice-text {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* Dues specific styles */
+.dues-amount {
+    font-weight: bold;
+    color: var(--warning-color);
+    text-align: right;
+}
+
+.positive-amount {
+    color: var(--success-color);
+    text-align: right;
+}
+
+.negative-amount {
+    color: var(--warning-color);
+    text-align: right;
+}
+
+/* Fee Dues table - align all amount columns to the right */
+#duesTable th:nth-child(n+11):nth-child(-n+19),
+#duesTable td:nth-child(n+11):nth-child(-n+19) {
+    text-align: right;
+}
+
+/* Fee List table - align all amount columns to the right */
+#feeListTable th:nth-child(n+11):nth-child(-n+28),
+#feeListTable td:nth-child(n+11):nth-child(-n+28) {
+    text-align: right;
+}
+
+/* Payment status styling */
+.payment-status.paid {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.payment-status.partial {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.payment-status.due {
+    color: var(--error-color);
+    font-weight: 600;
+}
+
+/* Due amount styling */
+.due-amount {
+    color: var(--error-color) !important;
+    font-weight: 600 !important;
+}
+
+/* Amount column styling */
+.amount {
+    font-family: monospace;
+    font-weight: 500;
+}
+
+/* Course Breakdown Popup Styles */
+.course-breakdown-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.course-breakdown-popup.show {
+    display: flex;
+}
+
+.popup-content {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    border: 2px solid var(--border-color);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+[data-theme="dark"] .popup-content {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.popup-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 12px;
+}
+
+.popup-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.popup-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.popup-timer {
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.popup-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.popup-close:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.breakdown-container {
+    margin-top: 15px;
+}
+
+.single-breakdown-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.breakdown-grid {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.breakdown-header {
+    display: contents;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.breakdown-row {
+    display: contents;
+}
+
+.year-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+    padding: 4px 0;
+}
+
+.breakdown-value {
+    text-align: center;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    min-width: 25px;
+}
+
+.breakdown-value.regular {
+    background: rgba(67, 97, 238, 0.15);
+    color: var(--primary-color);
+}
+
+.breakdown-value.ltrl {
+    background: rgba(247, 37, 133, 0.15);
+    color: var(--warning-color);
+}
+
+.breakdown-value.snq {
+    background: rgba(76, 179, 240, 0.15);
+    color: var(--success-color);
+}
+
+.breakdown-value.rptr {
+    background: rgba(255, 152, 0, 0.15);
+    color: var(--ec-color);
+}
+
+.breakdown-total {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    border-radius: 3px;
+}
+
+.breakdown-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border-color);
+    margin: 6px 0;
+}
+
+.breakdown-grand-total {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 6px;
+    border-radius: 5px;
+    margin-top: 8px;
+}
+
+.admtype-regular { color: var(--primary-color); font-weight: 600; }
+.admtype-ltrl { color: var(--warning-color); font-weight: 600; }
+.admtype-snq { color: var(--success-color); font-weight: 600; }
+.admtype-rptr { color: var(--ec-color); font-weight: 600; }
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .popup-content {
+        margin: 20px;
+        padding: 18px;
+        max-width: none;
+        width: calc(100% - 40px);
+    }
+
+    .popup-title {
+        font-size: 1.1rem;
+    }
+
+    .popup-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .breakdown-grid {
+        font-size: 0.7rem;
+        gap: 6px;
+    }
+
+    .breakdown-value {
+        padding: 2px 4px;
+        min-width: 20px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header .year-info {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+
+    .header .update-info {
+        font-size: 0.75rem;
+    }
+
+    .scrolling-message {
+        margin: 0 10px;
+        padding: 6px 15px;
+        border-radius: 20px;
+    }
+
+    .scrolling-text {
+        font-size: 0.8rem;
+        animation: scroll-left 12s linear infinite;
+    }
+
+    .scrolling-message::before {
+        left: 8px;
+        font-size: 0.9rem;
+    }
+
+    /* Mobile responsive editor popups */
+    .editor-content {
+        margin: 10px;
+        padding: 20px;
+        max-width: none;
+        width: calc(100% - 20px);
+        max-height: 90vh;
+    }
+
+    .auth-content {
+        margin: 10px;
+        padding: 20px;
+        max-width: none;
+        width: calc(100% - 20px);
+    }
+
+    .editor-title {
+        font-size: 1.2rem;
+    }
+
+    .message-input {
+        font-size: 14px;
+        min-height: 70px;
+    }
+
+    .message-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-small {
+        width: 100%;
+        padding: 8px 12px;
+    }
+
+    .btn-add-message {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 16px;
+    }
+
+    /* Specific styling for dues metrics grid on mobile to show 2 per row */
+    #duesMetricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    #duesMetricsGrid .metric-card {
+        min-width: auto;
+        padding: 12px 14px;
+        min-height: 110px;
+    }
+
+    /* Specific styling for fee list metrics grid on mobile to show 2 per row */
+    #feeListMetricsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    #feeListMetricsGrid .metric-card {
+        min-width: auto;
+        padding: 10px 8px;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #feeListMetricsGrid .metric-number {
+        font-size: 1.4rem;
+        margin-bottom: 4px;
+    }
+
+    #feeListMetricsGrid .metric-label {
+        font-size: 0.75rem;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    #duesMetricsGrid .metric-number {
+        font-size: 1.6rem;
+    }
+
+    #duesMetricsGrid .metric-label {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+    }
+
+    #duesMetricsGrid .metric-card > div:last-child {
+        font-size: 0.8rem;
+    }
+
+    .year-breakdown {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .year-item {
+        font-size: 0.8rem;
+    }
+
+    .compact-metric-card {
+        padding: 12px 16px;
+        min-height: 120px;
+    }
+
+    .compact-metric-number {
+        font-size: 1.8rem;
+    }
+
+    .compact-course-name {
+        font-size: 1rem;
+    }
+
+    .compact-dues-info {
+        font-size: 0.8rem;
+    }
+
+    .compact-dues-amount {
+        font-size: 0.9rem;
+    }
+
+    .nav-tabs {
+        overflow-x: auto;
+        padding: 6px;
+    }
+
+    .nav-tab {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        min-width: 120px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .filter-group {
+        padding: 12px;
+    }
+
+    select, input {
+        width: 100%;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    th, td {
+        padding: 8px 6px;
+        font-size: 12px;
+        min-width: 80px; /* Minimum column width */
+    }
+
+    /* Make table horizontally scrollable on mobile */
+    .table-container {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Adjust scrollable table heights for mobile */
+    .table-container.scrollable-datewise {
+        max-height: 280px;
+    }
+
+    .table-container.scrollable-students, .table-container.scrollable-dues, .table-container.scrollable-feelist, .table-container.scrollable-notadmitted {
+        max-height: 400px;
+    }
+
+    table {
+        min-width: 700px; /* Force horizontal scroll for additional column */
+    }
+
+    #duesTable {
+        min-width: 1300px; /* Wider minimum width for mobile dues table with additional column */
+    }
+
+    #feeListTable {
+        min-width: 1600px; /* Wider minimum width for mobile fee list table */
+    }
+
+    /* Summary table mobile optimization */
+    #summaryTable {
+        min-width: 600px; /* Reduced minimum width for mobile summary table */
+    }
+
+    #summaryTable th:nth-child(1), #summaryTable td:nth-child(1) {
+        width: 80px; /* Reduced Year column for mobile */
+        min-width: 80px;
+    }
+
+    #summaryTable th:nth-child(2), #summaryTable td:nth-child(2) {
+        width: 65px; /* Reduced Course column for mobile */
+        min-width: 65px;
+    }
+
+    #summaryTable th:nth-child(3), #summaryTable td:nth-child(3),
+    #summaryTable th:nth-child(4), #summaryTable td:nth-child(4),
+    #summaryTable th:nth-child(5), #summaryTable td:nth-child(5),
+    #summaryTable th:nth-child(6), #summaryTable td:nth-child(6) {
+        width: 60px; /* Reduced admission type columns for mobile */
+        min-width: 60px;
+    }
+
+    #summaryTable th:nth-child(7), #summaryTable td:nth-child(7) {
+        width: 70px; /* Reduced Total column for mobile */
+        min-width: 70px;
+    }
+
+    /* Date-wise table mobile optimization */
+    #datewiseTable {
+        min-width: 600px; /* Reduced minimum width for mobile datewise table */
+    }
+
+    #datewiseTable th:nth-child(1), #datewiseTable td:nth-child(1) {
+        width: 100px; /* Reduced Date column for mobile */
+        min-width: 100px;
+    }
+
+    #datewiseTable th:nth-child(2), #datewiseTable td:nth-child(2),
+    #datewiseTable th:nth-child(3), #datewiseTable td:nth-child(3),
+    #datewiseTable th:nth-child(4), #datewiseTable td:nth-child(4),
+    #datewiseTable th:nth-child(5), #datewiseTable td:nth-child(5),
+    #datewiseTable th:nth-child(6), #datewiseTable td:nth-child(6) {
+        width: 70px; /* Reduced course columns for mobile */
+        min-width: 70px;
+    }
+
+    #datewiseTable th:nth-child(7), #datewiseTable td:nth-child(7) {
+        width: 80px; /* Reduced Total column for mobile */
+        min-width: 80px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .notice-section {
+        padding: 12px;
+    }
+
+    .notice-text {
+        font-size: 0.9rem;
+    }
+
+    /* Year-wise charts mobile responsive */
+    .charts-scroll-container {
+        padding: 15px 0;
+        margin: 15px 0;
+    }
+
+    .charts-wrapper {
+        gap: 20px;
+        padding: 0 15px;
+    }
+
+    .year-chart-container {
+        min-width: 350px;
+        padding: 20px 15px;
+    }
+
+    .year-chart-title {
+        font-size: 1.1rem;
+    }
+
+    .year-chart-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .year-chart-wrapper {
+        height: 260px;
+    }
+
+    .year-chart {
+        padding: 20px 0 50px 0;
+    }
+
+    .year-course-group {
+        max-width: 60px;
+    }
+
+    .year-bar-container {
+        height: 180px;
+    }
+
+    .year-bar {
+        width: 35px;
+    }
+
+    .year-course-label {
+        font-size: 1rem;
+    }
+
+    .year-course-stats {
+        font-size: 0.75rem;
+    }
+
+    /* Chart mobile responsive */
+    .chart-container {
+        padding: 20px 15px;
+    }
+
+    .chart-title {
+        font-size: 1.4rem;
+    }
+
+    .chart-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .chart-wrapper {
+        height: 320px;
+    }
+
+    .chart {
+        height: 100%;
+        padding: 30px 0 70px 0;
+        gap: 10px;
+    }
+
+    .course-group {
+        max-width: 140px;
+    }
+
+    .bars-container {
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+
+    .course-main-label {
+        font-size: 1.1rem;
+        margin-top: 8px;
+    }
+
+    .bar-container {
+        height: 200px;
+    }
+
+    .bar {
+        width: 30px;
+    }
+
+    .bar-group {
+        max-width: 35px;
+    }
+
+    .year-label {
+        font-size: 0.8rem;
+        margin-bottom: 2px;
+    }
+
+    .stats {
+        font-size: 0.7rem;
+    }
+
+    .chart-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .legend-text {
+        font-size: 0.85rem;
+    }
+}
+
+.footer {
+    text-align: center;
+    padding: 24px 0;
+    margin-top: 32px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.footer-line {
+    margin-bottom: 8px;
+}
+
+.footer-copyright {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+@media screen and (max-width: 768px) {
+    .footer {
+        padding: 16px 0;
+        font-size: 12px;
+    }
+}
+
+/* Data Info Popup Styles */
+.data-info-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.data-info-popup.show {
+    display: flex;
+}
+
+.popup-info-content {
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 
+        0 25px 50px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    animation: slideInUp 0.25s ease-out;
+    position: relative;
+    z-index: 10001;
+}
+
+.popup-info-header h3 {
+    margin: 0 0 16px 0;
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.popup-info-body p {
+    margin: 8px 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.popup-info-body .dev-info {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: normal;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .popup-info-content {
+        padding: 20px;
+        max-width: 350px;
+    }
+    
+    .popup-info-header h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Custom selection buttons - matching export/PDF colors */
+.btn-custom {
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    border: none;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+/* Export Selected CSV - matches regular export green */
+.btn-custom[onclick*="exportSelected"] {
+    background: #28a745 !important;
+    color: white !important;
+}
+
+.btn-custom[onclick*="exportSelected"]:hover:not(:disabled) {
+    background: #218838 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+/* Save Selected PDF - matches regular PDF orange */
+.btn-custom[onclick*="saveSelected"] {
+    background: #fd7e14 !important;
+    color: white !important;
+}
+
+.btn-custom[onclick*="saveSelected"]:hover:not(:disabled) {
+    background: #e96500 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+.btn-custom:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background: #6c757d !important;
+}
+
+.btn-custom:not(:disabled) {
+    opacity: 1;
+}
+
+/* Clear selection button */
+.btn-clear {
+    background: #dc3545 !important;
+    color: white !important;
+    margin-left: 10px;
+    opacity: 0.6;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    border: none;
+    min-width: 140px;
+    height: 44px;
+    padding: 12px 16px;
+}
+
+.btn-clear:hover:not(:disabled) {
+    background: #c82333 !important;
+    color: white !important;
+    opacity: 1;
+}
+
+.btn-clear:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    background: #6c757d !important;
+}
+
+.btn-clear:not(:disabled) {
+    opacity: 1;
+}
+
+/* Checkbox styling in table */
+.student-checkbox, .dues-checkbox, .notadmitted-checkbox {
+    cursor: pointer;
+    transform: scale(1.4);
+    border-radius: 4px;
+    width: 16px;
+    height: 16px;
+    display: block;
+    margin: 0 auto;
+    accent-color: #4361ee;
+}
+
+/* Dark mode checkbox styling */
+[data-theme="dark"] .student-checkbox, 
+[data-theme="dark"] .dues-checkbox, 
+[data-theme="dark"] .notadmitted-checkbox {
+    accent-color: #6c8aff;
+    filter: brightness(1.2);
+}
+
+/* Select column styling */
+th:first-child, td:first-child {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    text-align: center;
+    padding: 14px 8px;
+}
+
+/* Override for table cells containing checkboxes */
+td:first-child {
+    vertical-align: middle;
+}
+
+
+/* Mobile button layout - 2 columns */
+@media screen and (max-width: 768px) {
+    .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        align-items: start;
+    }
+    
+    .filter-group {
+        grid-column: span 2;
+    }
+    
+    .filters .btn {
+        grid-column: span 1;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 10px 8px;
+        min-width: auto;
+        height: 40px;
+    }
+}
+
+/* ========================================== */
+/* FEE STATISTICS TABLE OPTIMIZATIONS */
+/* ========================================== */
+
+/* Fee Statistics Table first column optimization */
+#feeStatsSummaryTable th:first-child,
+#feeStatsYearwiseTable th:first-child,
+#feeStatsCoursewiseTable th:first-child,
+#feeStatsCombinedTable th:first-child,
+#feeStatsYearwiseFullyPaidTable th:first-child,
+#feeStatsCoursewiseFullyPaidTable th:first-child,
+#feeStatsCombinedFullyPaidTable th:first-child,
+#feeStatsYearwisePartiallyPaidTable th:first-child,
+#feeStatsCoursewisePartiallyPaidTable th:first-child,
+#feeStatsCombinedPartiallyPaidTable th:first-child {
+    min-width: 140px;
+    width: 140px;
+    text-align: left;
+}
+
+#feeStatsSummaryTable td:first-child,
+#feeStatsYearwiseTable td:first-child,
+#feeStatsCoursewiseTable td:first-child,
+#feeStatsCombinedTable td:first-child,
+#feeStatsYearwiseFullyPaidTable td:first-child,
+#feeStatsCoursewiseFullyPaidTable td:first-child,
+#feeStatsCombinedFullyPaidTable td:first-child,
+#feeStatsYearwisePartiallyPaidTable td:first-child,
+#feeStatsCoursewisePartiallyPaidTable td:first-child,
+#feeStatsCombinedPartiallyPaidTable td:first-child {
+    min-width: 140px;
+    width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    padding-left: 8px;
+}
+
+/* Combined table second column (Course) optimization */
+#feeStatsCombinedTable th:nth-child(2),
+#feeStatsCombinedTable td:nth-child(2) {
+    min-width: 80px;
+    width: 80px;
+    text-align: center;
+}
+
+/* Fee Statistics amount columns optimization */
+#feeStatsSummaryTable .amount,
+#feeStatsYearwiseTable .amount,
+#feeStatsCoursewiseTable .amount,
+#feeStatsCombinedTable .amount {
+    text-align: right;
+    min-width: 90px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    padding-right: 8px;
+}
+
+/* Students count column */
+#feeStatsSummaryTable th:nth-child(2),
+#feeStatsYearwiseTable th:nth-child(2),
+#feeStatsCoursewiseTable th:nth-child(2),
+#feeStatsCombinedTable th:nth-child(3) {
+    min-width: 70px;
+    width: 70px;
+    text-align: center;
+}
+
+#feeStatsSummaryTable td:nth-child(2),
+#feeStatsYearwiseTable td:nth-child(2),
+#feeStatsCoursewiseTable td:nth-child(2),
+#feeStatsCombinedTable td:nth-child(3) {
+    min-width: 70px;
+    width: 70px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Year subtotal row styling */
+.year-subtotal-row {
+    background-color: var(--table-hover) !important;
+    font-weight: 600;
+    border-top: 2px solid var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.year-subtotal-row td {
+    padding: 8px 6px !important;
+    color: var(--primary-color) !important;
+}
+
+/* Grand total row enhanced styling */
+.grand-total-row {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
+    color: white !important;
+    font-weight: 700;
+    border-top: 3px solid var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.grand-total-row td {
+    color: white !important;
+    padding: 10px 6px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Total row styling for consistency */
+.total-row {
+    background: linear-gradient(135deg, var(--info-color) 0%, var(--accent-color) 100%) !important;
+    color: white !important;
+    font-weight: 600;
+    border-top: 2px solid var(--info-color);
+    border-bottom: 2px solid var(--info-color);
+}
+
+.total-row td {
+    color: white !important;
+    padding: 8px 6px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Fee Statistics specific scrollable containers */
+.table-container.scrollable-feestats {
+    max-height: 500px;
+    overflow: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 15px;
+}
+
+/* Fee Statistics metrics grid enhancements */
+#feeStatsMetricsGrid .metric-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--hover-bg) 100%);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+#feeStatsMetricsGrid .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-color: var(--primary-color);
+}
+
+/* Due amounts highlighting in Fee Statistics */
+#feeStatsSummaryTable .due-amount,
+#feeStatsYearwiseTable .due-amount,
+#feeStatsCoursewiseTable .due-amount,
+#feeStatsCombinedTable .due-amount {
+    color: var(--error-color);
+    font-weight: 600;
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+/* Collection percentage styling */
+#feeStatsSummaryTable td:last-child,
+#feeStatsYearwiseTable td:last-child,
+#feeStatsCoursewiseTable td:last-child,
+#feeStatsCombinedTable td:last-child {
+    font-weight: 600;
+    color: var(--success-color);
+    text-align: center;
+    min-width: 80px;
+    background-color: rgba(76, 201, 240, 0.1);
+    border-radius: 4px;
+}
+
+/* Subsection title styling for Fee Statistics */
+.subsection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 10px 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, var(--hover-bg) 0%, var(--table-header-bg) 100%);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Fee Statistics table headers */
+#feeStatsSummaryTable th,
+#feeStatsYearwiseTable th,
+#feeStatsCoursewiseTable th,
+#feeStatsCombinedTable th,
+#feeStatsYearwiseFullyPaidTable th,
+#feeStatsCoursewiseFullyPaidTable th,
+#feeStatsYearwisePartiallyPaidTable th,
+#feeStatsCoursewisePartiallyPaidTable th {
+    background: linear-gradient(135deg, var(--table-header-bg) 0%, var(--hover-bg) 100%);
+    color: var(--table-header-text);
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 6px;
+    border-bottom: 2px solid var(--primary-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Fee Statistics table body styling */
+#feeStatsSummaryTable tbody tr:hover,
+#feeStatsYearwiseTable tbody tr:hover,
+#feeStatsCoursewiseTable tbody tr:hover,
+#feeStatsCombinedTable tbody tr:hover,
+#feeStatsYearwiseFullyPaidTable tbody tr:hover,
+#feeStatsCoursewiseFullyPaidTable tbody tr:hover,
+#feeStatsYearwisePartiallyPaidTable tbody tr:hover,
+#feeStatsCoursewisePartiallyPaidTable tbody tr:hover {
+    background-color: var(--table-hover);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Responsive improvements for Fee Statistics */
+@media (max-width: 768px) {
+    #feeStatsSummaryTable,
+    #feeStatsYearwiseTable,
+    #feeStatsCoursewiseTable,
+    #feeStatsCombinedTable {
+        font-size: 0.8em;
+    }
+    
+    #feeStatsSummaryTable th:first-child,
+    #feeStatsYearwiseTable th:first-child,
+    #feeStatsCoursewiseTable th:first-child,
+    #feeStatsCombinedTable th:first-child,
+    #feeStatsSummaryTable td:first-child,
+    #feeStatsYearwiseTable td:first-child,
+    #feeStatsCoursewiseTable td:first-child,
+    #feeStatsCombinedTable td:first-child {
+        min-width: 100px;
+        width: 100px;
+    }
+    
+    .amount {
+        min-width: 70px !important;
+        font-size: 0.85em;
+    }
+    
+    .table-container.scrollable-feestats {
+        max-height: 400px;
+    }
+}
+
+/* ============================================================================
+   EXAM FEE MANAGEMENT STYLES
+   ============================================================================ */
+
+/* Exam Fee Table Scrollable Container */
+.table-container.scrollable-examfee {
+    max-height: 80vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-card);
+}
+
+/* Exam Fee Table Styling */
+#examFeeTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+#examFeeTable th,
+#examFeeTable td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+#examFeeTable th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#examFeeTable tr:hover {
+    background: var(--table-hover);
+}
+
+/* Exam Fee Status Column */
+.exam-fee-status {
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.exam-fee-amount {
+    font-weight: 600;
+    color: var(--success-color);
+    min-width: 100px;
+}
+
+/* Student Name Cell with Context Menu */
+.student-name-cell {
+    cursor: context-menu;
+    position: relative;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.student-name-cell:hover {
+    background: var(--hover-bg);
+    text-decoration: underline;
+}
+
+/* Context Menu Styling */
+.exam-fee-context-menu {
+    display: none;
+    position: absolute;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.context-menu-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.context-menu-item:hover {
+    background: var(--hover-bg);
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 0;
+    padding: 0;
+}
+
+.context-menu-delete {
+    color: var(--error-color);
+}
+
+.context-menu-delete:hover {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+/* Old exam fee dialog CSS removed - now using context menu style */
+
+.dialog-content {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    min-width: 400px;
+    max-width: 500px;
+    margin: 20px;
+    animation: dialogSlideIn 0.3s ease-out;
+}
+
+@keyframes dialogSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dialog-content h3 {
+    margin: 0;
+    padding: 20px 24px 10px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--hover-bg);
+    border-top: 1px solid var(--border-color);
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--secondary-color);
+}
+
+.btn-secondary {
+    background: var(--btn-reset-bg);
+    color: var(--btn-reset-color);
+    border: 1px solid var(--border-color);
+    padding: 11px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-secondary:hover {
+    background: var(--btn-reset-hover-bg);
+    border-color: var(--primary-color);
+}
+
+/* Exam Fee Status Visual Indicators */
+.exam-fee-status:contains("✅") {
+    color: var(--success-color);
+}
+
+.exam-fee-status:contains("❌") {
+    color: var(--error-color);
+}
+
+/* Visual styling for paid exam fee rows */
+.exam-fee-paid-row {
+    background: linear-gradient(90deg, rgba(247, 37, 133, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%) !important;
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+
+.exam-fee-paid-row .exam-fee-status {
+    color: var(--warning-color);
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(247, 37, 133, 0.2);
+}
+
+.exam-fee-paid-row .exam-fee-amount {
+    color: var(--warning-color);
+    font-weight: 700;
+    background: rgba(247, 37, 133, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.exam-fee-paid-row .student-name-cell {
+    color: var(--warning-color);
+    font-weight: 700;
+}
+
+/* Responsive Exam Fee Styles */
+@media (max-width: 768px) {
+    .table-container.scrollable-examfee {
+        max-height: 60vh;
+    }
+    
+    #examFeeTable {
+        font-size: 0.8rem;
+    }
+    
+    #examFeeTable th,
+    #examFeeTable td {
+        padding: 8px 6px;
+    }
+    
+    .dialog-content {
+        min-width: 300px;
+        margin: 10px;
+    }
+    
+    .context-menu-item {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Exam Fee Summary Styles */
+.exam-fee-summary {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.exam-fee-summary h3 {
+    margin: 0 0 15px 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.summary-course {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-course::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-color);
+}
+
+.summary-course.ce::before { background: var(--ce-color); }
+.summary-course.me::before { background: var(--me-color); }
+.summary-course.ec::before { background: var(--ec-color); }
+.summary-course.cs::before { background: var(--cs-color); }
+.summary-course.ee::before { background: var(--ee-color); }
+
+.summary-course-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.summary-stats {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.summary-paid {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.summary-total {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.summary-amount {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+.summary-total-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-total-box::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-color);
+}
+
+.summary-total-box .summary-course-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+}
+
+.summary-total-box .summary-stats {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.summary-total-box .summary-amount {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .exam-fee-summary {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+}
+
+[data-theme="dark"] .summary-course {
+    background: var(--bg-card);
+}
+
+[data-theme="dark"] .summary-total-box {
+    background: var(--bg-card);
+}
+
+/* Exam Fee Dialog - Centered Modal Style */
+.exam-fee-dialog {
+    position: fixed;
+    z-index: 1000;
+    display: none;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+    justify-content: center;
+    align-items: center;
+}
+.exam-fee-dialog[style*="display: block"] {
+    display: flex !important;
+}
+
+.dialog-content.compact {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    min-width: 280px;
+    max-width: 320px;
+    width: auto;
+    position: relative;
+}
+
+.dialog-content.compact h3 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dialog-body.compact {
+    margin: 0;
+    padding: 0;
+}
+
+.form-group.compact {
+    margin-bottom: 12px;
+}
+.compact-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.form-group.compact label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.compact-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    box-sizing: border-box;
+}
+
+.compact-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px rgba(67, 97, 238, 0.2);
+}
+
+.dialog-buttons.compact {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.btn.compact {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    min-width: 70px;
+    white-space: nowrap;
+}
+
+/* Remove number input arrows */
+.compact-input::-webkit-outer-spin-button,
+.compact-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.compact-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .compact-input {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Context Menu Status Styles */
+.context-menu-status {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 12px;
+    margin: 0 -8px 4px -8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    border-radius: 4px 4px 0 0;
+}
+
+.context-menu-status.paid {
+    background: rgba(247, 37, 133, 0.1);
+    color: var(--warning-color);
+    border-bottom-color: var(--warning-color);
+}
+
+.context-menu-status .status-label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.context-menu-status .status-amount {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .context-menu-status {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .context-menu-status.paid {
+    background: rgba(247, 37, 133, 0.15);
+}

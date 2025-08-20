@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMP Admn Stats 2025-26</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SMP Admn Stats</h1>
+            <p class="year-info">Year: 2025-26</p>
+            <div class="scrolling-message" title="Double-click the 📢 icon to edit messages">
+                <div class="scrolling-text" id="scrollingText">
+                    📅 Last date for fee payment: 31st March 2025 | 📋 Submit original documents by 15th April 2025 | 🎓 Final semester exam registration opens 1st May 2025
+                </div>
+            </div>
+        </div>
+
+        <div id="loading" class="content-section">
+            <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 2rem; margin-bottom: 20px;">⏳</div>
+                <h3>Loading Student Data...</h3>
+                <p>Please wait while we fetch the student database</p>
+            </div>
+        </div>
+
+        <div id="error" class="content-section hidden">
+            <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                <div style="font-size: 2rem; margin-bottom: 20px;">❌</div>
+                <h3>Error Loading Data</h3>
+                <p id="errorMessage">Could not load students.csv file</p>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+                    Make sure 'students.csv' is in the same directory as this HTML file
+                </p>
+            </div>
+        </div>
+
+        <div id="dashboard" class="hidden">
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be populated here -->
+            </div>
+
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showSection('statistics')">📊 Statistics</button>
+                <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
+                <button class="nav-tab" onclick="showSection('examfee')">📝 Exam Fee</button>
+                <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
+                <button class="nav-tab" onclick="showSection('feelist')">📋 Fee List</button>
+                <button class="nav-tab" onclick="showSection('feestats')">💹 Fee Statistics</button>
+                <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
+            </div>
+
+            <div id="statistics" class="section active">
+                <div class="content-section">
+                    <h2 class="section-title clickable" id="summaryTableTitle" onclick="exportSummaryToPDF()" title="Click to save as PDF">📋 Year, Course & Admission Type-wise Student Count</h2>
+                    <div class="table-container scrollable-summary">
+                        <table id="summaryTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Regular</th>
+                                    <th>LTRL</th>
+                                    <th>SNQ</th>
+                                    <th>RPTR</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Summary data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h2 class="section-title clickable" id="datewiseTableTitle" onclick="exportDatewiseToPDF()" title="Click to save as PDF">📅 Date-wise & Course-wise Students Report</h2>
+                    <div class="table-container scrollable-datewise">
+                        <table id="datewiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>CE</th>
+                                    <th>ME</th>
+                                    <th>EC</th>
+                                    <th>CS</th>
+                                    <th>EE</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Datewise data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Year-wise Bar Charts Section -->
+                <div class="content-section">
+                    <h2 class="section-title">📊 Year-wise Course Admission Analytics</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Interactive charts showing student distribution across courses for each academic year. Scroll horizontally to view all years.
+                    </p>
+                    <div class="charts-scroll-container">
+                        <div class="charts-wrapper" id="yearChartsWrapper">
+                            <!-- Year-wise charts will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="students" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">👥 Student Directory</h2>
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="courseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="yearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="admTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="nameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportToCSV()" id="exportAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveToPDF()" id="saveAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearSelection()" id="clearSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedToCSV()" id="exportSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedToPDF()" id="saveSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-students">
+                        <table id="studentTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Student data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="examfee" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">📝 Exam Fee Management</h2>
+                    
+                    <!-- Exam Fee Summary Section -->
+                    <div class="exam-fee-summary" id="examFeeSummary">
+                        <!-- Summary will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="examFeeCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="examFeeYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="examFeeAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Fee Paid Status</label>
+                            <select id="examFeeStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="paid">Exam Fee Paid</option>
+                                <option value="notpaid">Not Paid</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="examFeeNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearExamFeeFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportExamFeeToCSV()" id="exportExamFeeAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveExamFeeToPDF()" id="saveExamFeeAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearExamFeeSelection()" id="clearExamFeeSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedExamFeeToCSV()" id="exportExamFeeSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedExamFeeToPDF()" id="saveExamFeeSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-examfee">
+                        <table id="examFeeTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Status</th>
+                                    <th>Exam Fee Status</th>
+                                    <th>Exam Fee Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Exam fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dues" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">💰 Fee Dues Management</h2>
+                    
+                    <!-- Dues Metrics Grid -->
+                    <div class="metrics-grid" id="duesMetricsGrid">
+                        <!-- Dues metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="duesCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="duesYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="duesAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="duesNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearDuesFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportDuesToCSV()" id="exportDuesAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveDuesToPDF()" id="saveDuesAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearDuesSelection()" id="clearDuesSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedDuesToCSV()" id="exportDuesSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedDuesToPDF()" id="saveDuesSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-dues">
+                        <table id="duesTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Status</th>
+                                    <th>SMP Alloted</th>
+                                    <th>SVK Alloted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Alloted</th>
+                                    <th>Total Paid</th>
+                                    <th>Total Dues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dues data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feelist" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">📋 Fee List - Consolidated View</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Complete list of all students with detailed fee payment information
+                    </p>
+                    
+                    <!-- Fee List Metrics Grid -->
+                    <div class="metrics-grid" id="feeListMetricsGrid">
+                        <!-- Fee list metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="feeListCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="feeListYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="feeListAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Payment Status</label>
+                            <select id="feeListStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="Paid">Fully Paid</option>
+                                <option value="Partial">Partially Paid</option>
+                                <option value="Due">Dues Pending</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="feeListNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearFeeListFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportFeeListToCSV()" id="exportFeeListAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveFeeListToPDF()" id="saveFeeListAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-clear" onclick="clearFeeListSelection()" id="clearFeeListSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedFeeListToCSV()" id="exportFeeListSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedFeeListToPDF()" id="saveFeeListSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feelist">
+                        <table id="feeListTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Rpt</th>
+                                    <th>SMP Alloted</th>
+                                    <th>SVK Alloted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Alloted</th>
+                                    <th>Total Paid</th>
+                                    <th>Total Dues</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Fee list data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feestats" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">💹 Fee Statistics - Comprehensive Analysis</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Detailed fee collection statistics with year-wise and course-wise breakdowns
+                    </p>
+                    
+                    <!-- Fee Statistics Metrics Grid -->
+                    <div class="metrics-grid" id="feeStatsMetricsGrid">
+                        <!-- Fee statistics metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="feeStatsCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="feeStatsYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="feeStatsAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Table View</label>
+                            <select id="feeStatsTableFilter">
+                                <option value="all">All Tables</option>
+                                <option value="summary">Summary Only</option>
+                                <option value="yearwise">Year-wise Only</option>
+                                <option value="coursewise">Course-wise Only</option>
+                                <option value="combined">Combined Only</option>
+                                <option value="fullypaid">Fully Paid Only</option>
+                                <option value="partiallypaid">Partially Paid Only</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="clearFeeStatsFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportFeeStatsToCSV()" id="exportFeeStatsBtn">📥 Export CSV</button>
+                        <button class="btn btn-excel" onclick="saveFeeStatsToExcel()" id="saveFeeStatsExcelBtn">📊 Export Excel</button>
+                        <button class="btn btn-pdf" onclick="saveFeeStatsToPDF()" id="saveFeeStatsBtn">📄 Save PDF</button>
+                    </div>
+                </div>
+
+                <!-- Fee Summary Table -->
+                <div class="content-section" id="feeStatsSummarySection">
+                    <h2 class="section-title">📊 Fee Collection Summary</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsSummaryToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsSummaryToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsSummaryTable">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Fee summary data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Year-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsYearwiseSection">
+                    <h2 class="section-title">📅 Year-wise Fee Collection Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsYearwiseToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsYearwiseToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Year-wise fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Course-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsCoursewiseSection">
+                    <h2 class="section-title">🎓 Course-wise Fee Collection Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsCoursewiseToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsCoursewiseToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewiseTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Total Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Course-wise fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Combined Year & Course-wise Fee Statistics Table -->
+                <div class="content-section" id="feeStatsCombinedSection">
+                    <h2 class="section-title">🔢 Combined Year & Course-wise Fee Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsCombinedToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsCombinedToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined fee data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Fully Paid Students Statistics -->
+                <div class="content-section" id="feeStatsFullyPaidSection">
+                    <h2 class="section-title">✅ Fully Paid Students - Year & Course-wise Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsFullyPaidToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsFullyPaidToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    
+                    <!-- Yearwise Fully Paid -->
+                    <h3 class="subsection-title">📅 Year-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwiseFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Fully Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Yearwise fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Coursewise Fully Paid -->
+                    <h3 class="subsection-title">🎓 Course-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewiseFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Fully Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Coursewise fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Combined Year & Coursewise Fully Paid -->
+                    <h3 class="subsection-title">🔢 Combined Year & Course-wise Fully Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedFullyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined fully paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Partially Paid Students Statistics -->
+                <div class="content-section" id="feeStatsPartiallyPaidSection">
+                    <h2 class="section-title">⚠️ Partially Paid Students - Year & Course-wise Statistics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeStatsPartiallyPaidToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeStatsPartiallyPaidToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    
+                    <!-- Yearwise Partially Paid -->
+                    <h3 class="subsection-title">📅 Year-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsYearwisePartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Partially Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Yearwise partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Coursewise Partially Paid -->
+                    <h3 class="subsection-title">🎓 Course-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCoursewisePartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Course</th>
+                                    <th>Partially Paid Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Coursewise partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Combined Year & Coursewise Partially Paid -->
+                    <h3 class="subsection-title">🔢 Combined Year & Course-wise Partially Paid Students</h3>
+                    <div class="table-container scrollable-feestats">
+                        <table id="feeStatsCombinedPartiallyPaidTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Students</th>
+                                    <th>SMP Allotted</th>
+                                    <th>SVK Allotted</th>
+                                    <th>Total Allotted</th>
+                                    <th>SMP Paid</th>
+                                    <th>SVK Paid</th>
+                                    <th>Total Paid</th>
+                                    <th>SMP Due</th>
+                                    <th>SVK Due</th>
+                                    <th>Total Due</th>
+                                    <th>Collection %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="notadmitted" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">🚫 Not Admitted List</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Students from previous years who have not been admitted to the current academic year (2025-26)
+                    </p>
+                    
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        <strong>⚠️ Important Note:</strong> This list also includes students who may have not been promoted as well, so please double check.
+                    </p>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="notAdmittedCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="notAdmittedYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="notAdmittedAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Search Name/Reg No</label>
+                            <input type="text" id="notAdmittedNameFilter" placeholder="Enter student name or reg no...">
+                        </div>
+                        <button class="btn" onclick="clearNotAdmittedFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportNotAdmittedToCSV()" id="exportNotAdmittedAllBtn">📥 Export CSV</button>
+                        <button class="btn btn-pdf" onclick="saveNotAdmittedToPDF()" id="saveNotAdmittedAllBtn">📄 Save PDF</button>
+                        <button class="btn btn-summary" onclick="generateAdmissionSummary()">📊 Summary</button>
+                        <button class="btn btn-clear" onclick="clearNotAdmittedSelection()" id="clearNotAdmittedSelectionBtn" disabled>❌ Clear Selection</button>
+                        <button class="btn btn-custom" onclick="exportSelectedNotAdmittedToCSV()" id="exportNotAdmittedSelectedBtn" disabled>📥 Export Selected CSV</button>
+                        <button class="btn btn-custom" onclick="saveSelectedNotAdmittedToPDF()" id="saveNotAdmittedSelectedBtn" disabled>📄 Save Selected PDF</button>
+                    </div>
+                    <div class="table-container scrollable-notadmitted">
+                        <table id="notAdmittedTable">
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Sl No</th>
+                                    <th>Student Name</th>
+                                    <th>Father Name</th>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>Reg No</th>
+                                    <th>Adm Type</th>
+                                    <th>Adm Cat</th>
+                                    <th>Academic Year</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Not admitted data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Notice Section - Simplified -->
+        <div class="notice-section">
+            <div class="notice-text">
+                📋 <strong>Important Notice:</strong> Please visit the college office for accurate student numbers and official data verification.
+            </div>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button class="btn btn-theme-toggle" onclick="toggleDarkMode()" id="themeToggle">
+            🌙 Switch to Dark Mode
+        </button>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-line">This site is best optimized for Chrome on desktop</div>
+            <div class="footer-copyright">SMP(R), All Rights Reserved</div>
+        </div>
+    </div>
+
+    <!-- Authentication Popup -->
+    <div class="auth-popup" id="authPopup">
+        <div class="auth-content">
+            <h3 class="auth-title">🔐 Access Control</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+                Enter the access key to edit messages
+            </p>
+            <input type="password" class="auth-input" id="authInput" placeholder="Enter access key..." maxlength="20">
+            <div class="auth-buttons">
+                <button class="btn btn-small" onclick="authenticateUser()" style="background: var(--primary-color); color: white;">
+                    🔓 Access
+                </button>
+                <button class="btn btn-small" onclick="closeAuthPopup()" style="background: var(--btn-reset-bg); color: var(--btn-reset-color);">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Editor Popup -->
+    <div class="message-editor-popup" id="messageEditorPopup">
+        <div class="editor-content">
+            <button class="editor-close" onclick="closeMessageEditor()">×</button>
+            <div class="editor-header">
+                <div class="editor-title">📢 Message Editor</div>
+                <div class="editor-subtitle">Edit scrolling announcement messages</div>
+            </div>
+            <div class="editor-body">
+                <div class="editor-setup-notice">
+                    <h4>🔧 Setup Required for Cross-User Updates</h4>
+                    <p style="margin-bottom: 10px; color: var(--text-primary);">
+                        To enable message updates for all users, set up JSONhost.com:
+                    </p>
+                    <ol class="setup-steps">
+                        <li>Go to <strong>jsonhost.com</strong> and upload your JSON file</li>
+                        <li>Copy the <code>JSON ID</code> from the admin interface</li>
+                        <li>Get your <code>API Authorization token</code> from the settings</li>
+                        <li>Replace the placeholder values in the code:
+                            <br><code>JSONHOST_JSON_ID</code> and <code>JSONHOST_API_KEY</code>
+                        </li>
+                        <li>Redeploy your GitHub Pages site</li>
+                    </ol>
+                    <p style="margin-top: 10px; color: var(--warning-color); font-weight: 600;">
+                        ⚠️ Without setup, changes only affect your browser session.
+                    </p>
+                </div>
+                
+                <button class="btn-add-message" onclick="addNewMessage()">
+                    ➕ Add New Message
+                </button>
+                <div id="messagesContainer">
+                    <!-- Messages will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Exam Fee Context Menu -->
+    <div class="exam-fee-context-menu" id="examFeeContextMenu">
+        <div class="context-menu-status" id="contextMenuStatus">
+            <!-- Status info will be populated here -->
+        </div>
+        <div class="context-menu-item" id="examFeeMainOption" onclick="openExamFeeDialog()">
+            📝 Exam Fee Details
+        </div>
+        <div class="context-menu-item context-menu-divider"></div>
+        <div class="context-menu-item context-menu-delete" onclick="deleteExamFeeData()">
+            🗑️ Delete Exam Fee Data
+        </div>
+    </div>
+
+    <!-- Exam Fee Input Dialog -->
+    <div class="exam-fee-dialog" id="examFeeDialog">
+        <div class="dialog-content compact">
+            <h3 id="examFeeDialogTitle">📝 Exam Fee Details</h3>
+            <div class="dialog-body compact">
+                <div class="form-group compact">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="examFeePaidCheckbox" checked> 
+                        <span>Mark as Exam Fee Paid</span>
+                    </label>
+                </div>
+                <div class="form-group compact">
+                    <label for="examFeeAmount">Amount (₹):</label>
+                    <input type="number" id="examFeeAmount" placeholder="0" min="0" step="1" class="compact-input" value="0">
+                </div>
+            </div>
+            <div class="dialog-buttons compact">
+                <button class="btn btn-primary compact" onclick="saveExamFeeDetails()">💾 Save</button>
+                <button class="btn btn-secondary compact" onclick="closeExamFeeDialog()">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Breakdown Popup -->
+    <div class="course-breakdown-popup" id="courseBreakdownPopup">
+        <div class="popup-content">
+            <button class="popup-close" onclick="closeCourseBreakdown()">×</button>
+            <div class="popup-header">
+                <div class="popup-title" id="popupTitle">Course Breakdown</div>
+                <div class="popup-subtitle" id="popupSubtitle">Detailed student distribution</div>
+                <div class="popup-timer" id="popupTimer">Auto-close in 5 seconds</div>
+            </div>
+            <div class="breakdown-content">
+                <div class="breakdown-container" id="breakdownContainer">
+                    <div class="single-breakdown-card" id="breakdownCard">
+                        <!-- Breakdown data will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Info Popup -->
+    <div class="data-info-popup" id="dataInfoPopup">
+        <div class="popup-info-content">
+            <div class="popup-info-header">
+                <h3>📊 Real-time Student Analytics</h3>
+            </div>
+            <div class="popup-info-body">
+                <p>Visit daily for updates</p>
+                <p>Last Updated on <span id="popupLastUpdated">--</span></p>
+                <div class="dev-info">by Thejaraj R, SMP</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
