@@ -3277,8 +3277,10 @@ td:first-child {
     padding: 6px 12px;
     font-size: 0.8rem;
     border-radius: 4px;
-    min-width: 70px;
+    min-width: 80px;
+    flex: 1;
     white-space: nowrap;
+    text-align: center;
 }
 
 /* Remove number input arrows */

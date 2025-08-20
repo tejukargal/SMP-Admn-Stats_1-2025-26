@@ -11,6 +11,7 @@ let filteredExamFeeData = [];
 let examFeeStorage = {}; // Store exam fee payments locally
 let selectedExamFeeStudent = null; // Currently selected student for context menu
 let lastContextMenuPosition = { x: 0, y: 0 }; // Store context menu position
+let examFeeDialogKeyHandler = null; // Store the Enter key handler reference
 let popupTimer = null;
 let messageIndex = 0;
 const TOTAL_INTAKE_PER_COURSE = 63;
@@ -7993,12 +7994,21 @@ function openExamFeeDialog() {
     // Show the dialog - CSS handles the centering
     dialog.style.display = 'block';
     
-    // Focus on the appropriate field
-    if (currentData.paid) {
+    // Always focus on the amount input field
+    setTimeout(() => {
         amountInput.focus();
-    } else {
-        paidCheckbox.focus();
-    }
+        amountInput.select();
+    }, 100);
+    
+    // Add Enter key handler for the dialog
+    examFeeDialogKeyHandler = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveExamFeeDetails();
+        }
+    };
+    
+    dialog.addEventListener('keydown', examFeeDialogKeyHandler);
     
     hideExamFeeContextMenu();
 }
@@ -8071,6 +8081,13 @@ function saveExamFeeDetails() {
 // Close exam fee dialog
 function closeExamFeeDialog() {
     const dialog = document.getElementById('examFeeDialog');
+    
+    // Clean up the Enter key event listener
+    if (examFeeDialogKeyHandler) {
+        dialog.removeEventListener('keydown', examFeeDialogKeyHandler);
+        examFeeDialogKeyHandler = null;
+    }
+    
     dialog.style.display = 'none';
 }
 

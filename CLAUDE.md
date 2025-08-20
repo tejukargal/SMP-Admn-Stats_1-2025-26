@@ -8,9 +8,13 @@ This is a static web application for displaying student admission statistics for
 
 ## File Structure
 
-- `index.html` - Main application file (~4,767 lines) containing HTML, CSS, and JavaScript
+- `index.html` - Main application file containing HTML structure and DOM manipulation
+- `script.js` - JavaScript application logic and data processing functions
+- `style.css` - CSS styles with theme system and responsive design
 - `students.csv` - Student data file with admission details, fees, and course information
-- `jsonbin.io.txt` - Configuration notes for external storage service
+- `Previous Students.csv` - Historical student data for comparison
+- `start-server.bat` - Local development server launcher (Python HTTP server)
+- `jsonhost.com.txt` - Configuration notes for JSONHost.com external storage service
 
 ## Architecture
 
@@ -19,12 +23,16 @@ This is a static web application for displaying student admission statistics for
 The application is built as a single-page application with the following key sections:
 
 1. **Data Loading System** - Loads student data from `students.csv` using Papa Parse library
-2. **Dashboard Interface** - Three main views:
-   - Statistics view with summary tables and charts
-   - Student list with filtering capabilities
-   - Fee dues list with payment tracking
+2. **Dashboard Interface** - Seven main views:
+   - Statistics view with summary tables and interactive charts
+   - Student list with filtering and selection capabilities
+   - Exam Fee management with payment tracking
+   - Fee Dues list with payment status
+   - Fee List with detailed fee breakdown
+   - Fee Statistics with analytical insights
+   - Not Admitted list for rejected applications
 3. **Theme System** - Light/dark mode toggle with CSS custom properties
-4. **Data Persistence** - Optional JSONBin.io integration for cross-user message storage
+4. **Data Persistence** - Dual JSONHost.com endpoints for message and exam fee storage
 
 ### Key JavaScript Functions
 
@@ -38,27 +46,55 @@ The application includes several main functional areas:
 
 ### Data Model
 
-Student records contain fields including:
-- Basic info: Student Name, Father Name, Registration Number
-- Academic: Year, Course (CS/CE/EC/ME/EE), Admission Type (REGULAR/LTRL/SNQ/RPTR)
-- Financial: Various fee categories (SMP, SVK, Tuition, Library, etc.)
-- Status: Payment status, remarks, in/out status
+#### Student CSV Structure (35+ columns)
+- **Basic Info**: Sl No, Student Name, Father Name, Registration Number  
+- **Academic**: Year, Course (CS/CE/EC/ME/EE), Category, Admission Type (REGULAR/LTRL/SNQ/RPTR)
+- **Financial**: Alloted Fee SMP/SVK, Paid amounts, individual fee categories:
+  - Core: Admission, Tuition, Library, RR, Sports, Lab fees
+  - Additional: DVP, Magazine, ID, Association, SWF, TWF, NSS, Fine
+- **Status**: Date, In/Out status, Remarks, Academic Year (2025-26)
 
-## Development Workflow
+#### Global Data Arrays
+- `studentsData[]` - Main filtered student list
+- `allStudentsData[]` - Complete student dataset  
+- `duesData[]` - Students with pending fee payments
+- `examFeeData[]` - Exam fee specific records
+- `previousStudentsData[]` - Historical student data
+- `notAdmittedData[]` - Rejected applications
+
+#### Key Constants
+- `TOTAL_INTAKE_PER_COURSE = 63` - Maximum student capacity per course
+- Course codes: CS, CE, EC, ME, EE
+- Admission types: REGULAR, LTRL (Lateral), SNQ, RPTR (Repeater)
+
+## Development Commands
 
 ### Running the Application
 
-This is a static web application that can be run by:
-1. Opening `index.html` in a web browser
-2. Serving via any static web server (e.g., `python -m http.server`)
-3. Deploying to GitHub Pages or similar static hosting
+Use the provided batch file for local development:
+```bash
+# Windows
+start-server.bat
+
+# Manual server start (cross-platform)
+python -m http.server 8000
+```
+
+Then open: http://localhost:8000
+
+Alternative methods:
+1. Opening `index.html` directly in a web browser (limited functionality due to CORS)
+2. Deploying to GitHub Pages or similar static hosting
+
+### Development Workflow
 
 ### No Build Process
 
 The application requires no build step, compilation, or dependencies installation. All external libraries are loaded via CDN:
-- Papa Parse for CSV parsing
-- jsPDF for PDF generation
-- Google Fonts for typography
+- **Papa Parse 5.4.1**: CSV parsing and data loading
+- **jsPDF 2.5.1 + AutoTable 3.5.23**: PDF export functionality  
+- **SheetJS 0.18.5**: Excel export capabilities
+- **Google Fonts (Inter)**: Typography system
 
 ### Data Updates
 
@@ -74,12 +110,21 @@ The application uses CSS custom properties (variables) for theming:
 - Course-specific colors: `--cs-color`, `--ce-color`, `--ec-color`, `--me-color`, `--ee-color`
 - Light/dark mode variants for all UI elements
 
-### External Storage (Optional)
+### External Storage Architecture
 
-The application supports JSONBin.io integration for persistent message storage:
-- Configure `JSONBIN_API_KEY` and `JSONBIN_BIN_ID` in the JavaScript
-- Enables cross-user message updates
-- Falls back to local storage if not configured
+The application uses JSONHost.com for persistent data storage across two separate endpoints:
+
+#### Message Storage
+- **API Key**: `JSONHOST_API_KEY` in `script.js:19`
+- **JSON ID**: `JSONHOST_JSON_ID` in `script.js:20`
+- **Purpose**: Cross-user scrolling message updates
+- **Functions**: `loadMessagesFromServer()`, `saveMessagesToServer()`
+
+#### Exam Fee Storage  
+- **API Key**: `JSONHOST_EXAMFEE_API_KEY` in `script.js:23`
+- **JSON ID**: `JSONHOST_EXAMFEE_JSON_ID` in `script.js:24`
+- **Purpose**: Persistent exam fee payment tracking
+- **Fallback**: Local storage when server unavailable
 
 ## Key Features
 
