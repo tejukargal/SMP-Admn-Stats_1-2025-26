@@ -9358,6 +9358,72 @@ function exportFeeDistributionUnaidedToPDF() {
     doc.save(`SMP_Unaided_Course_Distribution_${timestamp}.pdf`);
 }
 
+// Export Combined Fee Distribution to Excel
+function exportFeeDistributionCombinedToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    const combinedData = [['Sl No', 'Course Type', 'Fee Type', 'Students Count', 'Fee Amount', 'Total Collected', 'To Govt', 'To SVK', 'To SMP']];
+    document.querySelectorAll('#feeDistributionCombinedTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (columns 0,1,2 have text/mixed content, rest are numerical)
+                if (index === 1 || index === 2) return textContent; // Course Type and Fee Type remain text
+                if (index === 0 && textContent === 'GRAND TOTAL') return textContent; // Keep GRAND TOTAL as text
+                return isNaN(textContent) ? textContent : Number(textContent);
+            });
+            combinedData.push(rowData);
+        }
+    });
+    
+    const combinedSheet = XLSX.utils.aoa_to_sheet(combinedData);
+    XLSX.utils.book_append_sheet(workbook, combinedSheet, 'Combined Distribution');
+    
+    XLSX.writeFile(workbook, `SMP_Combined_Fee_Distribution_${timestamp}.xlsx`);
+}
+
+// Export Combined Fee Distribution to PDF
+function exportFeeDistributionCombinedToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(16);
+    doc.text('SMP Combined Fee Remittance Abstract Table', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text('Aided & Unaided Courses | Academic Year: 2025-26', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    doc.autoTable({
+        html: '#feeDistributionCombinedTable',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [52, 73, 94], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        margin: { left: 10, right: 10 },
+        didParseCell: function (data) {
+            // Style aided rows with light green background
+            if (data.row.index > 0 && data.row.raw[1] && data.row.raw[1].textContent === 'Aided') {
+                data.cell.styles.fillColor = [39, 174, 96, 0.1];
+            }
+            // Style unaided rows with light purple background
+            else if (data.row.index > 0 && data.row.raw[1] && data.row.raw[1].textContent === 'Unaided') {
+                data.cell.styles.fillColor = [142, 68, 173, 0.1];
+            }
+            // Style grand total row
+            else if (data.row.index > 0 && data.row.raw[0] && data.row.raw[0].textContent === 'GRAND TOTAL') {
+                data.cell.styles.fillColor = [52, 73, 94];
+                data.cell.styles.textColor = 255;
+                data.cell.styles.fontStyle = 'bold';
+            }
+        }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Combined_Fee_Distribution_${timestamp}.pdf`);
+}
+
 // Update the main showSection function to handle exam fee section
 const examFeeShowSection = showSection;
 showSection = function(sectionName) {
