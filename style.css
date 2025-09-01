@@ -2769,6 +2769,131 @@ td:first-child {
 }
 
 /* ============================================================================
+   FEE DISTRIBUTION STYLES
+   ============================================================================ */
+
+/* Fee Distribution Table Scrollable Container */
+.table-container.scrollable-feedistribution {
+    max-height: 80vh;
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-card);
+}
+
+/* Fee Distribution Table Styling */
+.scrollable-feedistribution table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.scrollable-feedistribution th,
+.scrollable-feedistribution td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.scrollable-feedistribution th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.scrollable-feedistribution tr:hover {
+    background: var(--table-hover);
+}
+
+/* Fee Distribution Specific Styles */
+.aided-row {
+    background: var(--success-light);
+}
+
+.unaided-row {
+    background: var(--info-light);
+}
+
+.total-cell {
+    font-weight: 700;
+    background: var(--accent-light);
+}
+
+.amount {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* Fee Distribution table alignment - right align all numerical columns */
+#feeDistributionStudentStatsTable th:nth-child(2), #feeDistributionStudentStatsTable td:nth-child(2),
+#feeDistributionSummaryTable th:nth-child(2), #feeDistributionSummaryTable td:nth-child(2),
+#feeDistributionAidedTable th:nth-child(3), #feeDistributionAidedTable td:nth-child(3),
+#feeDistributionUnaidedTable th:nth-child(3), #feeDistributionUnaidedTable td:nth-child(3) {
+    text-align: right;
+}
+
+/* Fee Distribution table header alignment - center align all headers */
+#feeDistributionStudentStatsTable th,
+#feeDistributionSummaryTable th,
+#feeDistributionAidedTable th,
+#feeDistributionUnaidedTable th {
+    text-align: center !important;
+    font-weight: 600;
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
+    vertical-align: middle;
+    padding: 14px 8px;
+}
+
+/* Fee Distribution - specific column overrides for data alignment */
+#feeDistributionAidedTable td:nth-child(1),
+#feeDistributionUnaidedTable td:nth-child(1) {
+    text-align: center; /* Serial Number */
+}
+
+#feeDistributionAidedTable td:nth-child(2),
+#feeDistributionUnaidedTable td:nth-child(2) {
+    text-align: left; /* Fee Type */
+    font-weight: 600;
+}
+
+#feeDistributionStudentStatsTable td:nth-child(1),
+#feeDistributionSummaryTable td:nth-child(1) {
+    text-align: left; /* Course Type / Category */
+    font-weight: 600;
+}
+
+/* Fee Remittance Abstract Tables - right align all numerical columns */
+#feeDistributionAidedTable td:nth-child(n+3),
+#feeDistributionUnaidedTable td:nth-child(n+3) {
+    text-align: right; /* Student Count, Fee Amount, Total Collected, To Gov, To SVK, To SMP */
+}
+
+/* Fee Distribution Summary Table - right align all numerical columns */
+#feeDistributionSummaryTable td:nth-child(n+2) {
+    text-align: right; /* Students, Total Collected, To Government, To SVK, To SMP */
+}
+
+/* Fee Distribution Mobile Responsive */
+@media (max-width: 768px) {
+    .table-container.scrollable-feedistribution {
+        max-height: 60vh;
+    }
+    
+    .scrollable-feedistribution th,
+    .scrollable-feedistribution td {
+        padding: 8px 4px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ============================================================================
    EXAM FEE MANAGEMENT STYLES
    ============================================================================ */
 

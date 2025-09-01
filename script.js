@@ -331,6 +331,16 @@ function showSection(sectionName) {
         }
     }
     
+    // If switching to fee distribution section, check access control FIRST
+    if (sectionName === 'feedistribution') {
+        const accessKey = prompt('🔐 Enter access key to view Fee Distribution:');
+        if (accessKey === null || accessKey === '' || accessKey !== 'teju2015') {
+            alert('❌ Access denied. Invalid access key.');
+            // Don't switch sections, exit immediately
+            return;
+        }
+    }
+    
     // If switching to exam fee section, check access control FIRST
     if (sectionName === 'examfee') {
         const accessKey = prompt('🔐 Enter access key to view Exam Fee:');
@@ -8242,6 +8252,1032 @@ function saveExamFeeDataToPDF(data, filename) {
     doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
+// Fee Distribution Variables and Functions
+let filteredFeeDistributionData = [];
+let currentFeeDistributionFilters = {
+    courseType: '',
+    year: '',
+    course: '',
+    admType: ''
+};
+
+// Fee Structure based on academic year 2025-26
+const feeStructure = {
+    aided: {
+        tuition: { "1st Yr": 6200, "2nd Yr": 5618, "3rd Yr": 5618 },
+        other: {
+            dvp: 500,
+            admission: 30,
+            lab: 300,
+            rr: 100,
+            magazine: 60,
+            id: 10,
+            sports: 70,
+            association: 60,
+            library: 150, // Only for 1st year and lateral entry 2nd year
+            swf: 25,
+            twf: 25,
+            nss: 40
+        }
+    },
+    unaided: {
+        tuition: { "1st Yr": 13300, "2nd Yr": 12075, "3rd Yr": 12075 },
+        other: {
+            dvp: 500,
+            admission: 30,
+            lab: 300,
+            rr: 100,
+            magazine: 60,
+            id: 10,
+            sports: 70,
+            association: 60,
+            library: 150, // Only for 1st year and lateral entry 2nd year
+            swf: 25,
+            twf: 25,
+            nss: 40
+        }
+    }
+};
+
+// Initialize Fee Distribution Section
+function initializeFeeDistribution() {
+    filteredFeeDistributionData = [...studentsData];
+    populateFeeDistributionFilters();
+    applyFeeDistributionFilters();
+}
+
+// Populate Fee Distribution Filters
+function populateFeeDistributionFilters() {
+    const years = [...new Set(studentsData.map(s => s['Year']))].sort();
+    const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
+    
+    // Populate year filter
+    const yearFilter = document.getElementById('feeDistributionYearFilter');
+    if (yearFilter) {
+        yearFilter.innerHTML = '<option value="">All Years</option>';
+        years.forEach(year => {
+            if (year) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            }
+        });
+    }
+    
+    // Populate course filter
+    const courseFilter = document.getElementById('feeDistributionCourseFilter');
+    if (courseFilter) {
+        courseFilter.innerHTML = '<option value="">All Courses</option>';
+        courses.forEach(course => {
+            if (course) {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                courseFilter.appendChild(option);
+            }
+        });
+    }
+    
+    // Populate admission type filter
+    const admTypesSet = new Set();
+    studentsData.forEach(student => {
+        const admCat = student['Adm Cat'] || '';
+        const admTypeCol = student['Adm Type'] || '';
+        
+        if (admCat.trim() === 'SNQ') {
+            admTypesSet.add('SNQ');
+        } else {
+            if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                admTypesSet.add(admTypeCol);
+            } else {
+                admTypesSet.add('REGULAR');
+            }
+        }
+    });
+    
+    const admTypeFilter = document.getElementById('feeDistributionAdmTypeFilter');
+    if (admTypeFilter) {
+        admTypeFilter.innerHTML = '<option value="">All Types</option>';
+        [...admTypesSet].sort().forEach(admType => {
+            const option = document.createElement('option');
+            option.value = admType;
+            option.textContent = admType;
+            admTypeFilter.appendChild(option);
+        });
+    }
+}
+
+// Apply Fee Distribution Filters
+function applyFeeDistributionFilters() {
+    currentFeeDistributionFilters.courseType = document.getElementById('feeDistributionCourseTypeFilter')?.value || '';
+    currentFeeDistributionFilters.year = document.getElementById('feeDistributionYearFilter')?.value || '';
+    currentFeeDistributionFilters.course = document.getElementById('feeDistributionCourseFilter')?.value || '';
+    currentFeeDistributionFilters.admType = document.getElementById('feeDistributionAdmTypeFilter')?.value || '';
+    
+    filteredFeeDistributionData = studentsData.filter(student => {
+        // Course Type filter (Aided/Unaided)
+        if (currentFeeDistributionFilters.courseType) {
+            const course = student['Course'];
+            const isAided = ['CE', 'ME', 'EC', 'CS'].includes(course);
+            if ((currentFeeDistributionFilters.courseType === 'Aided' && !isAided) ||
+                (currentFeeDistributionFilters.courseType === 'Unaided' && isAided)) {
+                return false;
+            }
+        }
+        
+        // Year filter
+        if (currentFeeDistributionFilters.year && student['Year'] !== currentFeeDistributionFilters.year) {
+            return false;
+        }
+        
+        // Course filter
+        if (currentFeeDistributionFilters.course && student['Course'] !== currentFeeDistributionFilters.course) {
+            return false;
+        }
+        
+        // Admission Type filter
+        if (currentFeeDistributionFilters.admType) {
+            const admCat = student['Adm Cat'] || '';
+            const admTypeCol = student['Adm Type'] || '';
+            
+            let studentAdmType = '';
+            if (admCat.trim() === 'SNQ') {
+                studentAdmType = 'SNQ';
+            } else if (admTypeCol === 'LTRL' || admTypeCol === 'RPTR') {
+                studentAdmType = admTypeCol;
+            } else {
+                studentAdmType = 'REGULAR';
+            }
+            
+            if (studentAdmType !== currentFeeDistributionFilters.admType) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    displayFeeDistributionData();
+    displayFeeDistributionMetrics();
+    showHideFeeDistributionTables();
+}
+
+// Display Fee Distribution Data
+function displayFeeDistributionData() {
+    displayFeeDistributionStudentStats();
+    displayFeeDistributionSummary();
+    displayFeeDistributionAided();
+    displayFeeDistributionUnaided();
+}
+
+// Display Fee Distribution Student Statistics
+function displayFeeDistributionStudentStats() {
+    const tbody = document.querySelector('#feeDistributionStudentStatsTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    // Group students by course and year
+    const stats = {};
+    const courses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    const years = ['1st Yr', '2nd Yr', '3rd Yr'];
+    
+    // Initialize stats structure
+    courses.forEach(course => {
+        stats[course] = {};
+        years.forEach(year => {
+            stats[course][year] = { regular: 0, lateral: 0, snq: 0, total: 0 };
+        });
+        stats[course].grandTotal = 0;
+    });
+    
+    // Populate stats from filtered data
+    filteredFeeDistributionData.forEach(student => {
+        const course = student['Course'];
+        const year = student['Year'];
+        const admCat = student['Adm Cat'] || '';
+        const admType = student['Adm Type'] || '';
+        
+        if (stats[course] && stats[course][year]) {
+            if (admCat.trim() === 'SNQ') {
+                stats[course][year].snq++;
+            } else if (admType === 'LTRL') {
+                stats[course][year].lateral++;
+            } else {
+                stats[course][year].regular++;
+            }
+            stats[course][year].total++;
+            stats[course].grandTotal++;
+        }
+    });
+    
+    // Display stats
+    courses.forEach((course, index) => {
+        const courseType = ['CE', 'ME', 'EC', 'CS'].includes(course) ? 'Aided' : 'Unaided';
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><strong>${course} (${courseType})</strong></td>
+            <td>${stats[course]['1st Yr'].regular}</td>
+            <td>${stats[course]['1st Yr'].snq}</td>
+            <td><strong>${stats[course]['1st Yr'].total}</strong></td>
+            <td>${stats[course]['2nd Yr'].regular}</td>
+            <td>${stats[course]['2nd Yr'].lateral}</td>
+            <td>${stats[course]['2nd Yr'].snq}</td>
+            <td><strong>${stats[course]['2nd Yr'].total}</strong></td>
+            <td>${stats[course]['3rd Yr'].regular}</td>
+            <td>${stats[course]['3rd Yr'].snq}</td>
+            <td><strong>${stats[course]['3rd Yr'].total}</strong></td>
+            <td class="total-cell"><strong>${stats[course].grandTotal}</strong></td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Add Grand Total row
+    const grandTotalRow = document.createElement('tr');
+    grandTotalRow.className = 'grand-total-row';
+    
+    const grandTotals = {
+        '1st Yr': { regular: 0, snq: 0, total: 0 },
+        '2nd Yr': { regular: 0, lateral: 0, snq: 0, total: 0 },
+        '3rd Yr': { regular: 0, snq: 0, total: 0 },
+        overall: 0
+    };
+    
+    courses.forEach(course => {
+        years.forEach(year => {
+            grandTotals[year].regular += stats[course][year].regular;
+            grandTotals[year].lateral = (grandTotals[year].lateral || 0) + stats[course][year].lateral;
+            grandTotals[year].snq += stats[course][year].snq;
+            grandTotals[year].total += stats[course][year].total;
+        });
+        grandTotals.overall += stats[course].grandTotal;
+    });
+    
+    grandTotalRow.innerHTML = `
+        <td colspan="2"><strong>GRAND TOTAL</strong></td>
+        <td><strong>${grandTotals['1st Yr'].regular}</strong></td>
+        <td><strong>${grandTotals['1st Yr'].snq}</strong></td>
+        <td><strong>${grandTotals['1st Yr'].total}</strong></td>
+        <td><strong>${grandTotals['2nd Yr'].regular}</strong></td>
+        <td><strong>${grandTotals['2nd Yr'].lateral}</strong></td>
+        <td><strong>${grandTotals['2nd Yr'].snq}</strong></td>
+        <td><strong>${grandTotals['2nd Yr'].total}</strong></td>
+        <td><strong>${grandTotals['3rd Yr'].regular}</strong></td>
+        <td><strong>${grandTotals['3rd Yr'].snq}</strong></td>
+        <td><strong>${grandTotals['3rd Yr'].total}</strong></td>
+        <td class="total-cell"><strong>${grandTotals.overall}</strong></td>
+    `;
+    tbody.appendChild(grandTotalRow);
+}
+
+// Calculate Fee Distribution for Aided/Unaided courses
+function calculateFeeDistribution(students, isAided) {
+    const courseFilter = isAided ? 
+        (course) => ['CE', 'ME', 'EC', 'CS'].includes(course) :
+        (course) => course === 'EE';
+    
+    const filteredStudents = students.filter(s => courseFilter(s['Course']));
+    const feeData = isAided ? feeStructure.aided : feeStructure.unaided;
+    
+    const distribution = [];
+    let slNo = 1;
+    
+    // Calculate tuition fees by year using fixed fee structure
+    ['1st Yr', '2nd Yr', '3rd Yr'].forEach(year => {
+        const yearStudents = filteredStudents.filter(s => s['Year'] === year);
+        
+        // Filter students who pay tuition (Regular + Lateral, exclude SNQ)
+        const tuitionPayingStudents = yearStudents.filter(s => {
+            const admCat = s['Adm Cat'] || '';
+            return admCat.trim() !== 'SNQ';
+        });
+        
+        if (tuitionPayingStudents.length > 0) {
+            const tuitionFeePerStudent = feeData.tuition[year];
+            const totalTuitionCollected = tuitionPayingStudents.length * tuitionFeePerStudent;
+            
+            distribution.push({
+                slNo: slNo++,
+                feeType: `Tuition Fee ${year}`,
+                studentCount: tuitionPayingStudents.length,
+                feeAmount: tuitionFeePerStudent,
+                totalCollected: totalTuitionCollected,
+                toGov: isAided ? totalTuitionCollected / 2 : 0,
+                toSVK: isAided ? totalTuitionCollected / 2 : totalTuitionCollected,
+                toSMP: 0
+            });
+        }
+    });
+    
+    // Calculate other fees
+    Object.entries(feeData.other).forEach(([feeType, amount]) => {
+        let studentCount = 0;
+        
+        if (feeType === 'library') {
+            // Library fee: 1st Yr total count + 2nd Yr LTRL count
+            const firstYearStudents = filteredStudents.filter(s => s['Year'] === '1st Yr');
+            const secondYearLateralStudents = filteredStudents.filter(s => s['Year'] === '2nd Yr' && s['Adm Type'] === 'LTRL');
+            studentCount = firstYearStudents.length + secondYearLateralStudents.length;
+        } else {
+            studentCount = filteredStudents.length;
+        }
+        
+        if (studentCount > 0) {
+            const totalCollected = studentCount * amount;
+            let toGov = 0, toSVK = 0, toSMP = 0;
+            
+            // Distribution logic based on fee type
+            if (isAided) {
+                if (['dvp', 'admission'].includes(feeType)) {
+                    // DVP and Admission fees for aided courses: 50% to Government, 50% to SVK
+                    toGov = totalCollected / 2;
+                    toSVK = totalCollected / 2;
+                } else if (['lab', 'rr', 'magazine', 'id'].includes(feeType)) {
+                    // Other specified fees are split between Government and SMP
+                    toGov = totalCollected / 2;
+                    toSMP = totalCollected / 2;
+                } else {
+                    // Remaining fees go to SMP
+                    toSMP = totalCollected;
+                }
+            } else {
+                if (['dvp', 'admission'].includes(feeType)) {
+                    toSVK = totalCollected;
+                } else {
+                    toSMP = totalCollected;
+                }
+            }
+            
+            distribution.push({
+                slNo: slNo++,
+                feeType: feeType.toUpperCase(),
+                studentCount: studentCount,
+                feeAmount: amount,
+                totalCollected: totalCollected,
+                toGov: toGov,
+                toSVK: toSVK,
+                toSMP: toSMP
+            });
+        }
+    });
+    
+    // Calculate Fine Amount from CSV data
+    let totalFine = 0;
+    let finePayingStudents = 0;
+    
+    filteredStudents.forEach(student => {
+        const fineAmount = parseFloat(student['Fine'] || 0);
+        if (fineAmount > 0) {
+            totalFine += fineAmount;
+            finePayingStudents++;
+        }
+    });
+    
+    // Add fine entry if there are students who paid fine
+    if (totalFine > 0) {
+        distribution.push({
+            slNo: slNo++,
+            feeType: 'FINE',
+            studentCount: finePayingStudents,
+            feeAmount: Math.round(totalFine / finePayingStudents),
+            totalCollected: totalFine,
+            toGov: totalFine, // 100% to Government
+            toSVK: 0,
+            toSMP: 0
+        });
+    }
+    
+    return distribution;
+}
+
+// Display Fee Distribution Summary
+function displayFeeDistributionSummary() {
+    const tbody = document.querySelector('#feeDistributionSummaryTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+    
+    const aidedDistribution = calculateFeeDistribution(aidedStudents, true);
+    const unaidedDistribution = calculateFeeDistribution(unaidedStudents, false);
+    
+    const summaryData = [
+        {
+            courseType: 'Aided Courses (CE, ME, EC, CS)',
+            students: aidedStudents.length,
+            totalCollected: aidedDistribution.reduce((sum, item) => sum + item.totalCollected, 0),
+            toGov: aidedDistribution.reduce((sum, item) => sum + item.toGov, 0),
+            toSVK: aidedDistribution.reduce((sum, item) => sum + item.toSVK, 0),
+            toSMP: aidedDistribution.reduce((sum, item) => sum + item.toSMP, 0)
+        },
+        {
+            courseType: 'Unaided Course (EE)',
+            students: unaidedStudents.length,
+            totalCollected: unaidedDistribution.reduce((sum, item) => sum + item.totalCollected, 0),
+            toGov: unaidedDistribution.reduce((sum, item) => sum + item.toGov, 0),
+            toSVK: unaidedDistribution.reduce((sum, item) => sum + item.toSVK, 0),
+            toSMP: unaidedDistribution.reduce((sum, item) => sum + item.toSMP, 0)
+        }
+    ];
+    
+    summaryData.forEach((data, index) => {
+        const row = document.createElement('tr');
+        if (index === 0) row.className = 'aided-row';
+        if (index === 1) row.className = 'unaided-row';
+        
+        row.innerHTML = `
+            <td><strong>${data.courseType}</strong></td>
+            <td>${data.students}</td>
+            <td class="amount">₹${data.totalCollected.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.toGov.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.toSVK.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${data.toSMP.toLocaleString('en-IN')}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Add Grand Total row
+    const grandTotal = {
+        students: summaryData.reduce((sum, item) => sum + item.students, 0),
+        totalCollected: summaryData.reduce((sum, item) => sum + item.totalCollected, 0),
+        toGov: summaryData.reduce((sum, item) => sum + item.toGov, 0),
+        toSVK: summaryData.reduce((sum, item) => sum + item.toSVK, 0),
+        toSMP: summaryData.reduce((sum, item) => sum + item.toSMP, 0)
+    };
+    
+    const grandTotalRow = document.createElement('tr');
+    grandTotalRow.className = 'grand-total-row';
+    grandTotalRow.innerHTML = `
+        <td><strong>GRAND TOTAL</strong></td>
+        <td><strong>${grandTotal.students}</strong></td>
+        <td class="amount"><strong>₹${grandTotal.totalCollected.toLocaleString('en-IN')}</strong></td>
+        <td class="amount"><strong>₹${grandTotal.toGov.toLocaleString('en-IN')}</strong></td>
+        <td class="amount"><strong>₹${grandTotal.toSVK.toLocaleString('en-IN')}</strong></td>
+        <td class="amount"><strong>₹${grandTotal.toSMP.toLocaleString('en-IN')}</strong></td>
+    `;
+    tbody.appendChild(grandTotalRow);
+}
+
+// Display Aided Courses Fee Distribution
+function displayFeeDistributionAided() {
+    const tbody = document.querySelector('#feeDistributionAidedTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const distribution = calculateFeeDistribution(aidedStudents, true);
+    
+    distribution.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.slNo}</td>
+            <td><strong>${item.feeType}</strong></td>
+            <td>${item.studentCount}</td>
+            <td class="amount">₹${item.feeAmount.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.totalCollected.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toGov.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toSVK.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toSMP.toLocaleString('en-IN')}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Add Grand Total row
+    if (distribution.length > 0) {
+        const totals = distribution.reduce((sum, item) => ({
+            totalCollected: sum.totalCollected + item.totalCollected,
+            toGov: sum.toGov + item.toGov,
+            toSVK: sum.toSVK + item.toSVK,
+            toSMP: sum.toSMP + item.toSMP
+        }), { totalCollected: 0, toGov: 0, toSVK: 0, toSMP: 0 });
+        
+        const grandTotalRow = document.createElement('tr');
+        grandTotalRow.className = 'grand-total-row';
+        grandTotalRow.innerHTML = `
+            <td colspan="4"><strong>GRAND TOTAL</strong></td>
+            <td class="amount"><strong>₹${totals.totalCollected.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toGov.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSVK.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSMP.toLocaleString('en-IN')}</strong></td>
+        `;
+        tbody.appendChild(grandTotalRow);
+    }
+}
+
+// Display Unaided Course Fee Distribution
+function displayFeeDistributionUnaided() {
+    const tbody = document.querySelector('#feeDistributionUnaidedTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+    const distribution = calculateFeeDistribution(unaidedStudents, false);
+    
+    distribution.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.slNo}</td>
+            <td><strong>${item.feeType}</strong></td>
+            <td>${item.studentCount}</td>
+            <td class="amount">₹${item.feeAmount.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.totalCollected.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toGov.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toSVK.toLocaleString('en-IN')}</td>
+            <td class="amount">₹${item.toSMP.toLocaleString('en-IN')}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // Add Grand Total row
+    if (distribution.length > 0) {
+        const totals = distribution.reduce((sum, item) => ({
+            totalCollected: sum.totalCollected + item.totalCollected,
+            toGov: sum.toGov + item.toGov,
+            toSVK: sum.toSVK + item.toSVK,
+            toSMP: sum.toSMP + item.toSMP
+        }), { totalCollected: 0, toGov: 0, toSVK: 0, toSMP: 0 });
+        
+        const grandTotalRow = document.createElement('tr');
+        grandTotalRow.className = 'grand-total-row';
+        grandTotalRow.innerHTML = `
+            <td colspan="4"><strong>GRAND TOTAL</strong></td>
+            <td class="amount"><strong>₹${totals.totalCollected.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toGov.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSVK.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSMP.toLocaleString('en-IN')}</strong></td>
+        `;
+        tbody.appendChild(grandTotalRow);
+    }
+}
+
+// Display Fee Distribution Metrics
+function displayFeeDistributionMetrics() {
+    const metricsGrid = document.getElementById('feeDistributionMetricsGrid');
+    if (!metricsGrid) return;
+    
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+    
+    const aidedDistribution = calculateFeeDistribution(aidedStudents, true);
+    const unaidedDistribution = calculateFeeDistribution(unaidedStudents, false);
+    
+    const totalCollected = [
+        ...aidedDistribution,
+        ...unaidedDistribution
+    ].reduce((sum, item) => sum + item.totalCollected, 0);
+    
+    const totalToGov = [
+        ...aidedDistribution,
+        ...unaidedDistribution
+    ].reduce((sum, item) => sum + item.toGov, 0);
+    
+    const totalToSVK = [
+        ...aidedDistribution,
+        ...unaidedDistribution
+    ].reduce((sum, item) => sum + item.toSVK, 0);
+    
+    const totalToSMP = [
+        ...aidedDistribution,
+        ...unaidedDistribution
+    ].reduce((sum, item) => sum + item.toSMP, 0);
+    
+    metricsGrid.innerHTML = `
+        <div class="metric-card" onclick="showCourseBreakdown('Total Students', ${filteredFeeDistributionData.length}, 'students')">
+            <div class="metric-value">${filteredFeeDistributionData.length}</div>
+            <div class="metric-label">Total Students</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('Total Fee Collected', '₹${totalCollected.toLocaleString('en-IN')}', 'amount')">
+            <div class="metric-value">₹${totalCollected.toLocaleString('en-IN')}</div>
+            <div class="metric-label">Total Fee Collected</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('To Government', '₹${totalToGov.toLocaleString('en-IN')}', 'amount')">
+            <div class="metric-value">₹${totalToGov.toLocaleString('en-IN')}</div>
+            <div class="metric-label">To Government</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('To SVK Management', '₹${totalToSVK.toLocaleString('en-IN')}', 'amount')">
+            <div class="metric-value">₹${totalToSVK.toLocaleString('en-IN')}</div>
+            <div class="metric-label">To SVK Management</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('To SMP', '₹${totalToSMP.toLocaleString('en-IN')}', 'amount')">
+            <div class="metric-value">₹${totalToSMP.toLocaleString('en-IN')}</div>
+            <div class="metric-label">To SMP</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('Aided Students', ${aidedStudents.length}, 'students')">
+            <div class="metric-value">${aidedStudents.length}</div>
+            <div class="metric-label">Aided Students</div>
+        </div>
+        <div class="metric-card" onclick="showCourseBreakdown('Unaided Students', ${unaidedStudents.length}, 'students')">
+            <div class="metric-value">${unaidedStudents.length}</div>
+            <div class="metric-label">Unaided Students</div>
+        </div>
+    `;
+}
+
+// Show/Hide Fee Distribution Tables based on filter
+function showHideFeeDistributionTables() {
+    const tableFilter = document.getElementById('feeDistributionTableFilter')?.value || 'all';
+    
+    const sections = {
+        'feeDistributionStudentStatsSection': ['all', 'studentstats'],
+        'feeDistributionSummarySection': ['all', 'summary'],
+        'feeDistributionAidedSection': ['all', 'aided'],
+        'feeDistributionUnaidedSection': ['all', 'unaided']
+    };
+    
+    Object.entries(sections).forEach(([sectionId, visibleFor]) => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = visibleFor.includes(tableFilter) ? 'block' : 'none';
+        }
+    });
+}
+
+// Clear Fee Distribution Filters
+function clearFeeDistributionFilters() {
+    document.getElementById('feeDistributionCourseTypeFilter').value = '';
+    document.getElementById('feeDistributionYearFilter').value = '';
+    document.getElementById('feeDistributionCourseFilter').value = '';
+    document.getElementById('feeDistributionAdmTypeFilter').value = '';
+    document.getElementById('feeDistributionTableFilter').value = 'all';
+    applyFeeDistributionFilters();
+}
+
+// Export Functions for Fee Distribution
+function exportFeeDistributionToCSV() {
+    // Export all data as CSV
+    const timestamp = new Date().toISOString().split('T')[0];
+    const csvData = [];
+    
+    // Add header
+    csvData.push('Section,Sl No,Fee Type,Students Count,Fee Amount,Total Collected,To Govt,To SVK,To SMP');
+    
+    // Add Aided data
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const aidedDistribution = calculateFeeDistribution(aidedStudents, true);
+    aidedDistribution.forEach(item => {
+        csvData.push(`Aided,${Number(item.slNo)},"${item.feeType}",${Number(item.studentCount)},${Number(item.feeAmount)},${Number(item.totalCollected)},${Number(item.toGov)},${Number(item.toSVK)},${Number(item.toSMP)}`);
+    });
+    
+    // Add Unaided data
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+    const unaidedDistribution = calculateFeeDistribution(unaidedStudents, false);
+    unaidedDistribution.forEach(item => {
+        csvData.push(`Unaided,${Number(item.slNo)},"${item.feeType}",${Number(item.studentCount)},${Number(item.feeAmount)},${Number(item.totalCollected)},${Number(item.toGov)},${Number(item.toSVK)},${Number(item.toSMP)}`);
+    });
+    
+    // Download CSV
+    const csvContent = csvData.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `SMP_Fee_Distribution_${timestamp}.csv`;
+    link.click();
+}
+
+function saveFeeDistributionToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    // Student Statistics Sheet
+    const statsData = [['Sl No', 'Courses', '1st Yr Regular', '1st Yr SNQ', '1st Yr Total', '2nd Yr Regular', '2nd Yr Lateral', '2nd Yr SNQ', '2nd Yr Total', '3rd Yr Regular', '3rd Yr SNQ', '3rd Yr Total', 'Grand Total']];
+    document.querySelectorAll('#feeDistributionStudentStatsTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.trim();
+                // Convert numerical columns to numbers (column 0 is course name, rest are numbers)
+                return index === 0 ? textContent : (isNaN(textContent) ? textContent : Number(textContent));
+            });
+            statsData.push(rowData);
+        }
+    });
+    const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+    XLSX.utils.book_append_sheet(workbook, statsSheet, 'Student Statistics');
+    
+    // Summary Sheet
+    const summaryData = [['Course Type', 'Total Students', 'Total Fee Collected', 'To Government', 'To SVK Management', 'To SMP']];
+    document.querySelectorAll('#feeDistributionSummaryTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (columns 1+ are numerical)
+                return index === 0 ? textContent : (isNaN(textContent) ? textContent : Number(textContent));
+            });
+            summaryData.push(rowData);
+        }
+    });
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Distribution Summary');
+    
+    // Aided Courses Sheet
+    const aidedData = [['Sl No', 'Fee Type', 'Students Count', 'Fee Amount', 'Total Collected', 'To Govt', 'To SVK', 'To SMP']];
+    document.querySelectorAll('#feeDistributionAidedTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (column 0 is Sl No, column 1 is Fee Type text, rest are numerical)
+                if (index === 1) return textContent; // Fee Type remains text
+                return isNaN(textContent) ? textContent : Number(textContent);
+            });
+            aidedData.push(rowData);
+        }
+    });
+    const aidedSheet = XLSX.utils.aoa_to_sheet(aidedData);
+    XLSX.utils.book_append_sheet(workbook, aidedSheet, 'Aided Courses');
+    
+    // Unaided Course Sheet
+    const unaidedData = [['Sl No', 'Fee Type', 'Students Count', 'Fee Amount', 'Total Collected', 'To Govt', 'To SVK', 'To SMP']];
+    document.querySelectorAll('#feeDistributionUnaidedTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (column 0 is Sl No, column 1 is Fee Type text, rest are numerical)
+                if (index === 1) return textContent; // Fee Type remains text
+                return isNaN(textContent) ? textContent : Number(textContent);
+            });
+            unaidedData.push(rowData);
+        }
+    });
+    const unaidedSheet = XLSX.utils.aoa_to_sheet(unaidedData);
+    XLSX.utils.book_append_sheet(workbook, unaidedSheet, 'Unaided Course');
+    
+    XLSX.writeFile(workbook, `SMP_Fee_Distribution_${timestamp}.xlsx`);
+}
+
+function saveFeeDistributionToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
+    
+    // Title
+    doc.setFontSize(16);
+    doc.text('SMP Fee Distribution Report', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Academic Year: 2025-26 | Generated: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    let yPosition = 35;
+    
+    // Student Statistics Table
+    doc.setFontSize(14);
+    doc.text('Student Statistics Summary', 15, yPosition);
+    yPosition += 5;
+    
+    doc.autoTable({
+        html: '#feeDistributionStudentStatsTable',
+        startY: yPosition,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 9 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    // Add new page for distribution tables
+    doc.addPage();
+    yPosition = 15;
+    
+    // Distribution Summary
+    doc.setFontSize(14);
+    doc.text('Fee Distribution Summary', 15, yPosition);
+    yPosition += 5;
+    
+    doc.autoTable({
+        html: '#feeDistributionSummaryTable',
+        startY: yPosition,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    yPosition = doc.lastAutoTable.finalY + 15;
+    
+    // Aided Courses Table
+    doc.setFontSize(14);
+    doc.text('Aided Courses Distribution', 15, yPosition);
+    yPosition += 5;
+    
+    doc.autoTable({
+        html: '#feeDistributionAidedTable',
+        startY: yPosition,
+        theme: 'grid',
+        headStyles: { fillColor: [39, 174, 96], textColor: 255, fontSize: 9 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    // Add new page for unaided
+    doc.addPage();
+    yPosition = 15;
+    
+    // Unaided Course Table
+    doc.setFontSize(14);
+    doc.text('Unaided Course Distribution', 15, yPosition);
+    yPosition += 5;
+    
+    doc.autoTable({
+        html: '#feeDistributionUnaidedTable',
+        startY: yPosition,
+        theme: 'grid',
+        headStyles: { fillColor: [142, 68, 173], textColor: 255, fontSize: 9 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Fee_Distribution_${timestamp}.pdf`);
+}
+
+function exportFeeDistributionStudentStatsToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    const statsData = [['Sl No', 'Courses', '1st Yr Regular', '1st Yr SNQ', '1st Yr Total', '2nd Yr Regular', '2nd Yr Lateral', '2nd Yr SNQ', '2nd Yr Total', '3rd Yr Regular', '3rd Yr SNQ', '3rd Yr Total', 'Grand Total']];
+    document.querySelectorAll('#feeDistributionStudentStatsTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.trim();
+                // Convert numerical columns to numbers (column 0 is course name, rest are numbers)
+                return index === 0 ? textContent : (isNaN(textContent) ? textContent : Number(textContent));
+            });
+            statsData.push(rowData);
+        }
+    });
+    
+    const statsSheet = XLSX.utils.aoa_to_sheet(statsData);
+    XLSX.utils.book_append_sheet(workbook, statsSheet, 'Student Statistics');
+    
+    XLSX.writeFile(workbook, `SMP_Student_Statistics_${timestamp}.xlsx`);
+}
+
+function exportFeeDistributionStudentStatsToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(16);
+    doc.text('SMP Student Statistics Summary', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Academic Year: 2025-26 | Generated: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    doc.autoTable({
+        html: '#feeDistributionStudentStatsTable',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Student_Statistics_${timestamp}.pdf`);
+}
+
+function exportFeeDistributionSummaryToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    const summaryData = [['Course Type', 'Total Students', 'Total Fee Collected', 'To Government', 'To SVK Management', 'To SMP']];
+    document.querySelectorAll('#feeDistributionSummaryTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (columns 1+ are numerical)
+                return index === 0 ? textContent : (isNaN(textContent) ? textContent : Number(textContent));
+            });
+            summaryData.push(rowData);
+        }
+    });
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Distribution Summary');
+    
+    XLSX.writeFile(workbook, `SMP_Distribution_Summary_${timestamp}.xlsx`);
+}
+
+function exportFeeDistributionSummaryToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(16);
+    doc.text('SMP Fee Distribution Summary', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Academic Year: 2025-26 | Generated: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    doc.autoTable({
+        html: '#feeDistributionSummaryTable',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 12 },
+        bodyStyles: { fontSize: 10 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Distribution_Summary_${timestamp}.pdf`);
+}
+
+function exportFeeDistributionAidedToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    const aidedData = [['Sl No', 'Fee Type', 'Students Count', 'Fee Amount', 'Total Collected', 'To Govt', 'To SVK', 'To SMP']];
+    document.querySelectorAll('#feeDistributionAidedTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (column 0 is Sl No, column 1 is Fee Type text, rest are numerical)
+                if (index === 1) return textContent; // Fee Type remains text
+                return isNaN(textContent) ? textContent : Number(textContent);
+            });
+            aidedData.push(rowData);
+        }
+    });
+    
+    const aidedSheet = XLSX.utils.aoa_to_sheet(aidedData);
+    XLSX.utils.book_append_sheet(workbook, aidedSheet, 'Aided Courses');
+    
+    XLSX.writeFile(workbook, `SMP_Aided_Courses_Distribution_${timestamp}.xlsx`);
+}
+
+function exportFeeDistributionAidedToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(16);
+    doc.text('SMP Aided Courses Fee Distribution', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Courses: CE, ME, EC, CS | Academic Year: 2025-26`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    doc.autoTable({
+        html: '#feeDistributionAidedTable',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [39, 174, 96], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Aided_Courses_Distribution_${timestamp}.pdf`);
+}
+
+function exportFeeDistributionUnaidedToExcel() {
+    const timestamp = new Date().toISOString().split('T')[0];
+    const workbook = XLSX.utils.book_new();
+    
+    const unaidedData = [['Sl No', 'Fee Type', 'Students Count', 'Fee Amount', 'Total Collected', 'To Govt', 'To SVK', 'To SMP']];
+    document.querySelectorAll('#feeDistributionUnaidedTable tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 0) {
+            const rowData = Array.from(cells).map((cell, index) => {
+                const textContent = cell.textContent.replace(/₹|,/g, '').trim();
+                // Convert numerical columns to numbers (column 0 is Sl No, column 1 is Fee Type text, rest are numerical)
+                if (index === 1) return textContent; // Fee Type remains text
+                return isNaN(textContent) ? textContent : Number(textContent);
+            });
+            unaidedData.push(rowData);
+        }
+    });
+    
+    const unaidedSheet = XLSX.utils.aoa_to_sheet(unaidedData);
+    XLSX.utils.book_append_sheet(workbook, unaidedSheet, 'Unaided Course');
+    
+    XLSX.writeFile(workbook, `SMP_Unaided_Course_Distribution_${timestamp}.xlsx`);
+}
+
+function exportFeeDistributionUnaidedToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    
+    doc.setFontSize(16);
+    doc.text('SMP Unaided Course Fee Distribution', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Course: EE (Electrical Engineering) | Academic Year: 2025-26`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+    
+    doc.autoTable({
+        html: '#feeDistributionUnaidedTable',
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [142, 68, 173], textColor: 255, fontSize: 10 },
+        bodyStyles: { fontSize: 9 },
+        margin: { left: 15, right: 15 }
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`SMP_Unaided_Course_Distribution_${timestamp}.pdf`);
+}
+
 // Update the main showSection function to handle exam fee section
 const examFeeShowSection = showSection;
 showSection = function(sectionName) {
@@ -8252,6 +9288,13 @@ showSection = function(sectionName) {
     if (sectionName === 'examfee') {
         setTimeout(() => {
             initializeExamFeeData();
+        }, 100);
+    }
+    
+    // Initialize fee distribution data when section is shown
+    if (sectionName === 'feedistribution') {
+        setTimeout(() => {
+            initializeFeeDistribution();
         }, 100);
     }
 };
@@ -8279,6 +9322,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     closeExamFeeDialog();
                 }
             });
+        }
+        
+        // Add event listeners for fee distribution filters
+        if (document.getElementById('feeDistributionCourseTypeFilter')) {
+            document.getElementById('feeDistributionCourseTypeFilter').addEventListener('change', applyFeeDistributionFilters);
+            document.getElementById('feeDistributionYearFilter').addEventListener('change', applyFeeDistributionFilters);
+            document.getElementById('feeDistributionCourseFilter').addEventListener('change', applyFeeDistributionFilters);
+            document.getElementById('feeDistributionAdmTypeFilter').addEventListener('change', applyFeeDistributionFilters);
+            document.getElementById('feeDistributionTableFilter').addEventListener('change', showHideFeeDistributionTables);
         }
     }, 1000);
 });
