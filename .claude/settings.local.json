@@ -4,7 +4,10 @@
       "Bash(start index.html)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Read(c:\\Users\\Lekhana\\Downloads/**)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

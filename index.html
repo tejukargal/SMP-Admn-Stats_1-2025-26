@@ -56,6 +56,7 @@
                 <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
                 <button class="nav-tab" onclick="showSection('feelist')">📋 Fee List</button>
                 <button class="nav-tab" onclick="showSection('feestats')">💹 Fee Statistics</button>
+                <button class="nav-tab" onclick="showSection('feedistribution')">💸 Fee Distribution</button>
                 <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
             </div>
 
@@ -747,6 +748,189 @@
                             </thead>
                             <tbody>
                                 <!-- Combined partially paid data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedistribution" class="section">
+                <div class="content-section">
+                    <h2 class="section-title">💸 Fee Distribution - Government, Management & PD Account Analysis</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">
+                        Fee collection and distribution analysis across Government, SVK Management, and SMP accounts based on aided/unaided status and student categories
+                    </p>
+                    
+                    <!-- Fee Distribution Metrics Grid -->
+                    <div class="metrics-grid" id="feeDistributionMetricsGrid">
+                        <!-- Fee distribution metrics will be populated here -->
+                    </div>
+                    
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Course Type</label>
+                            <select id="feeDistributionCourseTypeFilter">
+                                <option value="">All Courses</option>
+                                <option value="Aided">Aided Courses (CE, ME, EC, CS)</option>
+                                <option value="Unaided">Unaided Course (EE)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="feeDistributionYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Course</label>
+                            <select id="feeDistributionCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Adm Type</label>
+                            <select id="feeDistributionAdmTypeFilter">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Table View</label>
+                            <select id="feeDistributionTableFilter">
+                                <option value="all">All Tables</option>
+                                <option value="summary">Summary Only</option>
+                                <option value="studentstats">Student Statistics Only</option>
+                                <option value="aided">Aided Distribution Only</option>
+                                <option value="unaided">Unaided Distribution Only</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="clearFeeDistributionFilters()">Clear Filters</button>
+                        <button class="btn btn-export" onclick="exportFeeDistributionToCSV()" id="exportFeeDistributionBtn">📥 Export CSV</button>
+                        <button class="btn btn-excel" onclick="saveFeeDistributionToExcel()" id="saveFeeDistributionExcelBtn">📊 Export Excel</button>
+                        <button class="btn btn-pdf" onclick="saveFeeDistributionToPDF()" id="saveFeeDistributionBtn">📄 Save PDF</button>
+                    </div>
+                </div>
+
+                <!-- Student Statistics Summary -->
+                <div class="content-section" id="feeDistributionStudentStatsSection">
+                    <h2 class="section-title">📊 SMP Students Statistics Summary</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeDistributionStudentStatsToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeDistributionStudentStatsToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feedistribution">
+                        <table id="feeDistributionStudentStatsTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Sl No</th>
+                                    <th rowspan="2">Courses</th>
+                                    <th colspan="3">1st Year</th>
+                                    <th colspan="4">2nd Year</th>
+                                    <th colspan="3">3rd Year</th>
+                                    <th rowspan="2">Grand Total</th>
+                                </tr>
+                                <tr>
+                                    <th>Regular</th>
+                                    <th>SNQ</th>
+                                    <th>Total</th>
+                                    <th>Regular</th>
+                                    <th>Lateral</th>
+                                    <th>SNQ</th>
+                                    <th>Total</th>
+                                    <th>Regular</th>
+                                    <th>SNQ</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Student statistics data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Fee Distribution Summary Table -->
+                <div class="content-section" id="feeDistributionSummarySection">
+                    <h2 class="section-title">💰 Fee Distribution Summary</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeDistributionSummaryToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeDistributionSummaryToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feedistribution">
+                        <table id="feeDistributionSummaryTable">
+                            <thead>
+                                <tr>
+                                    <th>Course Type</th>
+                                    <th>Total Students</th>
+                                    <th>Total Fee Collected</th>
+                                    <th>To Government</th>
+                                    <th>To SVK Management</th>
+                                    <th>To SMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Distribution summary data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Aided Courses Fee Distribution Table -->
+                <div class="content-section" id="feeDistributionAidedSection">
+                    <h2 class="section-title">🏛️ Fee Remittance Abstract Table (Aided Courses)</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeDistributionAidedToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeDistributionAidedToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feedistribution">
+                        <table id="feeDistributionAidedTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Sl No</th>
+                                    <th rowspan="2">Fee Type</th>
+                                    <th rowspan="2">Students Count</th>
+                                    <th rowspan="2">Fee Amount (₹)</th>
+                                    <th rowspan="2">Total Collected (₹)</th>
+                                    <th colspan="3">Fee Remittance (₹)</th>
+                                </tr>
+                                <tr>
+                                    <th>To Govt.</th>
+                                    <th>To SVK</th>
+                                    <th>To SMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Aided distribution data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Unaided Course Fee Distribution Table -->
+                <div class="content-section" id="feeDistributionUnaidedSection">
+                    <h2 class="section-title">🏢 Fee Remittance Abstract Table (Unaided Course)</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeDistributionUnaidedToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeDistributionUnaidedToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feedistribution">
+                        <table id="feeDistributionUnaidedTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Sl No</th>
+                                    <th rowspan="2">Fee Type</th>
+                                    <th rowspan="2">Students Count</th>
+                                    <th rowspan="2">Fee Amount (₹)</th>
+                                    <th rowspan="2">Total Collected (₹)</th>
+                                    <th colspan="3">Fee Remittance (₹)</th>
+                                </tr>
+                                <tr>
+                                    <th>To Govt.</th>
+                                    <th>To SVK</th>
+                                    <th>To SMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Unaided distribution data will be populated here -->
                             </tbody>
                         </table>
                     </div>
