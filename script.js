@@ -8429,6 +8429,7 @@ function displayFeeDistributionData() {
     displayFeeDistributionSummary();
     displayFeeDistributionAided();
     displayFeeDistributionUnaided();
+    displayFeeDistributionCombined();
 }
 
 // Display Fee Distribution Student Statistics
@@ -8817,6 +8818,84 @@ function displayFeeDistributionUnaided() {
     }
 }
 
+// Display Combined Fee Distribution (Aided & Unaided)
+function displayFeeDistributionCombined() {
+    const tbody = document.querySelector('#feeDistributionCombinedTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+    
+    const aidedDistribution = calculateFeeDistribution(aidedStudents, true);
+    const unaidedDistribution = calculateFeeDistribution(unaidedStudents, false);
+    
+    let slNo = 1;
+    
+    // Add Aided courses data
+    if (aidedDistribution.length > 0) {
+        aidedDistribution.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'aided-row';
+            row.innerHTML = `
+                <td>${slNo++}</td>
+                <td><strong>Aided</strong></td>
+                <td><strong>${item.feeType}</strong></td>
+                <td class="amount">${item.studentCount}</td>
+                <td class="amount">₹${item.feeAmount.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.totalCollected.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toGov.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toSVK.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toSMP.toLocaleString('en-IN')}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Add Unaided courses data
+    if (unaidedDistribution.length > 0) {
+        unaidedDistribution.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'unaided-row';
+            row.innerHTML = `
+                <td>${slNo++}</td>
+                <td><strong>Unaided</strong></td>
+                <td><strong>${item.feeType}</strong></td>
+                <td class="amount">${item.studentCount}</td>
+                <td class="amount">₹${item.feeAmount.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.totalCollected.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toGov.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toSVK.toLocaleString('en-IN')}</td>
+                <td class="amount">₹${item.toSMP.toLocaleString('en-IN')}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Add Grand Total row
+    if (aidedDistribution.length > 0 || unaidedDistribution.length > 0) {
+        const allDistribution = [...aidedDistribution, ...unaidedDistribution];
+        const totals = allDistribution.reduce((sum, item) => ({
+            totalCollected: sum.totalCollected + item.totalCollected,
+            toGov: sum.toGov + item.toGov,
+            toSVK: sum.toSVK + item.toSVK,
+            toSMP: sum.toSMP + item.toSMP
+        }), { totalCollected: 0, toGov: 0, toSVK: 0, toSMP: 0 });
+        
+        const grandTotalRow = document.createElement('tr');
+        grandTotalRow.className = 'grand-total-row';
+        grandTotalRow.innerHTML = `
+            <td colspan="5"><strong>GRAND TOTAL</strong></td>
+            <td class="amount"><strong>₹${totals.totalCollected.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toGov.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSVK.toLocaleString('en-IN')}</strong></td>
+            <td class="amount"><strong>₹${totals.toSMP.toLocaleString('en-IN')}</strong></td>
+        `;
+        tbody.appendChild(grandTotalRow);
+    }
+}
+
 // Display Fee Distribution Metrics
 function displayFeeDistributionMetrics() {
     const metricsGrid = document.getElementById('feeDistributionMetricsGrid');
@@ -8888,7 +8967,8 @@ function showHideFeeDistributionTables() {
         'feeDistributionStudentStatsSection': ['all', 'studentstats'],
         'feeDistributionSummarySection': ['all', 'summary'],
         'feeDistributionAidedSection': ['all', 'aided'],
-        'feeDistributionUnaidedSection': ['all', 'unaided']
+        'feeDistributionUnaidedSection': ['all', 'unaided'],
+        'feeDistributionCombinedSection': ['all', 'combined']
     };
     
     Object.entries(sections).forEach(([sectionId, visibleFor]) => {

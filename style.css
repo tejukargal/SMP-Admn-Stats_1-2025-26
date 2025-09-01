@@ -2880,6 +2880,43 @@ td:first-child {
     text-align: right; /* Students, Total Collected, To Government, To SVK, To SMP */
 }
 
+/* Fee Distribution Combined Table - specific column alignment */
+#feeDistributionCombinedTable th,
+#feeDistributionCombinedTable td {
+    text-align: center; /* Default center alignment for headers */
+}
+
+#feeDistributionCombinedTable td:nth-child(1) {
+    text-align: center; /* Serial Number */
+}
+
+#feeDistributionCombinedTable td:nth-child(2),
+#feeDistributionCombinedTable td:nth-child(3) {
+    text-align: left; /* Course Type and Fee Type */
+    font-weight: 600;
+}
+
+#feeDistributionCombinedTable td:nth-child(n+4) {
+    text-align: right; /* Student Count, Fee Amount, Total Collected, To Gov, To SVK, To SMP */
+}
+
+/* Row styling for Combined table */
+#feeDistributionCombinedTable .aided-row {
+    background-color: rgba(39, 174, 96, 0.1); /* Light green for aided courses */
+}
+
+#feeDistributionCombinedTable .unaided-row {
+    background-color: rgba(142, 68, 173, 0.1); /* Light purple for unaided course */
+}
+
+#feeDistributionCombinedTable .aided-row:hover {
+    background-color: rgba(39, 174, 96, 0.2);
+}
+
+#feeDistributionCombinedTable .unaided-row:hover {
+    background-color: rgba(142, 68, 173, 0.2);
+}
+
 /* Fee Distribution Mobile Responsive */
 @media (max-width: 768px) {
     .table-container.scrollable-feedistribution {

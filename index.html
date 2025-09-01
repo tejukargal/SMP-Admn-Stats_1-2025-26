@@ -801,6 +801,7 @@
                                 <option value="studentstats">Student Statistics Only</option>
                                 <option value="aided">Aided Distribution Only</option>
                                 <option value="unaided">Unaided Distribution Only</option>
+                                <option value="combined">Combined Distribution Only</option>
                             </select>
                         </div>
                         <button class="btn" onclick="clearFeeDistributionFilters()">Clear Filters</button>
@@ -931,6 +932,38 @@
                             </thead>
                             <tbody>
                                 <!-- Unaided distribution data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Combined Fee Remittance Abstract Table (Aided & Unaided) -->
+                <div class="content-section" id="feeDistributionCombinedSection">
+                    <h2 class="section-title">🏛️🏢 Combined Fee Remittance Abstract Table (Aided & Unaided Courses)</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-excel-small" onclick="exportFeeDistributionCombinedToExcel()" title="Export to Excel">📊 Excel</button>
+                        <button class="btn btn-pdf-small" onclick="exportFeeDistributionCombinedToPDF()" title="Export to PDF">📄 PDF</button>
+                    </div>
+                    <div class="table-container scrollable-feedistribution">
+                        <table id="feeDistributionCombinedTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">Sl No</th>
+                                    <th rowspan="2">Course Type</th>
+                                    <th rowspan="2">Fee Type</th>
+                                    <th rowspan="2">Students Count</th>
+                                    <th rowspan="2">Fee Amount (₹)</th>
+                                    <th rowspan="2">Total Collected (₹)</th>
+                                    <th colspan="3">Fee Remittance (₹)</th>
+                                </tr>
+                                <tr>
+                                    <th>To Govt.</th>
+                                    <th>To SVK</th>
+                                    <th>To SMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Combined distribution data will be populated here -->
                             </tbody>
                         </table>
                     </div>
