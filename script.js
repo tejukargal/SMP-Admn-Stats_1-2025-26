@@ -599,6 +599,70 @@ function parseCSVLine(line) {
     return result;
 }
 
+// Automatic correction function for 1st Year SNQ students
+function correctSNQFees(student) {
+    // Check if this is a 1st Year SNQ student
+    const year = student['Year'] || '';
+    const admCat = student['Adm Cat'] || student['Adm Type'] || '';
+    
+    if (year === '1st Yr' && admCat === 'SNQ') {
+        const allotedFeeSMP = student['Alloted Fee SMP'] || '';
+        const smpPaid = student['SMP Paid'] || '';
+        const studentName = student['Student Name'] || '';
+        const regNo = student['Reg No'] || '';
+        
+        // Handle PRANATHI's special multi-installment case
+        if (studentName === 'PRANATHI' && regNo === '6') {
+            if (allotedFeeSMP === '6988') {
+                // First installment record - adjust to 382
+                console.log(`Correcting SNQ fees for PRANATHI (1st installment): ${student['Course']}`);
+                
+                const originalTotalPaid = parseFloat(student['Total Paid']) || 0;
+                const originalSMPPaid = parseFloat(smpPaid) || 0;
+                
+                student['Alloted Fee SMP'] = '1370';
+                student['SMP Paid'] = '382';  // First installment adjusted
+                
+                // Recalculate Total Paid: subtract the difference in SMP payment
+                const smpReduction = originalSMPPaid - 382;
+                const newTotalPaid = Math.max(0, originalTotalPaid - smpReduction);
+                student['Total Paid'] = newTotalPaid.toString();
+                
+                console.log(`  PRANATHI 1st installment: Original SMP=${originalSMPPaid}, Corrected SMP=382, Total=${newTotalPaid}`);
+                return student;
+            } else if (smpPaid === '988') {
+                // Second installment record - leave unchanged
+                console.log(`PRANATHI 2nd installment (no change needed): SMP Paid=988`);
+                return student;
+            }
+        }
+        
+        // Standard correction for other SNQ students
+        if (allotedFeeSMP === '6988' || allotedFeeSMP === '13445') {
+            console.log(`Correcting SNQ fees for student: ${studentName} (${student['Course']})`);
+            
+            // Store original values for calculation
+            const originalAllotedSMP = parseFloat(allotedFeeSMP) || 0;
+            const originalSMPPaid = parseFloat(smpPaid) || 0;
+            const originalTotalPaid = parseFloat(student['Total Paid']) || 0;
+            
+            // Set corrected values
+            student['Alloted Fee SMP'] = '1370';
+            student['SMP Paid'] = '1370';
+            
+            // Recalculate Total Paid
+            const feeReduction = originalAllotedSMP - 1370;
+            const newTotalPaid = Math.max(0, originalTotalPaid - feeReduction);
+            student['Total Paid'] = newTotalPaid.toString();
+            
+            console.log(`  Original: Alloted=${originalAllotedSMP}, Paid=${originalSMPPaid}, Total=${originalTotalPaid}`);
+            console.log(`  Corrected: Alloted=1370, Paid=1370, Total=${newTotalPaid}`);
+        }
+    }
+    
+    return student;
+}
+
 function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim());
     
@@ -630,6 +694,9 @@ function parseCSV(csvText) {
             headers.forEach((header, index) => {
                 student[header] = values[index] ? values[index].trim() : '';
             });
+            
+            // Apply automatic correction for 1st Year SNQ students
+            correctSNQFees(student);
             
             // Normalize Adm Type: treat all values as REGULAR except SNQ, LTRL & RPTR
             if (student['Adm Type']) {
