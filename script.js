@@ -8530,9 +8530,11 @@ function displayFeeDistributionStudentStats() {
         if (stats[course] && stats[course][year]) {
             if (admCat.trim() === 'SNQ') {
                 stats[course][year].snq++;
-            } else if (admType === 'LTRL') {
+            } else if (admType === 'LTRL' && year !== '3rd Yr') {
+                // For 3rd year, LTRL students should be counted as Regular
                 stats[course][year].lateral++;
             } else {
+                // Regular includes: Regular, RPTR, and 3rd year LTRL students
                 stats[course][year].regular++;
             }
             stats[course][year].total++;
@@ -8999,9 +9001,9 @@ function displayFeeDistributionMetrics() {
             <div class="metric-value">${filteredFeeDistributionData.length}</div>
             <div class="metric-label">Total Students</div>
         </div>
-        <div class="metric-card" onclick="showCourseBreakdown('Total Fee Collected', '₹${totalCollected.toLocaleString('en-IN')}', 'amount')">
+        <div class="metric-card" onclick="showCourseBreakdown('Total Fee Allotted', '₹${totalCollected.toLocaleString('en-IN')}', 'amount')">
             <div class="metric-value">₹${totalCollected.toLocaleString('en-IN')}</div>
-            <div class="metric-label">Total Fee Collected</div>
+            <div class="metric-label">Total Fee Allotted</div>
         </div>
         <div class="metric-card" onclick="showCourseBreakdown('To Government', '₹${totalToGov.toLocaleString('en-IN')}', 'amount')">
             <div class="metric-value">₹${totalToGov.toLocaleString('en-IN')}</div>
@@ -9109,7 +9111,7 @@ function saveFeeDistributionToExcel() {
     XLSX.utils.book_append_sheet(workbook, statsSheet, 'Student Statistics');
     
     // Summary Sheet
-    const summaryData = [['Course Type', 'Total Students', 'Total Fee Collected', 'To Government', 'To SVK Management', 'To SMP']];
+    const summaryData = [['Course Type', 'Total Students', 'Total Fee Allotted', 'To Government', 'To SVK Management', 'To SMP']];
     document.querySelectorAll('#feeDistributionSummaryTable tbody tr').forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 0) {
@@ -9292,7 +9294,7 @@ function exportFeeDistributionSummaryToExcel() {
     const timestamp = new Date().toISOString().split('T')[0];
     const workbook = XLSX.utils.book_new();
     
-    const summaryData = [['Course Type', 'Total Students', 'Total Fee Collected', 'To Government', 'To SVK Management', 'To SMP']];
+    const summaryData = [['Course Type', 'Total Students', 'Total Fee Allotted', 'To Government', 'To SVK Management', 'To SMP']];
     document.querySelectorAll('#feeDistributionSummaryTable tbody tr').forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 0) {
