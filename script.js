@@ -8615,32 +8615,73 @@ function calculateFeeDistribution(students, isAided) {
     const distribution = [];
     let slNo = 1;
     
-    // Calculate tuition fees by year using fixed fee structure
-    ['1st Yr', '2nd Yr', '3rd Yr'].forEach(year => {
-        const yearStudents = filteredStudents.filter(s => s['Year'] === year);
+    // Calculate tuition fees by year using corrected fee structure
+    // 1st Year: Regular 1st Year students + Lateral 2nd Year students
+    const firstYearRegularStudents = filteredStudents.filter(s => 
+        s['Year'] === '1st Yr' && s['Adm Cat']?.trim() !== 'SNQ'
+    );
+    const lateralSecondYearStudents = filteredStudents.filter(s => 
+        s['Year'] === '2nd Yr' && s['Adm Type'] === 'LTRL' && s['Adm Cat']?.trim() !== 'SNQ'
+    );
+    const firstYearTuitionStudents = [...firstYearRegularStudents, ...lateralSecondYearStudents];
+    
+    if (firstYearTuitionStudents.length > 0) {
+        const tuitionFeePerStudent = feeData.tuition['1st Yr'];
+        const totalTuitionCollected = firstYearTuitionStudents.length * tuitionFeePerStudent;
         
-        // Filter students who pay tuition (Regular + Lateral, exclude SNQ)
-        const tuitionPayingStudents = yearStudents.filter(s => {
-            const admCat = s['Adm Cat'] || '';
-            return admCat.trim() !== 'SNQ';
+        distribution.push({
+            slNo: slNo++,
+            feeType: `Tuition Fee 1st Yr`,
+            studentCount: firstYearTuitionStudents.length,
+            feeAmount: tuitionFeePerStudent,
+            totalCollected: totalTuitionCollected,
+            toGov: isAided ? totalTuitionCollected / 2 : 0,
+            toSVK: isAided ? totalTuitionCollected / 2 : totalTuitionCollected,
+            toSMP: 0
         });
+    }
+    
+    // 2nd Year: Only Regular 2nd Year students (excluding Lateral)
+    const secondYearRegularStudents = filteredStudents.filter(s => 
+        s['Year'] === '2nd Yr' && s['Adm Type'] !== 'LTRL' && s['Adm Cat']?.trim() !== 'SNQ'
+    );
+    
+    if (secondYearRegularStudents.length > 0) {
+        const tuitionFeePerStudent = feeData.tuition['2nd Yr'];
+        const totalTuitionCollected = secondYearRegularStudents.length * tuitionFeePerStudent;
         
-        if (tuitionPayingStudents.length > 0) {
-            const tuitionFeePerStudent = feeData.tuition[year];
-            const totalTuitionCollected = tuitionPayingStudents.length * tuitionFeePerStudent;
-            
-            distribution.push({
-                slNo: slNo++,
-                feeType: `Tuition Fee ${year}`,
-                studentCount: tuitionPayingStudents.length,
-                feeAmount: tuitionFeePerStudent,
-                totalCollected: totalTuitionCollected,
-                toGov: isAided ? totalTuitionCollected / 2 : 0,
-                toSVK: isAided ? totalTuitionCollected / 2 : totalTuitionCollected,
-                toSMP: 0
-            });
-        }
-    });
+        distribution.push({
+            slNo: slNo++,
+            feeType: `Tuition Fee 2nd Yr`,
+            studentCount: secondYearRegularStudents.length,
+            feeAmount: tuitionFeePerStudent,
+            totalCollected: totalTuitionCollected,
+            toGov: isAided ? totalTuitionCollected / 2 : 0,
+            toSVK: isAided ? totalTuitionCollected / 2 : totalTuitionCollected,
+            toSMP: 0
+        });
+    }
+    
+    // 3rd Year: All 3rd Year students (excluding SNQ)
+    const thirdYearStudents = filteredStudents.filter(s => 
+        s['Year'] === '3rd Yr' && s['Adm Cat']?.trim() !== 'SNQ'
+    );
+    
+    if (thirdYearStudents.length > 0) {
+        const tuitionFeePerStudent = feeData.tuition['3rd Yr'];
+        const totalTuitionCollected = thirdYearStudents.length * tuitionFeePerStudent;
+        
+        distribution.push({
+            slNo: slNo++,
+            feeType: `Tuition Fee 3rd Yr`,
+            studentCount: thirdYearStudents.length,
+            feeAmount: tuitionFeePerStudent,
+            totalCollected: totalTuitionCollected,
+            toGov: isAided ? totalTuitionCollected / 2 : 0,
+            toSVK: isAided ? totalTuitionCollected / 2 : totalTuitionCollected,
+            toSMP: 0
+        });
+    }
     
     // Calculate other fees
     Object.entries(feeData.other).forEach(([feeType, amount]) => {
