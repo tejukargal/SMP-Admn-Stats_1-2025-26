@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Column Test</title>
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+    <h1>Cat Column Test</h1>
+    <div id="output"></div>
+
+    <script>
+        // Test if the CSV parsing and Cat column works
+        fetch('students.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        const output = document.getElementById('output');
+                        let html = '<h2>Test Results:</h2>';
+
+                        // Test first 5 students
+                        results.data.slice(0, 5).forEach((student, index) => {
+                            html += `<h3>Student ${index + 1}:</h3>`;
+                            html += `<p><strong>Name:</strong> ${student['Student Name']}</p>`;
+                            html += `<p><strong>Course:</strong> ${student['Course']}</p>`;
+                            html += `<p><strong>Reg No:</strong> ${student['Reg No']}</p>`;
+                            html += `<p><strong>Cat:</strong> ${student['Cat']}</p>`;
+                            html += `<p><strong>Adm Type:</strong> ${student['Adm Type']}</p>`;
+                            html += `<p><strong>Adm Cat:</strong> ${student['Adm Cat']}</p>`;
+                            html += '<hr>';
+                        });
+
+                        output.innerHTML = html;
+                        console.log('Test completed successfully!');
+                        console.log('Sample students:', results.data.slice(0, 3));
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading CSV:', error);
+                document.getElementById('output').innerHTML = '<p>Error loading CSV file</p>';
+            });
+    </script>
+</body>
+</html>

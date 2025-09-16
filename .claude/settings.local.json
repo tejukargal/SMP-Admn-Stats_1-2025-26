@@ -14,7 +14,8 @@
       "Bash(python:*)",
       "Bash(start-server.bat)",
       "Bash(curl:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []
