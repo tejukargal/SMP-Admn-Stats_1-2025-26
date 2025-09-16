@@ -1040,6 +1040,48 @@ body {
     overflow-y: auto;
 }
 
+.table-container.scrollable-category {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+/* Optimized column widths for category table */
+#categoryTable th:nth-child(1), /* Year */
+#categoryTable td:nth-child(1) {
+    width: 60px;
+    min-width: 60px;
+}
+
+#categoryTable th:nth-child(2), /* Course */
+#categoryTable td:nth-child(2) {
+    width: 70px;
+    min-width: 70px;
+}
+
+#categoryTable th:nth-child(3), /* GM */
+#categoryTable td:nth-child(3),
+#categoryTable th:nth-child(4), /* 2A */
+#categoryTable td:nth-child(4),
+#categoryTable th:nth-child(5), /* 2B */
+#categoryTable td:nth-child(5),
+#categoryTable th:nth-child(6), /* 3A */
+#categoryTable td:nth-child(6),
+#categoryTable th:nth-child(7), /* 3B */
+#categoryTable td:nth-child(7),
+#categoryTable th:nth-child(8), /* SC */
+#categoryTable td:nth-child(8),
+#categoryTable th:nth-child(9), /* ST */
+#categoryTable td:nth-child(9) {
+    width: 45px;
+    min-width: 45px;
+}
+
+#categoryTable th:nth-child(10), /* Total */
+#categoryTable td:nth-child(10) {
+    width: 60px;
+    min-width: 60px;
+}
+
 .table-container.scrollable-students {
     max-height: 600px;
     overflow-y: auto;
@@ -1061,14 +1103,14 @@ body {
 }
 
 /* Smooth scrolling for better UX */
-.scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-feelist, .scrollable-notadmitted, .scrollable-summary {
+.scrollable-category, .scrollable-datewise, .scrollable-students, .scrollable-dues, .scrollable-feelist, .scrollable-notadmitted, .scrollable-summary {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
 /* Subtle scroll indicator */
-.scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-feelist::after, .scrollable-notadmitted::after, .scrollable-summary::after {
+.scrollable-category::after, .scrollable-datewise::after, .scrollable-students::after, .scrollable-dues::after, .scrollable-feelist::after, .scrollable-notadmitted::after, .scrollable-summary::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -1080,7 +1122,8 @@ body {
     opacity: 0.7;
 }
 
-[data-theme="dark"] .scrollable-datewise::after, 
+[data-theme="dark"] .scrollable-category::after,
+[data-theme="dark"] .scrollable-datewise::after,
 [data-theme="dark"] .scrollable-students::after,
 [data-theme="dark"] .scrollable-dues::after,
 [data-theme="dark"] .scrollable-feelist::after,
@@ -1090,7 +1133,7 @@ body {
 }
 
 /* Enhanced sticky headers for scrollable tables */
-.scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-feelist th, .scrollable-notadmitted th, .scrollable-summary th {
+.scrollable-category th, .scrollable-datewise th, .scrollable-students th, .scrollable-dues th, .scrollable-feelist th, .scrollable-notadmitted th, .scrollable-summary th {
     position: sticky;
     top: 0;
     z-index: 20;
@@ -2062,6 +2105,10 @@ select:focus, input:focus {
     }
 
     /* Adjust scrollable table heights for mobile */
+    .table-container.scrollable-category {
+        max-height: 280px;
+    }
+
     .table-container.scrollable-datewise {
         max-height: 280px;
     }

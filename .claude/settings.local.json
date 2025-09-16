@@ -11,7 +11,10 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(grep:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(start-server.bat)",
+      "Bash(curl:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

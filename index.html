@@ -84,6 +84,31 @@
                 </div>
 
                 <div class="content-section">
+                    <h2 class="section-title clickable" id="categoryTableTitle" onclick="exportCategoryToPDF()" title="Click to save as PDF">📋 Year, Course & Cat wise Student Count</h2>
+                    <div class="table-container scrollable-category">
+                        <table id="categoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Course</th>
+                                    <th>GM</th>
+                                    <th>2A</th>
+                                    <th>2B</th>
+                                    <th>3A</th>
+                                    <th>3B</th>
+                                    <th>SC</th>
+                                    <th>ST</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Category data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-section">
                     <h2 class="section-title clickable" id="datewiseTableTitle" onclick="exportDatewiseToPDF()" title="Click to save as PDF">📅 Date-wise & Course-wise Students Report</h2>
                     <div class="table-container scrollable-datewise">
                         <table id="datewiseTable">
@@ -163,6 +188,7 @@
                                     <th>Year</th>
                                     <th>Course</th>
                                     <th>Reg No</th>
+                                    <th>Cat</th>
                                     <th>Adm Type</th>
                                     <th>Adm Cat</th>
                                     <th>Status</th>

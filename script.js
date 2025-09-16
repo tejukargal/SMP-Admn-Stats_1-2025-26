@@ -921,6 +921,7 @@ function displayDashboard() {
     generateMetrics();
     generateYearWiseCharts();
     generateSummaryTable();
+    generateCategoryTable();
     generateDatewiseReport();
     populateFilters();
     populateDuesFilters();
@@ -1401,6 +1402,133 @@ function generateSummaryTable() {
     tbody.appendChild(grandTotalRow);
 }
 
+function generateCategoryTable() {
+    const categorySummary = {};
+
+    studentsData.forEach(student => {
+        const year = student['Year'];
+        const course = student['Course'];
+        let category = student['Cat'] || 'GM'; // Use the 'Cat' column (column 7)
+
+        // Normalize category values
+        category = category.trim().toUpperCase();
+
+        // Map various category codes to standard categories
+        let normalizedCategory = 'GM'; // Default
+        if (category === '2A' || category === '2AU') {
+            normalizedCategory = '2A';
+        } else if (category === '2B' || category === '2BU') {
+            normalizedCategory = '2B';
+        } else if (category === '3A' || category === '3AU') {
+            normalizedCategory = '3A';
+        } else if (category === '3B' || category === '3BU') {
+            normalizedCategory = '3B';
+        } else if (category === 'SC' || category === 'GMK') {
+            normalizedCategory = 'SC';
+        } else if (category === 'ST') {
+            normalizedCategory = 'ST';
+        } else if (category === 'GM' || category === 'GMR' || category === 'GMU') {
+            normalizedCategory = 'GM';
+        } else if (category === 'C1' || category === 'C1U') {
+            normalizedCategory = 'GM'; // Treat C1 as GM
+        } else {
+            normalizedCategory = 'GM'; // Default any other categories to GM
+        }
+
+        if (!categorySummary[year]) {
+            categorySummary[year] = {};
+        }
+        if (!categorySummary[year][course]) {
+            categorySummary[year][course] = { GM: 0, '2A': 0, '2B': 0, '3A': 0, '3B': 0, SC: 0, ST: 0, total: 0 };
+        }
+
+        // Initialize category if not exists
+        if (!categorySummary[year][course][normalizedCategory]) {
+            categorySummary[year][course][normalizedCategory] = 0;
+        }
+
+        categorySummary[year][course][normalizedCategory]++;
+        categorySummary[year][course].total++;
+    });
+
+    const tbody = document.querySelector('#categoryTable tbody');
+    tbody.innerHTML = '';
+
+    // Calculate grand totals
+    const grandTotals = { GM: 0, '2A': 0, '2B': 0, '3A': 0, '3B': 0, SC: 0, ST: 0, total: 0 };
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+    const expectedCategories = ['GM', '2A', '2B', '3A', '3B', 'SC', 'ST'];
+
+    expectedYears.forEach(year => {
+        let yearTotals = { GM: 0, '2A': 0, '2B': 0, '3A': 0, '3B': 0, SC: 0, ST: 0, total: 0 };
+
+        expectedCourses.forEach(course => {
+            const categories = categorySummary[year]?.[course] || { GM: 0, '2A': 0, '2B': 0, '3A': 0, '3B': 0, SC: 0, ST: 0, total: 0 };
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><strong>${year}</strong></td>
+                <td><strong>${course}</strong></td>
+                <td>${categories.GM || 0}</td>
+                <td>${categories['2A'] || 0}</td>
+                <td>${categories['2B'] || 0}</td>
+                <td>${categories['3A'] || 0}</td>
+                <td>${categories['3B'] || 0}</td>
+                <td>${categories.SC || 0}</td>
+                <td>${categories.ST || 0}</td>
+                <td><strong>${categories.total}</strong></td>
+            `;
+            tbody.appendChild(row);
+
+            // Add to year totals
+            expectedCategories.forEach(cat => {
+                yearTotals[cat] += categories[cat] || 0;
+            });
+            yearTotals.total += categories.total;
+
+            // Add to grand totals
+            expectedCategories.forEach(cat => {
+                grandTotals[cat] += categories[cat] || 0;
+            });
+            grandTotals.total += categories.total;
+        });
+
+        // Add subtotal row for each year
+        const subtotalRow = document.createElement('tr');
+        subtotalRow.className = 'subtotal-row';
+        subtotalRow.innerHTML = `
+            <td><strong>${year} SUBTOTAL</strong></td>
+            <td><strong>All Courses</strong></td>
+            <td><strong>${yearTotals.GM}</strong></td>
+            <td><strong>${yearTotals['2A']}</strong></td>
+            <td><strong>${yearTotals['2B']}</strong></td>
+            <td><strong>${yearTotals['3A']}</strong></td>
+            <td><strong>${yearTotals['3B']}</strong></td>
+            <td><strong>${yearTotals.SC}</strong></td>
+            <td><strong>${yearTotals.ST}</strong></td>
+            <td><strong>${yearTotals.total}</strong></td>
+        `;
+        tbody.appendChild(subtotalRow);
+    });
+
+    // Add Grand Total row
+    const grandTotalRow = document.createElement('tr');
+    grandTotalRow.className = 'grand-total-row';
+    grandTotalRow.innerHTML = `
+        <td colspan="2"><strong>GRAND TOTAL</strong></td>
+        <td><strong>${grandTotals.GM}</strong></td>
+        <td><strong>${grandTotals['2A']}</strong></td>
+        <td><strong>${grandTotals['2B']}</strong></td>
+        <td><strong>${grandTotals['3A']}</strong></td>
+        <td><strong>${grandTotals['3B']}</strong></td>
+        <td><strong>${grandTotals.SC}</strong></td>
+        <td><strong>${grandTotals.ST}</strong></td>
+        <td><strong>${grandTotals.total}</strong></td>
+    `;
+    tbody.appendChild(grandTotalRow);
+}
+
 function generateDatewiseReport() {
     const dateSummary = {};
     
@@ -1579,7 +1707,7 @@ function displayStudentList() {
     tbody.innerHTML = '';
 
     if (filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="no-data">No students found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="no-data">No students found</td></tr>';
         return;
     }
 
@@ -1610,6 +1738,7 @@ function displayStudentList() {
             <td>${student['Year'] || ''}</td>
             <td><span class="${student['Course']?.toLowerCase()}" style="font-weight: bold;">${student['Course'] || ''}</span></td>
             <td>${student['Reg No'] || ''}</td>
+            <td>${student['Cat'] || ''}</td>
             <td>${displayedAdmType}</td>
             <td>${student['Adm Cat'] || ''}</td>
             <td>${student['In/Out'] || ''}</td>
@@ -2042,11 +2171,11 @@ function exportSummaryToPDF() {
             // Repeat headers on new page
             doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
-            doc.rect(15, currentY - 2, 180, 8, 'F');
+            doc.rect(15, currentY - 2, 190, 10, 'F'); // Increased for better space utilization
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 4);
+                doc.text(header, xPos + 2, currentY + 6);
                 xPos += colWidths[i];
             });
             
@@ -2062,12 +2191,12 @@ function exportSummaryToPDF() {
         
         if (isSubtotal || isGrandTotal) {
             doc.setFillColor(67, 97, 238);
-            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
             doc.setTextColor(255, 255, 255);
             doc.setFont('times', 'bold');
         } else if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
-            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
             doc.setTextColor(0, 0, 0);
             doc.setFont(undefined, 'normal');
         } else {
@@ -2100,7 +2229,7 @@ function exportSummaryToPDF() {
             
             alignedRowData.forEach((data, i) => {
                 const text = String(data);
-                doc.text(text, xPos + 2, currentY + 2);
+                doc.text(text, xPos + 3, currentY + 4);
                 xPos += colWidths[i];
             });
         } else {
@@ -2108,7 +2237,7 @@ function exportSummaryToPDF() {
             const rowData = Array.from(cells).map(cell => cell.textContent.trim());
             rowData.forEach((data, i) => {
                 const text = String(data);
-                doc.text(text, xPos + 2, currentY + 2);
+                doc.text(text, xPos + 3, currentY + 4);
                 xPos += colWidths[i];
             });
         }
@@ -2128,6 +2257,166 @@ function exportSummaryToPDF() {
     }
     
     const fileName = `SMP_Summary_Report_${currentDate.replace(/-/g, '_')}.pdf`;
+    doc.save(fileName);
+}
+
+function exportCategoryToPDF() {
+    if (!confirm('📄 Export Year, Course & Cat wise Student Count as PDF?')) {
+        return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation for better column fit
+    const currentDate = formatDate(new Date().toISOString().split('T')[0]);
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
+
+    doc.setFontSize(14);
+    doc.text('Year, Course & Cat wise Student Count', 148, 30, { align: 'center' });
+
+    // Generation info
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    const genInfo = `Generated: ${currentDate}`;
+    doc.text(genInfo, 148, 45, { align: 'center' });
+
+    // Get table data
+    const table = document.getElementById('categoryTable');
+    const rows = table.querySelectorAll('tbody tr');
+
+    if (rows.length === 0) {
+        alert('No data to export');
+        return;
+    }
+
+    // Table headers
+    const headers = ['Year', 'Course', 'GM', '2A', '2B', '3A', '3B', 'SC', 'ST', 'Total'];
+    const startY = 55;
+
+    doc.setFontSize(9);
+    doc.setFont('times', 'bold');
+
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, startY - 2, 270, 10, 'F'); // Optimal width for landscape
+
+    const colWidths = [30, 45, 26, 26, 26, 26, 26, 26, 26, 37]; // Balanced column widths
+    let xPos = 15;
+
+    headers.forEach((header, index) => {
+        doc.text(header, xPos + 3, startY + 6);
+        xPos += colWidths[index];
+    });
+
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(8);
+
+    let currentY = startY + 12;
+    const rowHeight = 7;
+    const pageHeight = 270;
+
+    rows.forEach((row, index) => {
+        if (currentY > pageHeight) {
+            doc.addPage();
+            currentY = 20;
+
+            // Repeat headers on new page
+            doc.setFont('times', 'bold');
+            doc.setFillColor(240, 240, 240);
+            doc.rect(15, currentY - 2, 270, 10, 'F'); // Optimal width
+
+            xPos = 15;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 3, currentY + 6);
+                xPos += colWidths[i];
+            });
+
+            currentY += 12;
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+        }
+
+        const cells = row.querySelectorAll('td');
+
+        // Check if this is a subtotal or grand total row
+        const isSubtotal = row.classList.contains('subtotal-row');
+        const isGrandTotal = row.classList.contains('grand-total-row');
+
+        if (isSubtotal || isGrandTotal) {
+            doc.setFillColor(67, 97, 238);
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('times', 'bold');
+        } else if (index % 2 === 0) {
+            doc.setFillColor(250, 250, 250);
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        } else {
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+        }
+
+        xPos = 15;
+
+        // Handle Grand Total row special case with proper alignment
+        if (isGrandTotal) {
+            // For Grand Total row, manually construct the row data to match header alignment
+            const grandTotalText = cells[0].textContent.trim(); // "GRAND TOTAL"
+            const gmVal = cells[1].textContent.trim();
+            const a2Val = cells[2].textContent.trim();
+            const b2Val = cells[3].textContent.trim();
+            const a3Val = cells[4].textContent.trim();
+            const b3Val = cells[5].textContent.trim();
+            const scVal = cells[6].textContent.trim();
+            const stVal = cells[7].textContent.trim();
+            const totalVal = cells[8].textContent.trim();
+
+            // Create properly aligned row data (10 columns to match headers)
+            const alignedRowData = [
+                '', // Year column - empty for grand total
+                grandTotalText, // Course column - contains "GRAND TOTAL"
+                gmVal,
+                a2Val,
+                b2Val,
+                a3Val,
+                b3Val,
+                scVal,
+                stVal,
+                totalVal
+            ];
+
+            alignedRowData.forEach((data, i) => {
+                const text = String(data);
+                doc.text(text, xPos + 3, currentY + 4);
+                xPos += colWidths[i];
+            });
+        } else {
+            // Handle normal rows and subtotal rows
+            const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+            rowData.forEach((data, i) => {
+                const text = String(data);
+                doc.text(text, xPos + 3, currentY + 4);
+                xPos += colWidths[i];
+            });
+        }
+
+        currentY += rowHeight;
+    });
+
+    // Add page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Page ${i} of ${pageCount}`, 148, 205, { align: 'center' });
+        doc.text('SMP Admn Stats 2025-26 - Category Report', 148, 200, { align: 'center' });
+    }
+
+    const fileName = `SMP_Category_Report_${currentDate.replace(/-/g, '_')}.pdf`;
     doc.save(fileName);
 }
 
@@ -2196,11 +2485,11 @@ function exportDatewiseToPDF() {
             // Repeat headers on new page
             doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
-            doc.rect(15, currentY - 2, 180, 8, 'F');
+            doc.rect(15, currentY - 2, 190, 10, 'F'); // Increased for better space utilization
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 4);
+                doc.text(header, xPos + 2, currentY + 6);
                 xPos += colWidths[i];
             });
             
@@ -2216,12 +2505,12 @@ function exportDatewiseToPDF() {
         
         if (isGrandTotal) {
             doc.setFillColor(67, 97, 238);
-            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
             doc.setTextColor(255, 255, 255);
             doc.setFont('times', 'bold');
         } else if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
-            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
             doc.setTextColor(0, 0, 0);
             doc.setFont(undefined, 'normal');
         } else {
@@ -2232,7 +2521,7 @@ function exportDatewiseToPDF() {
         xPos = 15;
         rowData.forEach((data, i) => {
             const text = String(data);
-            doc.text(text, xPos + 2, currentY + 2);
+            doc.text(text, xPos + 3, currentY + 4);
             xPos += colWidths[i];
         });
         
@@ -2298,30 +2587,30 @@ function saveToPDF() {
     }
     
     // Table headers
-    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Cat', 'Adm Type', 'Adm Cat', 'Status'];
     const startY = courseFilter !== 'All Courses' ? 65 : 55;
-    
+
     doc.setFontSize(9);
     doc.setFont('times', 'bold');
-    
+
     doc.setFillColor(240, 240, 240);
-    doc.rect(15, startY - 2, 180, 8, 'F');
-    
-    const colWidths = [12, 28, 28, 15, 15, 20, 20, 20, 12];
+    doc.rect(15, startY - 2, 190, 10, 'F'); // Increased for better space utilization
+
+    const colWidths = [12, 32, 32, 14, 14, 22, 14, 18, 18, 12]; // Increased portrait widths
     let xPos = 15;
-    
+
     headers.forEach((header, index) => {
-        doc.text(header, xPos + 2, startY + 4);
+        doc.text(header, xPos + 2, startY + 6);
         xPos += colWidths[index];
     });
     
     doc.setFont(undefined, 'normal');
-    doc.setFontSize(8);
-    
+    doc.setFontSize(7);
+
     let currentY = startY + 12;
-    const rowHeight = 6;
+    const rowHeight = 7;
     const pageHeight = 270;
-    
+
     filteredData.forEach((student, index) => {
         if (currentY > pageHeight) {
             doc.addPage();
@@ -2329,11 +2618,11 @@ function saveToPDF() {
             
             doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
-            doc.rect(15, currentY - 2, 180, 8, 'F');
+            doc.rect(15, currentY - 2, 190, 10, 'F'); // Increased for better space utilization
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 4);
+                doc.text(header, xPos + 2, currentY + 6);
                 xPos += colWidths[i];
             });
             
@@ -2360,11 +2649,12 @@ function saveToPDF() {
         
         const rowData = [
             serialNumber,
-            (student['Student Name'] || '').substring(0, 20),
-            (student['Father Name'] || '').substring(0, 20),
+            (student['Student Name'] || '').substring(0, 25),
+            (student['Father Name'] || '').substring(0, 25),
             student['Year'] || '',
             student['Course'] || '',
-            (student['Reg No'] || '').substring(0, 15),
+            (student['Reg No'] || '').substring(0, 18),
+            (student['Cat'] || '').substring(0, 10),
             displayedAdmType.substring(0, 12),
             (student['Adm Cat'] || '').substring(0, 12),
             student['In/Out'] || ''
@@ -2372,13 +2662,13 @@ function saveToPDF() {
         
         if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
-            doc.rect(15, currentY - 2, 180, rowHeight, 'F');
+            doc.rect(15, currentY - 2, 190, rowHeight, 'F'); // Increased for better space utilization
         }
-        
+
         xPos = 15;
         rowData.forEach((data, i) => {
             const text = String(data);
-            doc.text(text, xPos + 2, currentY + 2);
+            doc.text(text, xPos + 2, currentY + 4);
             xPos += colWidths[i];
         });
         
@@ -2469,7 +2759,7 @@ function saveDuesToPDF() {
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 4);
+                doc.text(header, xPos + 2, currentY + 6);
                 xPos += colWidths[i];
             });
             
@@ -2510,7 +2800,7 @@ function saveDuesToPDF() {
         xPos = 15;
         rowData.forEach((data, i) => {
             const text = String(data);
-            doc.text(text, xPos + 2, currentY + 2);
+            doc.text(text, xPos + 3, currentY + 4);
             xPos += colWidths[i];
         });
         
@@ -2536,7 +2826,7 @@ function exportToCSV() {
         return;
     }
 
-    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Cat', 'Adm Type', 'Adm Cat', 'Status'];
     const csvContent = [
         headers.join(','),
         ...filteredData.map((student, index) => {
@@ -2564,6 +2854,7 @@ function exportToCSV() {
                 student['Year'] || '',
                 student['Course'] || '',
                 student['Reg No'] || '',
+                student['Cat'] || '',
                 displayedAdmType,
                 student['Adm Cat'] || '',
                 student['In/Out'] || ''
@@ -3601,7 +3892,7 @@ function exportSelectedToCSV() {
         return;
     }
     
-    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status'];
+    const headers = ['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Cat', 'Adm Type', 'Adm Cat', 'Status'];
     const csvContent = [
         headers.join(','),
         ...selectedStudents.map((student, index) => {
@@ -3629,6 +3920,7 @@ function exportSelectedToCSV() {
                 student['Year'] || '',
                 student['Course'] || '',
                 student['Reg No'] || '',
+                student['Cat'] || '',
                 displayedAdmType,
                 student['Adm Cat'] || '',
                 student['In/Out'] || ''
@@ -3706,14 +3998,15 @@ function saveSelectedToPDF() {
             student['Year'] || '',
             student['Course'] || '',
             student['Reg No'] || '',
+            student['Cat'] || '',
             displayedAdmType,
             student['Adm Cat'] || '',
             student['In/Out'] || ''
         ];
     });
-    
+
     doc.autoTable({
-        head: [['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Adm Type', 'Adm Cat', 'Status']],
+        head: [['Sl No', 'Student Name', 'Father Name', 'Year', 'Course', 'Reg No', 'Cat', 'Adm Type', 'Adm Cat', 'Status']],
         body: tableData,
         startY: 60,
         styles: { fontSize: 7, cellPadding: 2 },
