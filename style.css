@@ -1141,6 +1141,84 @@ body {
     border-bottom: 2px solid var(--border-color);
 }
 
+/* Student Directory List column width optimization */
+#studentTable th:nth-child(1), /* Select */
+#studentTable td:nth-child(1) {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(2), /* Sl No */
+#studentTable td:nth-child(2) {
+    width: 50px;
+    min-width: 50px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(3), /* Student Name */
+#studentTable td:nth-child(3) {
+    width: 180px;
+    min-width: 180px;
+    max-width: 200px;
+}
+
+#studentTable th:nth-child(4), /* Father Name */
+#studentTable td:nth-child(4) {
+    width: 150px;
+    min-width: 150px;
+    max-width: 170px;
+}
+
+#studentTable th:nth-child(5), /* Year */
+#studentTable td:nth-child(5) {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(6), /* Course */
+#studentTable td:nth-child(6) {
+    width: 50px;
+    min-width: 50px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(7), /* Reg No */
+#studentTable td:nth-child(7) {
+    width: 70px;
+    min-width: 70px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(8), /* Cat */
+#studentTable td:nth-child(8) {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(9), /* Adm Type */
+#studentTable td:nth-child(9) {
+    width: 80px;
+    min-width: 80px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(10), /* Adm Cat */
+#studentTable td:nth-child(10) {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+}
+
+#studentTable th:nth-child(11), /* Status */
+#studentTable td:nth-child(11) {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+}
+
 /* Subtotal row styling */
 .subtotal-row {
     background-color: var(--primary-color) !important;
@@ -1445,18 +1523,18 @@ select:focus, input:focus {
     background: var(--primary-color);
     color: white;
     border: none;
-    padding: 12px 16px;
+    padding: 10px 12px;
     border-radius: var(--border-radius);
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-width: 140px;
-    height: 44px;
+    gap: 6px;
+    min-width: 100px;
+    height: 40px;
 }
 
 .btn:hover {
@@ -1468,10 +1546,10 @@ select:focus, input:focus {
 .btn-export {
     background: #28a745 !important;
     color: white !important;
-    margin-left: 10px;
-    min-width: 140px;
-    height: 44px;
-    padding: 12px 16px;
+    margin-left: 6px;
+    min-width: 100px;
+    height: 40px;
+    padding: 10px 12px;
 }
 
 .btn-export:hover {
@@ -1483,10 +1561,10 @@ select:focus, input:focus {
 .btn-pdf {
     background: #fd7e14 !important;
     color: white !important;
-    margin-left: 10px;
-    min-width: 140px;
-    height: 44px;
-    padding: 12px 16px;
+    margin-left: 6px;
+    min-width: 100px;
+    height: 40px;
+    padding: 10px 12px;
 }
 
 .btn-pdf:hover {
@@ -2129,6 +2207,79 @@ select:focus, input:focus {
         min-width: 1600px; /* Wider minimum width for mobile fee list table */
     }
 
+    /* Student table mobile optimization */
+    #studentTable {
+        min-width: 900px; /* Minimum width for mobile student table */
+    }
+
+    #studentTable th:nth-child(1), /* Select */
+    #studentTable td:nth-child(1) {
+        width: 50px;
+        min-width: 50px;
+    }
+
+    #studentTable th:nth-child(2), /* Sl No */
+    #studentTable td:nth-child(2) {
+        width: 40px;
+        min-width: 40px;
+    }
+
+    #studentTable th:nth-child(3), /* Student Name */
+    #studentTable td:nth-child(3) {
+        width: 140px;
+        min-width: 140px;
+        max-width: 160px;
+    }
+
+    #studentTable th:nth-child(4), /* Father Name */
+    #studentTable td:nth-child(4) {
+        width: 120px;
+        min-width: 120px;
+        max-width: 140px;
+    }
+
+    #studentTable th:nth-child(5), /* Year */
+    #studentTable td:nth-child(5) {
+        width: 50px;
+        min-width: 50px;
+    }
+
+    #studentTable th:nth-child(6), /* Course */
+    #studentTable td:nth-child(6) {
+        width: 40px;
+        min-width: 40px;
+    }
+
+    #studentTable th:nth-child(7), /* Reg No */
+    #studentTable td:nth-child(7) {
+        width: 60px;
+        min-width: 60px;
+    }
+
+    #studentTable th:nth-child(8), /* Cat */
+    #studentTable td:nth-child(8) {
+        width: 35px;
+        min-width: 35px;
+    }
+
+    #studentTable th:nth-child(9), /* Adm Type */
+    #studentTable td:nth-child(9) {
+        width: 70px;
+        min-width: 70px;
+    }
+
+    #studentTable th:nth-child(10), /* Adm Cat */
+    #studentTable td:nth-child(10) {
+        width: 50px;
+        min-width: 50px;
+    }
+
+    #studentTable th:nth-child(11), /* Status */
+    #studentTable td:nth-child(11) {
+        width: 50px;
+        min-width: 50px;
+    }
+
     /* Summary table mobile optimization */
     #summaryTable {
         min-width: 600px; /* Reduced minimum width for mobile summary table */
@@ -2435,13 +2586,13 @@ select:focus, input:focus {
 
 /* Custom selection buttons - matching export/PDF colors */
 .btn-custom {
-    margin-left: 10px;
+    margin-left: 6px;
     opacity: 0.6;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     border: none;
-    min-width: 140px;
-    height: 44px;
-    padding: 12px 16px;
+    min-width: 100px;
+    height: 40px;
+    padding: 10px 12px;
 }
 
 /* Export Selected CSV - matches regular export green */
@@ -2482,13 +2633,13 @@ select:focus, input:focus {
 .btn-clear {
     background: #dc3545 !important;
     color: white !important;
-    margin-left: 10px;
+    margin-left: 6px;
     opacity: 0.6;
     transition: opacity 0.3s ease, background-color 0.3s ease;
     border: none;
-    min-width: 140px;
-    height: 44px;
-    padding: 12px 16px;
+    min-width: 100px;
+    height: 40px;
+    padding: 10px 12px;
 }
 
 .btn-clear:hover:not(:disabled) {
@@ -2550,11 +2701,11 @@ td:first-child {
         gap: 10px;
         align-items: start;
     }
-    
+
     .filter-group {
         grid-column: span 2;
     }
-    
+
     .filters .btn {
         grid-column: span 1;
         margin: 0;

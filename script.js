@@ -1635,13 +1635,13 @@ function generateDatewiseReport() {
 function populateFilters() {
     const courses = [...new Set(studentsData.map(s => s['Course']))].sort();
     const years = [...new Set(studentsData.map(s => s['Year']))].sort();
-    
+
     // Collect admission types from both columns with mixed logic
     const admTypesSet = new Set();
     studentsData.forEach(student => {
         const admCat = student['Adm Cat'] || '';
         const admTypeCol = student['Adm Type'] || '';
-        
+
         if (admCat.trim() === 'SNQ') {
             admTypesSet.add('SNQ');
         } else {
@@ -1652,12 +1652,43 @@ function populateFilters() {
             }
         }
     });
-    
+
     const admTypes = Array.from(admTypesSet).sort();
+
+    // Collect categories with normalization
+    const categoriesSet = new Set();
+    studentsData.forEach(student => {
+        let category = student['Cat'] || 'GM';
+        category = category.trim().toUpperCase();
+        let normalizedCategory = 'GM';
+        if (category === '2A' || category === '2AU') {
+            normalizedCategory = '2A';
+        } else if (category === '2B' || category === '2BU') {
+            normalizedCategory = '2B';
+        } else if (category === '3A' || category === '3AU') {
+            normalizedCategory = '3A';
+        } else if (category === '3B' || category === '3BU') {
+            normalizedCategory = '3B';
+        } else if (category === 'SC' || category === 'GMK') {
+            normalizedCategory = 'SC';
+        } else if (category === 'ST') {
+            normalizedCategory = 'ST';
+        } else if (category === 'GM' || category === 'GMR' || category === 'GMU') {
+            normalizedCategory = 'GM';
+        } else if (category === 'C1' || category === 'C1U') {
+            normalizedCategory = 'GM';
+        } else {
+            normalizedCategory = 'GM';
+        }
+        categoriesSet.add(normalizedCategory);
+    });
+
+    const categories = Array.from(categoriesSet).sort();
 
     const courseFilter = document.getElementById('courseFilter');
     const yearFilter = document.getElementById('yearFilter');
     const admTypeFilter = document.getElementById('admTypeFilter');
+    const catFilter = document.getElementById('catFilter');
 
     courseFilter.innerHTML = '<option value="">All Courses</option>';
     courses.forEach(course => {
@@ -1672,6 +1703,11 @@ function populateFilters() {
     admTypeFilter.innerHTML = '<option value="">All Types</option>';
     admTypes.forEach(admType => {
         admTypeFilter.innerHTML += `<option value="${admType}">${admType}</option>`;
+    });
+
+    catFilter.innerHTML = '<option value="">All Categories</option>';
+    categories.forEach(category => {
+        catFilter.innerHTML += `<option value="${category}">${category}</option>`;
     });
 }
 
@@ -1922,12 +1958,13 @@ function applyFilters() {
     const courseFilter = document.getElementById('courseFilter').value;
     const yearFilter = document.getElementById('yearFilter').value;
     const admTypeFilter = document.getElementById('admTypeFilter').value;
+    const catFilter = document.getElementById('catFilter').value;
     const nameFilter = document.getElementById('nameFilter').value.toLowerCase();
 
     filteredData = studentsData.filter(student => {
         const matchesCourse = !courseFilter || student['Course'] === courseFilter;
         const matchesYear = !yearFilter || student['Year'] === yearFilter;
-        
+
         // Mixed admission type filtering logic
         let matchesAdmType = true;
         if (admTypeFilter) {
@@ -1941,8 +1978,8 @@ function applyFilters() {
                 if (admTypeFilter === 'REGULAR') {
                     // Regular includes all values that are not LTRL, RPTR, or SNQ
                     const admCat = student['Adm Cat'] || '';
-                    matchesAdmType = (admCat.trim() !== 'SNQ') && 
-                                   (admTypeCol !== 'LTRL') && 
+                    matchesAdmType = (admCat.trim() !== 'SNQ') &&
+                                   (admTypeCol !== 'LTRL') &&
                                    (admTypeCol !== 'RPTR');
                 } else {
                     // For LTRL and RPTR, exact match from Adm Type column
@@ -1950,13 +1987,41 @@ function applyFilters() {
                 }
             }
         }
-        
-        const matchesName = !nameFilter || 
+
+        // Category filtering logic with normalization
+        let matchesCat = true;
+        if (catFilter) {
+            let category = student['Cat'] || 'GM';
+            category = category.trim().toUpperCase();
+            let normalizedCategory = 'GM';
+            if (category === '2A' || category === '2AU') {
+                normalizedCategory = '2A';
+            } else if (category === '2B' || category === '2BU') {
+                normalizedCategory = '2B';
+            } else if (category === '3A' || category === '3AU') {
+                normalizedCategory = '3A';
+            } else if (category === '3B' || category === '3BU') {
+                normalizedCategory = '3B';
+            } else if (category === 'SC' || category === 'GMK') {
+                normalizedCategory = 'SC';
+            } else if (category === 'ST') {
+                normalizedCategory = 'ST';
+            } else if (category === 'GM' || category === 'GMR' || category === 'GMU') {
+                normalizedCategory = 'GM';
+            } else if (category === 'C1' || category === 'C1U') {
+                normalizedCategory = 'GM';
+            } else {
+                normalizedCategory = 'GM';
+            }
+            matchesCat = normalizedCategory === catFilter;
+        }
+
+        const matchesName = !nameFilter ||
             student['Student Name']?.toLowerCase().includes(nameFilter) ||
             student['Father Name']?.toLowerCase().includes(nameFilter) ||
             student['Reg No']?.toString().toLowerCase().includes(nameFilter);
 
-        return matchesCourse && matchesYear && matchesAdmType && matchesName;
+        return matchesCourse && matchesYear && matchesAdmType && matchesCat && matchesName;
     });
 
     displayStudentList();
@@ -2091,6 +2156,7 @@ function clearFilters() {
     document.getElementById('courseFilter').value = '';
     document.getElementById('yearFilter').value = '';
     document.getElementById('admTypeFilter').value = '';
+    document.getElementById('catFilter').value = '';
     document.getElementById('nameFilter').value = '';
     filteredData = [...studentsData];
     displayStudentList();
@@ -2940,6 +3006,7 @@ document.getElementById('nameFilter').addEventListener('input', applyFilters);
 document.getElementById('courseFilter').addEventListener('change', applyFilters);
 document.getElementById('yearFilter').addEventListener('change', applyFilters);
 document.getElementById('admTypeFilter').addEventListener('change', applyFilters);
+document.getElementById('catFilter').addEventListener('change', applyFilters);
 
 // Dues filters
 document.getElementById('duesNameFilter').addEventListener('input', applyDuesFilters);
