@@ -13,6 +13,7 @@ let selectedExamFeeStudent = null; // Currently selected student for context men
 let lastContextMenuPosition = { x: 0, y: 0 }; // Store context menu position
 let examFeeDialogKeyHandler = null; // Store the Enter key handler reference
 let popupTimer = null;
+let searchPopupTimer = null;
 let messageIndex = 0;
 const TOTAL_INTAKE_PER_COURSE = 63;
 
@@ -310,7 +311,7 @@ function loadTheme() {
 }
 
 // Section navigation
-function showSection(sectionName) {
+function showSection(sectionName, event) {
     // If switching to fee list section, check access control FIRST
     if (sectionName === 'feelist') {
         const accessKey = prompt('🔐 Enter access key to view Fee List:');
@@ -365,8 +366,24 @@ function showSection(sectionName) {
     document.getElementById(sectionName).classList.add('active');
     
     // Add active class to clicked tab
-    event.target.classList.add('active');
-    
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+
+    // If switching to students section, display student list
+    if (sectionName === 'students') {
+        if (studentsData.length > 0) {
+            displayStudentList();
+        }
+    }
+
+    // If switching to dues section, display dues list
+    if (sectionName === 'dues') {
+        if (duesData.length > 0) {
+            displayDuesList();
+        }
+    }
+
     // If switching to fee list section, load data
     if (sectionName === 'feelist') {
         // Access already granted above, proceed with loading data
@@ -435,6 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeCourseBreakdown();
             closeAuthPopup();
             closeMessageEditor();
+            closeSearchResultsPopup();
         }
     });
 });
@@ -450,10 +468,13 @@ async function loadCSVFile() {
         
         const csvText = await response.text();
         
-        // Parse CSV and show basic UI immediately
+        // Parse CSV and process data
         parseCSV(csvText);
         updateLastModifiedDate();
         hideLoading();
+
+        // Initialize dashboard after data is loaded and UI is visible
+        displayDashboard();
         
         // Show data info popup after successful loading
         showDataInfoPopup();
@@ -483,6 +504,7 @@ function showLoading() {
 
 function hideLoading() {
     document.getElementById('loading').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
 }
 
 function showError(message) {
@@ -743,8 +765,8 @@ function parseCSV(csvText) {
     
     // Process dues data
     processDuesData();
-    
-    displayDashboard();
+
+    // Dashboard will be displayed after loading is complete
 }
 
 function processDuesData() {
@@ -917,7 +939,7 @@ function processDuesData() {
 
 function displayDashboard() {
     document.getElementById('dashboard').classList.remove('hidden');
-    
+
     generateMetrics();
     generateYearWiseCharts();
     generateSummaryTable();
@@ -925,9 +947,16 @@ function displayDashboard() {
     generateDatewiseReport();
     populateFilters();
     populateDuesFilters();
-    displayStudentList();
-    displayDuesList();
-    generateDuesMetrics();
+
+    // Initialize student list if on statistics page (default)
+    if (studentsData.length > 0) {
+        filteredData = [...studentsData];
+    }
+
+    // Ensure search is initialized after dashboard is visible
+    setTimeout(() => {
+        initializeGlobalSearch();
+    }, 200);
 }
 
 function generateMetrics() {
@@ -1002,6 +1031,7 @@ function generateMetrics() {
     
     const totalCard = document.createElement('div');
     totalCard.className = 'metric-card';
+    totalCard.style.cursor = 'pointer';
     totalCard.innerHTML = `
         <div class="metric-number" style="color: var(--primary-color);">${studentsData.length}</div>
         <div class="metric-label">All Students</div>
@@ -1011,7 +1041,15 @@ function generateMetrics() {
             <div class="year-item">3rd Yr: <span style="color: var(--primary-color); font-weight: 600;">${totalThirdYr}</span></div>
         </div>
     `;
+
+    // Add click event listener for all students breakdown popup
+    totalCard.addEventListener('click', () => showAllStudentsBreakdown());
     metricsGrid.appendChild(totalCard);
+
+    // Initialize global search functionality
+    setTimeout(() => {
+        initializeGlobalSearch();
+    }, 100);
 }
 
 // Course breakdown popup functions
@@ -1042,7 +1080,7 @@ function showCourseBreakdown(course) {
     let totalRegular = 0, totalLTRL = 0, totalSNQ = 0, totalRPTR = 0, grandTotal = 0;
     
     let cardHTML = `
-        <div class="breakdown-grid">
+        <div class="breakdown-grid course-breakdown-grid">
             <div class="breakdown-header">
                 <div class="year-label">Year</div>
                 <div style="text-align: center; font-weight: 600;">Regular</div>
@@ -1154,11 +1192,443 @@ function generateCourseBreakdown(course) {
 function closeCourseBreakdown() {
     const popup = document.getElementById('courseBreakdownPopup');
     popup.classList.remove('show');
-    
+
     // Clear timer
     if (popupTimer) {
         clearInterval(popupTimer);
         popupTimer = null;
+    }
+}
+
+// All Students breakdown popup function
+function showAllStudentsBreakdown() {
+    const popup = document.getElementById('courseBreakdownPopup');
+    const title = document.getElementById('popupTitle');
+    const subtitle = document.getElementById('popupSubtitle');
+    const timer = document.getElementById('popupTimer');
+    const card = document.getElementById('breakdownCard');
+
+    // Set popup title and subtitle
+    title.textContent = 'All Students - Year & Course Wise Statistics';
+    subtitle.textContent = 'Detailed student distribution across years and courses';
+
+    // Generate year and course breakdown data
+    const breakdown = generateAllStudentsBreakdown();
+
+    // Create table HTML
+    let tableHTML = `
+        <div class="breakdown-grid">
+            <div class="breakdown-header">
+                <div class="year-label">Year</div>
+                <div style="text-align: center; font-weight: 600;">CE</div>
+                <div style="text-align: center; font-weight: 600;">ME</div>
+                <div style="text-align: center; font-weight: 600;">EC</div>
+                <div style="text-align: center; font-weight: 600;">CS</div>
+                <div style="text-align: center; font-weight: 600;">EE</div>
+                <div style="text-align: center; font-weight: 600;">Total</div>
+            </div>
+            <div class="breakdown-divider"></div>
+    `;
+
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    let totalCE = 0, totalME = 0, totalEC = 0, totalCS = 0, totalEE = 0, grandTotal = 0;
+
+    expectedYears.forEach(year => {
+        const yearData = breakdown[year] || { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+
+        tableHTML += `
+            <div class="breakdown-row">
+                <div class="year-label">${year}</div>
+                <div class="breakdown-value ce">${yearData.CE}</div>
+                <div class="breakdown-value me">${yearData.ME}</div>
+                <div class="breakdown-value ec">${yearData.EC}</div>
+                <div class="breakdown-value cs">${yearData.CS}</div>
+                <div class="breakdown-value ee">${yearData.EE}</div>
+                <div class="breakdown-value breakdown-total">${yearData.total}</div>
+            </div>
+        `;
+
+        totalCE += yearData.CE;
+        totalME += yearData.ME;
+        totalEC += yearData.EC;
+        totalCS += yearData.CS;
+        totalEE += yearData.EE;
+        grandTotal += yearData.total;
+    });
+
+    tableHTML += `
+            <div class="breakdown-divider"></div>
+            <div class="breakdown-row">
+                <div class="year-label" style="font-weight: 700;">TOTAL</div>
+                <div class="breakdown-value ce" style="font-weight: 700;">${totalCE}</div>
+                <div class="breakdown-value me" style="font-weight: 700;">${totalME}</div>
+                <div class="breakdown-value ec" style="font-weight: 700;">${totalEC}</div>
+                <div class="breakdown-value cs" style="font-weight: 700;">${totalCS}</div>
+                <div class="breakdown-value ee" style="font-weight: 700;">${totalEE}</div>
+                <div class="breakdown-value breakdown-total" style="font-weight: 700;">${grandTotal}</div>
+            </div>
+        </div>
+        <div class="breakdown-grand-total">
+            Grand Total: ${grandTotal} Students
+        </div>
+    `;
+
+    card.innerHTML = tableHTML;
+
+    // Show popup
+    popup.classList.add('show');
+
+    // Start countdown timer (10 seconds)
+    let timeLeft = 10;
+    timer.textContent = `Auto-close in ${timeLeft} seconds`;
+
+    // Clear any existing timer
+    if (popupTimer) {
+        clearInterval(popupTimer);
+    }
+
+    popupTimer = setInterval(() => {
+        timeLeft--;
+        timer.textContent = `Auto-close in ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+            clearInterval(popupTimer);
+            popupTimer = null;
+            closeCourseBreakdown();
+        }
+    }, 1000);
+}
+
+// Generate all students breakdown data
+function generateAllStudentsBreakdown() {
+    const breakdown = {};
+    const expectedYears = ['1st Yr', '2nd Yr', '3rd Yr'];
+    const expectedCourses = ['CE', 'ME', 'EC', 'CS', 'EE'];
+
+    // Initialize structure
+    expectedYears.forEach(year => {
+        breakdown[year] = { CE: 0, ME: 0, EC: 0, CS: 0, EE: 0, total: 0 };
+    });
+
+    // Count students by year and course
+    studentsData.forEach(student => {
+        const year = student['Year'];
+        const course = student['Course'];
+
+        if (breakdown[year] && expectedCourses.includes(course)) {
+            breakdown[year][course]++;
+            breakdown[year].total++;
+        }
+    });
+
+    return breakdown;
+}
+
+// Global Search Functions
+function openSearchPopup() {
+    const popup = document.getElementById('searchResultsPopup');
+    popup.classList.add('show');
+
+    // Focus on the search input
+    setTimeout(() => {
+        const searchInput = document.getElementById('popupSearchInput');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.value = '';
+        }
+    }, 100);
+
+    // Start auto-close timer
+    startSearchPopupTimer();
+}
+
+function initializeGlobalSearch() {
+    const searchInput = document.getElementById('popupSearchInput');
+    if (!searchInput) return;
+
+    // Simple event listener - no value manipulation
+    searchInput.addEventListener('input', function() {
+        const value = this.value;
+        if (value.length >= 2) {
+            performGlobalSearch(value.toUpperCase());
+        } else {
+            clearSearchResults();
+        }
+    });
+}
+
+function startSearchPopupTimer() {
+    // Clear existing timer
+    if (searchPopupTimer) {
+        clearInterval(searchPopupTimer);
+    }
+
+    let timeLeft = 20;
+    const timerElement = document.getElementById('searchPopupTimer');
+
+    searchPopupTimer = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `Auto-close in ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+            closeSearchResultsPopup();
+        }
+    }, 1000);
+}
+
+function clearSearchResults() {
+    const resultsContainer = document.getElementById('searchResultsBody');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '<div class="no-results">Type at least 2 characters to search</div>';
+    }
+}
+
+
+function performGlobalSearch(searchTerm) {
+    const results = [];
+
+    // Search through all students data
+    allStudentsData.forEach(student => {
+        const studentName = (student['Student Name'] || '').toUpperCase();
+        const fatherName = (student['Father Name'] || '').toUpperCase();
+        const regNo = (student['Reg No'] || '').toUpperCase();
+
+        // Check if search term matches any of the fields
+        if (studentName.includes(searchTerm) ||
+            fatherName.includes(searchTerm) ||
+            regNo.includes(searchTerm)) {
+            results.push(student);
+        }
+    });
+
+    // Limit to 5 results
+    const limitedResults = results.slice(0, 5);
+
+    // Display results
+    displaySearchResults(limitedResults, searchTerm);
+}
+
+function displaySearchResults(results, searchTerm) {
+    const popup = document.getElementById('searchResultsPopup');
+    const body = document.getElementById('searchResultsBody');
+    const subtitle = document.getElementById('searchSubtitle');
+    const timer = document.getElementById('searchPopupTimer');
+
+    // Update subtitle
+    subtitle.textContent = `Found ${results.length} result(s) for "${searchTerm}"`;
+
+    // Clear previous results
+    body.innerHTML = '';
+
+    if (results.length === 0) {
+        body.innerHTML = `
+            <div class="no-results">
+                <div class="no-results-icon">🔍</div>
+                <div>No students found matching your search</div>
+            </div>
+        `;
+    } else {
+        results.forEach(student => {
+            const resultCard = createSearchResultCard(student, searchTerm);
+            body.appendChild(resultCard);
+        });
+    }
+
+    // Show popup
+    popup.classList.add('show');
+
+    // Start countdown timer (20 seconds)
+    let timeLeft = 20;
+    timer.textContent = `Auto-close in ${timeLeft} seconds`;
+
+    // Clear any existing timer
+    if (searchPopupTimer) {
+        clearInterval(searchPopupTimer);
+    }
+
+    searchPopupTimer = setInterval(() => {
+        timeLeft--;
+        timer.textContent = `Auto-close in ${timeLeft} seconds`;
+
+        if (timeLeft <= 0) {
+            clearInterval(searchPopupTimer);
+            searchPopupTimer = null;
+            closeSearchResultsPopup();
+        }
+    }, 1000);
+}
+
+function createSearchResultCard(student, searchTerm) {
+    const card = document.createElement('div');
+    card.className = 'search-result-card compact';
+
+    // Find all installment records for this student (same Reg No)
+    const studentRegNo = student['Reg No'];
+    const studentCourse = student['Course'];
+    const allInstallments = allStudentsData.filter(s => s['Reg No'] === studentRegNo && s['Course'] === studentCourse);
+
+    // Calculate total fees across all installments
+    let totalAllotedSMP = 0;
+    let totalAllotedSVK = 0;
+    let totalPaidSMP = 0;
+    let totalPaidSVK = 0;
+
+    allInstallments.forEach(installment => {
+        totalAllotedSMP += parseFloat(installment['Alloted Fee SMP']) || 0;
+        totalAllotedSVK += parseFloat(installment['Alloted Fee SVK']) || 0;
+        totalPaidSMP += parseFloat(installment['SMP Paid']) || 0;
+        totalPaidSVK += parseFloat(installment['SVK Paid']) || 0;
+    });
+
+    const totalAlloted = totalAllotedSMP + totalAllotedSVK;
+    const totalPaid = totalPaidSMP + totalPaidSVK;
+    const totalDue = totalAlloted - totalPaid;
+    const paymentPercentage = totalAlloted > 0 ? ((totalPaid / totalAlloted) * 100).toFixed(1) : '0.0';
+
+    // Determine payment status class
+    const paymentStatusClass = totalDue === 0 ? 'fee-fully-paid' : 'fee-has-dues';
+    const paymentStatusText = totalDue === 0 ? 'Fully Paid' : `Due: ₹${totalDue.toLocaleString('en-IN')}`;
+
+    // Highlight matching text
+    const highlightMatch = (text, term) => {
+        if (!text || !term) return text;
+        const regex = new RegExp(`(${term})`, 'gi');
+        return text.replace(regex, '<span class="highlight">$1</span>');
+    };
+
+    const studentName = highlightMatch(student['Student Name'] || '', searchTerm);
+    const fatherName = highlightMatch(student['Father Name'] || '', searchTerm);
+    const regNo = highlightMatch(student['Reg No'] || '', searchTerm);
+
+    const courseClass = student['Course'] ? student['Course'].toLowerCase() : '';
+
+    // Generate fee table HTML
+    const feeTableRows = allInstallments.map((installment, index) => {
+        const allotedSMP = parseFloat(installment['Alloted Fee SMP']) || 0;
+        const allotedSVK = parseFloat(installment['Alloted Fee SVK']) || 0;
+        const paidSMP = parseFloat(installment['SMP Paid']) || 0;
+        const paidSVK = parseFloat(installment['SVK Paid']) || 0;
+        const smpDue = Math.max(0, allotedSMP - paidSMP);
+        const svkDue = Math.max(0, allotedSVK - paidSVK);
+        const installmentTotal = allotedSMP + allotedSVK;
+        const installmentPaid = paidSMP + paidSVK;
+        const installmentDue = installmentTotal - installmentPaid;
+
+        return `
+            <tr class="${installmentDue > 0 ? 'has-dues' : 'fully-paid'}">
+                <td>${installment['Date'] || 'N/A'}</td>
+                <td>${installment['Rpt'] || 'N/A'}</td>
+                <td>₹${allotedSMP.toLocaleString('en-IN')}</td>
+                <td>₹${allotedSVK.toLocaleString('en-IN')}</td>
+                <td>₹${paidSMP.toLocaleString('en-IN')}</td>
+                <td>₹${paidSVK.toLocaleString('en-IN')}</td>
+                <td class="${smpDue > 0 ? 'due-amount' : ''}">₹${smpDue.toLocaleString('en-IN')}</td>
+                <td class="${svkDue > 0 ? 'due-amount' : ''}">₹${svkDue.toLocaleString('en-IN')}</td>
+                <td>₹${installmentTotal.toLocaleString('en-IN')}</td>
+                <td>₹${installmentPaid.toLocaleString('en-IN')}</td>
+                <td class="${installmentDue > 0 ? 'due-amount' : ''}">₹${installmentDue.toLocaleString('en-IN')}</td>
+            </tr>
+        `;
+    }).join('');
+
+    card.innerHTML = `
+        <div class="compact-result-header ${paymentStatusClass}">
+            <div class="compact-student-info">
+                <div class="compact-student-name">${studentName}</div>
+                <div class="compact-student-details">${regNo} | ${student['Year'] || 'N/A'} | <span class="${courseClass}">${student['Course'] || 'N/A'}</span></div>
+                <div class="compact-father-name">Father: ${fatherName}</div>
+            </div>
+            <div class="compact-fee-status">
+                <div class="payment-status">${paymentStatusText}</div>
+                <div class="payment-percentage">${paymentPercentage}%</div>
+            </div>
+        </div>
+        <div class="compact-result-details">
+            <!-- Student Details Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">Student Information</div>
+                <div class="detail-row">
+                    <div class="detail-item">
+                        <span class="detail-label">Category:</span>
+                        <span class="detail-value">${student['Cat'] || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Adm Cat:</span>
+                        <span class="detail-value">${student['Adm Cat'] || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-item">
+                        <span class="detail-label">Adm Type:</span>
+                        <span class="detail-value">${student['Adm Type'] || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">${student['In/Out'] || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fee Summary Table Section -->
+            <div class="detail-section">
+                <div class="detail-section-title">Fee Details (${allInstallments.length} Installment${allInstallments.length > 1 ? 's' : ''})</div>
+                <div class="fee-summary-table-container">
+                    <table class="fee-summary-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Rpt</th>
+                                <th>Alot SMP</th>
+                                <th>Alot SVK</th>
+                                <th>Paid SMP</th>
+                                <th>Paid SVK</th>
+                                <th>SMP Due</th>
+                                <th>SVK Due</th>
+                                <th>Total Alot</th>
+                                <th>Total Paid</th>
+                                <th>Total Due</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${feeTableRows}
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="2"><strong>Total</strong></td>
+                                <td><strong>₹${totalAllotedSMP.toLocaleString('en-IN')}</strong></td>
+                                <td><strong>₹${totalAllotedSVK.toLocaleString('en-IN')}</strong></td>
+                                <td><strong>₹${totalPaidSMP.toLocaleString('en-IN')}</strong></td>
+                                <td><strong>₹${totalPaidSVK.toLocaleString('en-IN')}</strong></td>
+                                <td class="${totalDue > 0 ? 'due-amount' : ''}"><strong>₹${Math.max(0, totalAllotedSMP - totalPaidSMP).toLocaleString('en-IN')}</strong></td>
+                                <td class="${totalDue > 0 ? 'due-amount' : ''}"><strong>₹${Math.max(0, totalAllotedSVK - totalPaidSVK).toLocaleString('en-IN')}</strong></td>
+                                <td><strong>₹${totalAlloted.toLocaleString('en-IN')}</strong></td>
+                                <td><strong>₹${totalPaid.toLocaleString('en-IN')}</strong></td>
+                                <td class="${totalDue > 0 ? 'due-amount' : ''}"><strong>₹${totalDue.toLocaleString('en-IN')}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    return card;
+}
+
+function closeSearchResultsPopup() {
+    const popup = document.getElementById('searchResultsPopup');
+    popup.classList.remove('show');
+
+    // Clear timer
+    if (searchPopupTimer) {
+        clearInterval(searchPopupTimer);
+        searchPopupTimer = null;
+    }
+
+    // Clear search input
+    const searchInput = document.getElementById('popupSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
     }
 }
 
@@ -1781,7 +2251,7 @@ function displayStudentList() {
         `;
         tbody.appendChild(row);
     });
-    
+
     updateSelectedButtons();
 }
 
@@ -7869,14 +8339,28 @@ function saveFeeStatsToPDF() {
 
 // Update the main showSection function to handle fee statistics
 const originalShowSection = showSection;
-showSection = function(sectionName) {
+showSection = function(sectionName, event) {
     // Call original function
-    originalShowSection.call(this, sectionName);
-    
+    originalShowSection.call(this, sectionName, event);
+
     // Initialize fee statistics when section is shown
     if (sectionName === 'feestats') {
         setTimeout(() => {
             initializeFeeStats();
+        }, 100);
+    }
+
+    // Initialize exam fee data when section is shown
+    if (sectionName === 'examfee') {
+        setTimeout(() => {
+            initializeExamFeeData();
+        }, 100);
+    }
+
+    // Initialize fee distribution data when section is shown
+    if (sectionName === 'feedistribution') {
+        setTimeout(() => {
+            initializeFeeDistribution();
         }, 100);
     }
 };
@@ -9894,26 +10378,7 @@ function exportFeeDistributionCombinedToPDF() {
     doc.save(`SMP_Combined_Fee_Distribution_${timestamp}.pdf`);
 }
 
-// Update the main showSection function to handle exam fee section
-const examFeeShowSection = showSection;
-showSection = function(sectionName) {
-    // Call original function
-    examFeeShowSection.call(this, sectionName);
-    
-    // Initialize exam fee data when section is shown
-    if (sectionName === 'examfee') {
-        setTimeout(() => {
-            initializeExamFeeData();
-        }, 100);
-    }
-    
-    // Initialize fee distribution data when section is shown
-    if (sectionName === 'feedistribution') {
-        setTimeout(() => {
-            initializeFeeDistribution();
-        }, 100);
-    }
-};
+// This wrapper was merged into the main showSection function above
 
 // Add event listeners for exam fee filters
 document.addEventListener('DOMContentLoaded', function() {

@@ -93,16 +93,60 @@ body {
     position: relative;
 }
 
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.header-title {
+    flex: 1;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.search-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.search-icon-btn:active {
+    transform: scale(0.95);
+}
+
 .header h1 {
     font-size: 2.2rem;
-    text-align: center;
+    text-align: left;
     margin-bottom: 8px;
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .header p {
-    text-align: center;
+    text-align: left;
     opacity: 0.9;
     margin-bottom: 5px;
     font-size: 1rem;
@@ -110,7 +154,7 @@ body {
 }
 
 .header .year-info {
-    text-align: center;
+    text-align: left;
     opacity: 0.95;
     margin-bottom: 8px;
     font-size: 1.1rem;
@@ -1851,10 +1895,14 @@ select:focus, input:focus {
 
 .breakdown-grid {
     display: grid;
-    grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
+    grid-template-columns: auto 1fr 1fr 1fr 1fr 1fr auto;
     gap: 8px;
     align-items: center;
     font-size: 0.75rem;
+}
+
+.course-breakdown-grid {
+    grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
 }
 
 .breakdown-header {
@@ -1900,6 +1948,32 @@ select:focus, input:focus {
 .breakdown-value.rptr {
     background: rgba(255, 152, 0, 0.15);
     color: var(--ec-color);
+}
+
+/* Course-specific breakdown value styles */
+.breakdown-value.ce {
+    background: rgba(103, 58, 183, 0.15);
+    color: var(--ce-color);
+}
+
+.breakdown-value.me {
+    background: rgba(233, 30, 99, 0.15);
+    color: var(--me-color);
+}
+
+.breakdown-value.ec {
+    background: rgba(255, 152, 0, 0.15);
+    color: var(--ec-color);
+}
+
+.breakdown-value.cs {
+    background: rgba(33, 150, 243, 0.15);
+    color: var(--cs-color);
+}
+
+.breakdown-value.ee {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--ee-color);
 }
 
 .breakdown-total {
@@ -1966,8 +2040,13 @@ select:focus, input:focus {
     }
 
     .breakdown-grid {
+        grid-template-columns: auto 1fr 1fr 1fr 1fr 1fr auto;
         font-size: 0.7rem;
         gap: 6px;
+    }
+
+    .course-breakdown-grid {
+        grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
     }
 
     .breakdown-value {
@@ -1981,17 +2060,31 @@ select:focus, input:focus {
         padding: 12px;
     }
 
+    /* Responsive styles moved to main header section */
+
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .header-actions {
+        justify-content: center;
+    }
+
     .header h1 {
+        text-align: center;
         font-size: 1.8rem;
     }
 
-    .header .year-info {
-        font-size: 1rem;
-        margin-bottom: 6px;
+    .header p {
+        text-align: center;
     }
 
-    .header .update-info {
-        font-size: 0.75rem;
+    .header .year-info {
+        text-align: center;
+        font-size: 1rem;
+        margin-bottom: 6px;
     }
 
     .scrolling-message {
@@ -2551,6 +2644,573 @@ select:focus, input:focus {
     color: var(--text-secondary);
     font-size: 0.9rem;
     font-style: normal;
+}
+
+/* Global Search Styles */
+/* Old search button styles removed - now using header search icon */
+
+.search-input:focus {
+    outline: none !important;
+    border-color: #0066cc !important;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+/* Search Results Popup Styles */
+.search-results-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.search-results-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.search-popup-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 90vw;
+    height: 600px;
+    width: 900px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.search-popup-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+    position: relative;
+}
+
+.search-popup-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0066cc;
+    margin-bottom: 4px;
+}
+
+.search-popup-subtitle {
+    font-size: 0.9rem;
+    color: #0066cc;
+    opacity: 0.8;
+}
+
+.search-popup-timer {
+    position: absolute;
+    top: 20px;
+    right: 50px;
+    font-size: 0.8rem;
+    color: #0066cc;
+    background: #f0f7ff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.search-popup-body {
+    padding: 0;
+    height: calc(600px - 80px);
+    overflow-y: auto;
+}
+
+.search-input-container {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+}
+
+.popup-search-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    background: white;
+    color: #0066cc;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.popup-search-input:focus {
+    outline: none;
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.search-results-container {
+    padding: 8px 12px;
+    height: calc(600px - 200px);
+    overflow-y: auto;
+    background: white;
+}
+
+.search-result-card {
+    border: 1px solid #e0e0e0;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-result-card.compact {
+    transition: all 0.2s ease;
+}
+
+.search-result-card.compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.compact-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.compact-student-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.compact-student-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.compact-student-details {
+    font-size: 13px;
+    color: #0066cc;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+
+.compact-father-name {
+    font-size: 12px;
+    color: #0066cc;
+    opacity: 0.7;
+}
+
+.compact-fee-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: 16px;
+}
+
+.compact-fee-amount {
+    text-align: center;
+}
+
+.fee-label {
+    font-size: 11px;
+    color: #0066cc;
+    opacity: 0.8;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.fee-value {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.fee-value.paid {
+    color: var(--success-color);
+}
+
+.compact-fee-percentage {
+    background: #f0f7ff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 45px;
+    text-align: center;
+    color: #0066cc;
+}
+
+.compact-fee-percentage.paid {
+    background: var(--success-color);
+    color: white;
+}
+
+/* Payment Status Color Coding */
+.fee-fully-paid {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.fee-has-dues {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.compact-fee-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.payment-status {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.payment-percentage {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.95;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Fee Summary Table Styles */
+.fee-summary-table-container {
+    overflow-x: auto;
+    margin: -4px;
+    padding: 4px;
+}
+
+.fee-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    table-layout: fixed;
+}
+
+.fee-summary-table th,
+.fee-summary-table td {
+    padding: 8px 4px;
+    text-align: right;
+    border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.fee-summary-table th {
+    background: #f8f9fa;
+    font-weight: 700;
+    color: #495057;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 8px 3px;
+    line-height: 1.1;
+}
+
+.fee-summary-table td {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    font-size: 0.7rem;
+    color: #212529;
+}
+
+/* Column width optimization */
+.fee-summary-table th:nth-child(1), /* Date */
+.fee-summary-table td:nth-child(1) {
+    width: 70px;
+    text-align: center;
+}
+
+.fee-summary-table th:nth-child(2), /* Rpt */
+.fee-summary-table td:nth-child(2) {
+    width: 45px;
+    text-align: center;
+}
+
+.fee-summary-table th:nth-child(3), /* Alot SMP */
+.fee-summary-table th:nth-child(4), /* Alot SVK */
+.fee-summary-table th:nth-child(5), /* Paid SMP */
+.fee-summary-table th:nth-child(6), /* Paid SVK */
+.fee-summary-table th:nth-child(7), /* SMP Due */
+.fee-summary-table th:nth-child(8), /* SVK Due */
+.fee-summary-table th:nth-child(9), /* Total Alot */
+.fee-summary-table th:nth-child(10), /* Total Paid */
+.fee-summary-table th:nth-child(11) /* Total Due */ {
+    width: 80px;
+}
+
+/* Center align specific columns */
+.fee-summary-table th:nth-child(1),
+.fee-summary-table td:nth-child(1),
+.fee-summary-table th:nth-child(2),
+.fee-summary-table td:nth-child(2) {
+    text-align: center;
+}
+
+.fee-summary-table tr.fully-paid {
+    background: rgba(40, 167, 69, 0.05);
+}
+
+.fee-summary-table tr.has-dues {
+    background: rgba(220, 53, 69, 0.05);
+}
+
+.fee-summary-table tr.total-row {
+    background: #e9ecef;
+    font-weight: 700;
+}
+
+.fee-summary-table tr.total-row td {
+    border-top: 2px solid #adb5bd;
+    border-bottom: 2px solid #adb5bd;
+}
+
+.compact-result-details {
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    padding: 16px;
+}
+
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.detail-section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.fee-installments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.fee-installment-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.fee-installment-name {
+    font-weight: 500;
+    color: #495057;
+}
+
+.fee-installment-amount {
+    font-weight: 600;
+    color: #212529;
+}
+
+.fee-total {
+    font-weight: 700;
+    color: #0066cc;
+}
+
+.fee-total-paid {
+    font-weight: 700;
+    color: #28a745;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.detail-label {
+    color: #0066cc;
+    opacity: 0.8;
+    font-weight: 500;
+    min-width: 60px;
+}
+
+.detail-value {
+    color: #0066cc;
+    font-weight: 600;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #0066cc;
+    opacity: 0.8;
+}
+
+.no-results-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.search-result-card:last-child {
+    border-bottom: none;
+}
+
+.search-result-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 20px 24px;
+}
+
+.search-result-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.search-result-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-result-section h4::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+.search-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-result-row:last-child {
+    border-bottom: none;
+}
+
+.search-result-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.search-result-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+}
+
+.search-result-value.highlight {
+    color: var(--primary-color);
+}
+
+.search-result-value .highlight {
+    background: rgba(67, 97, 238, 0.2);
+    color: var(--primary-color);
+    padding: 0 2px;
+    border-radius: 2px;
+    font-weight: 700;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.no-results-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .search-container {
+        margin-bottom: 16px;
+        padding: 0 4px;
+    }
+
+    .search-popup-content {
+        width: 95vw;
+        max-height: 95vh;
+    }
+
+    .search-result-content {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .search-popup-header {
+        padding: 16px 20px;
+    }
+
+    .search-popup-timer {
+        top: 16px;
+        right: 40px;
+        font-size: 0.75rem;
+    }
 }
 
 @keyframes slideInUp {
@@ -3696,4 +4356,161 @@ td:first-child {
 
 [data-theme="dark"] .context-menu-status.paid {
     background: rgba(247, 37, 133, 0.15);
+}/* Dark mode styles for search popup */
+[data-theme="dark"] .search-popup-content {
+    background: #1a1a1a;
+    border: 1px solid #333;
+}
+
+[data-theme="dark"] .search-popup-header {
+    background: #2d2d2d;
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .search-popup-title {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .search-popup-subtitle {
+    color: #4da6ff;
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .search-popup-timer {
+    color: #4da6ff;
+    background: #1a3a52;
+}
+
+[data-theme="dark"] .search-input-container {
+    background: #2d2d2d;
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .popup-search-input {
+    background: #1a1a1a;
+    color: #4da6ff;
+    border-color: #444;
+}
+
+[data-theme="dark"] .popup-search-input:focus {
+    border-color: #4da6ff;
+    box-shadow: 0 0 0 3px rgba(77, 166, 255, 0.2);
+}
+
+[data-theme="dark"] .search-results-container {
+    background: #1a1a1a;
+}
+
+[data-theme="dark"] .search-result-card {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+[data-theme="dark"] .compact-result-header {
+    background: #2d2d2d;
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .compact-student-name,
+[data-theme="dark"] .compact-student-details,
+[data-theme="dark"] .compact-father-name,
+[data-theme="dark"] .fee-label {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .compact-fee-percentage {
+    background: #1a3a52;
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .compact-fee-percentage.paid {
+    background: var(--success-color);
+    color: white;
+}
+
+[data-theme="dark"] .compact-result-details {
+    background: #2d2d2d;
+    border-top-color: #444;
+}
+
+[data-theme="dark"] .detail-label,
+[data-theme="dark"] .detail-value {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .detail-section-title {
+    color: #4da6ff;
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .fee-installment-item {
+    background: #1a1a1a;
+    border-color: #444;
+}
+
+[data-theme="dark"] .fee-installment-name {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .fee-installment-amount {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .fee-total {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .fee-total-paid {
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .fee-summary-table {
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .fee-summary-table th,
+[data-theme="dark"] .fee-summary-table td {
+    border-bottom-color: #444;
+}
+
+[data-theme="dark"] .fee-summary-table th {
+    background: #2d2d2d;
+    color: #4da6ff;
+}
+
+[data-theme="dark"] .fee-summary-table td {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .fee-summary-table tr.fully-paid {
+    background: rgba(40, 167, 69, 0.1);
+}
+
+[data-theme="dark"] .fee-summary-table tr.has-dues {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+[data-theme="dark"] .fee-summary-table tr.total-row {
+    background: #2d2d2d;
+}
+
+[data-theme="dark"] .fee-summary-table tr.total-row td {
+    border-top-color: #555;
+    border-bottom-color: #555;
+}
+
+[data-theme="dark"] .no-results {
+    color: #4da6ff;
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .popup-close {
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .popup-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }

@@ -16,8 +16,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>SMP Admn Stats</h1>
-            <p class="year-info">Year: 2025-26</p>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>SMP Admn Stats</h1>
+                    <p class="year-info">Year: 2025-26</p>
+                </div>
+                <div class="header-actions">
+                    <button id="globalSearchBtn" class="search-icon-btn" onclick="openSearchPopup()" title="Search Students">
+                        🔍
+                    </button>
+                </div>
+            </div>
             <div class="scrolling-message" title="Double-click the 📢 icon to edit messages">
                 <div class="scrolling-text" id="scrollingText">
                     📅 Last date for fee payment: 31st March 2025 | 📋 Submit original documents by 15th April 2025 | 🎓 Final semester exam registration opens 1st May 2025
@@ -50,14 +59,14 @@
             </div>
 
             <div class="nav-tabs">
-                <button class="nav-tab active" onclick="showSection('statistics')">📊 Statistics</button>
-                <button class="nav-tab" onclick="showSection('students')">👥 Student List</button>
-                <button class="nav-tab" onclick="showSection('examfee')">📝 Exam Fee</button>
-                <button class="nav-tab" onclick="showSection('dues')">💰 Fee Dues List</button>
-                <button class="nav-tab" onclick="showSection('feelist')">📋 Fee List</button>
-                <button class="nav-tab" onclick="showSection('feestats')">💹 Fee Statistics</button>
-                <button class="nav-tab" onclick="showSection('feedistribution')">💸 Fee Distribution</button>
-                <button class="nav-tab" onclick="showSection('notadmitted')">🚫 Not Admitted List</button>
+                <button class="nav-tab active" onclick="showSection('statistics', event)">📊 Statistics</button>
+                <button class="nav-tab" onclick="showSection('students', event)">👥 Student List</button>
+                <button class="nav-tab" onclick="showSection('examfee', event)">📝 Exam Fee</button>
+                <button class="nav-tab" onclick="showSection('dues', event)">💰 Fee Dues List</button>
+                <button class="nav-tab" onclick="showSection('feelist', event)">📋 Fee List</button>
+                <button class="nav-tab" onclick="showSection('feestats', event)">💹 Fee Statistics</button>
+                <button class="nav-tab" onclick="showSection('feedistribution', event)">💸 Fee Distribution</button>
+                <button class="nav-tab" onclick="showSection('notadmitted', event)">🚫 Not Admitted List</button>
             </div>
 
             <div id="statistics" class="section active">
@@ -1214,6 +1223,26 @@
                 <p>Visit daily for updates</p>
                 <p>Last Updated on <span id="popupLastUpdated">--</span></p>
                 <div class="dev-info">by Thejaraj R, SMP</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Search Results Popup -->
+    <div class="search-results-popup" id="searchResultsPopup">
+        <div class="search-popup-content">
+            <div class="search-popup-header">
+                <div class="search-popup-title">Student Search</div>
+                <div class="search-popup-subtitle" id="searchSubtitle">Search by Name, Father's Name, or Registration Number</div>
+                <div class="search-popup-timer" id="searchPopupTimer">Auto-close in 20 seconds</div>
+                <button class="popup-close" onclick="closeSearchResultsPopup()">×</button>
+            </div>
+            <div class="search-popup-body">
+                <div class="search-input-container">
+                    <input type="text" id="popupSearchInput" class="popup-search-input" placeholder="Type to search...">
+                </div>
+                <div class="search-results-container" id="searchResultsBody">
+                    <!-- Search results will be populated here -->
+                </div>
             </div>
         </div>
     </div>
