@@ -21,7 +21,7 @@
     --hover-bg: #f8f9fa;
     --table-hover: #f8f9fa;
     --table-header-bg: #f8f9fa;
-    --table-header-text: #ffffff;
+    --table-header-text: #212529;
     --toggle-bg: #e9ecef;
     
     /* Button and UI colors */
@@ -54,7 +54,7 @@
     --hover-bg: #2a2a2a;
     --table-hover: #2a2a2a;
     --table-header-bg: #272727;
-    --table-header-text: #ffffff;
+    --table-header-text: #e0e0e0;
     --toggle-bg: #333333;
     
     --btn-reset-bg: #333333;
