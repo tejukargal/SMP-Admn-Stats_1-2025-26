@@ -15,6 +15,7 @@ let examFeeDialogKeyHandler = null; // Store the Enter key handler reference
 let popupTimer = null;
 let searchPopupTimer = null;
 let messageIndex = 0;
+let paymentOfSharesData = []; // Store payment of shares data
 const TOTAL_INTAKE_PER_COURSE = 63;
 
 // JSONhost configuration for persistent storage
@@ -483,12 +484,71 @@ async function loadCSVFile() {
         setTimeout(() => {
             // Load not admitted students data in background
             loadNotAdmittedData();
+            // Load payment of shares data
+            loadPaymentOfSharesData();
         }, 100);
-        
+
     } catch (error) {
         console.error('Error loading CSV file:', error);
         showError('Could not load students.csv file. Make sure the file exists in the same directory.');
     }
+}
+
+// Load Payment of Shares data from CSV
+async function loadPaymentOfSharesData() {
+    try {
+        const response = await fetch('Payment of Shares.csv');
+
+        if (!response.ok) {
+            console.warn('Payment of Shares.csv not found, payment analysis will not be available');
+            return;
+        }
+
+        const csvText = await response.text();
+        parsePaymentOfSharesCSV(csvText);
+
+    } catch (error) {
+        console.warn('Error loading Payment of Shares.csv:', error);
+    }
+}
+
+// Parse Payment of Shares CSV data
+function parsePaymentOfSharesCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim());
+
+    if (lines.length === 0) {
+        return;
+    }
+
+    const headers = parseCSVLine(lines[0]).map(h => h.trim());
+
+    paymentOfSharesData = [];
+
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        try {
+            const values = parseCSVLine(line);
+            const payment = {};
+
+            headers.forEach((header, index) => {
+                payment[header] = values[index] ? values[index].trim() : '';
+            });
+
+            // Convert payment amount to number
+            if (payment['Payment Amt']) {
+                payment['Payment Amt'] = parseFloat(payment['Payment Amt'].replace(/,/g, '')) || 0;
+            }
+
+            paymentOfSharesData.push(payment);
+
+        } catch (error) {
+            console.warn('Error parsing payment line:', line, error);
+        }
+    }
+
+    console.log('Payment of Shares data loaded:', paymentOfSharesData.length, 'records');
 }
 
 function updateLastModifiedDate() {
@@ -9210,6 +9270,327 @@ const feeStructure = {
     }
 };
 
+// Payment Analysis Functions
+function formatNumber(amount) {
+    return amount.toLocaleString('en-IN');
+}
+
+function calculatePaymentAnalysis() {
+    // Use the existing fee distribution calculation logic for accuracy
+    const aidedStudents = filteredFeeDistributionData.filter(s => ['CE', 'ME', 'EC', 'CS'].includes(s['Course']));
+    const unaidedStudents = filteredFeeDistributionData.filter(s => s['Course'] === 'EE');
+
+    const aidedDistribution = calculateFeeDistribution(aidedStudents, true);
+    const unaidedDistribution = calculateFeeDistribution(unaidedStudents, false);
+
+    // Calculate total allotted amounts using the same logic as Fee Distribution Summary
+    const allottedAmounts = {
+        Government: aidedDistribution.reduce((sum, item) => sum + item.toGov, 0) + unaidedDistribution.reduce((sum, item) => sum + item.toGov, 0),
+        SVK: aidedDistribution.reduce((sum, item) => sum + item.toSVK, 0) + unaidedDistribution.reduce((sum, item) => sum + item.toSVK, 0),
+        SMP: aidedDistribution.reduce((sum, item) => sum + item.toSMP, 0) + unaidedDistribution.reduce((sum, item) => sum + item.toSMP, 0),
+        Total: aidedDistribution.reduce((sum, item) => sum + item.totalCollected, 0) + unaidedDistribution.reduce((sum, item) => sum + item.totalCollected, 0)
+    };
+
+    // Calculate actual payments from Payment of Shares data
+    const actualPayments = {
+        Government: 0,
+        SVK: 0,
+        SMP: 0
+    };
+
+    paymentOfSharesData.forEach(payment => {
+        const particulars = payment['Particulars'];
+        const amount = payment['Payment Amt'] || 0;
+
+        if (particulars === 'Government') {
+            actualPayments.Government += amount;
+        } else if (particulars === 'SVK') {
+            actualPayments.SVK += amount;
+        } else if (particulars === 'SMP') {
+            actualPayments.SMP += amount;
+        }
+    });
+
+    // Debug logging
+    console.log('Payment Analysis Debug:');
+    console.log('Payment Records:', paymentOfSharesData.length);
+    console.log('Actual Payments:', actualPayments);
+    console.log('Allotted Amounts:', allottedAmounts);
+
+    // Calculate remaining payments
+    const remainingPayments = {
+        Government: allottedAmounts.Government - actualPayments.Government,
+        SVK: allottedAmounts.SVK - actualPayments.SVK,
+        SMP: allottedAmounts.SMP - actualPayments.SMP
+    };
+
+    return {
+        allotted: allottedAmounts,
+        paid: actualPayments,
+        remaining: remainingPayments
+    };
+}
+
+// Display Payment Analysis Table
+function displayPaymentAnalysisTable() {
+    const analysis = calculatePaymentAnalysis();
+
+    const tableHTML = `
+        <div class="content-section">
+            <h2 class="section-title">💳 Payment Analysis - Actual vs Alloted</h2>
+            <div class="section-actions">
+                <button class="btn btn-excel-small" onclick="exportPaymentAnalysisToExcel()" title="Export to Excel">📊 Excel</button>
+                <button class="btn btn-pdf-small" onclick="exportPaymentAnalysisToPDF()" title="Export to PDF">📄 PDF</button>
+            </div>
+            <div class="table-container scrollable-feedistribution">
+                <table id="paymentAnalysisTable">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Alloted Amount (₹)</th>
+                            <th>Paid Amount (₹)</th>
+                            <th>Remaining Amount (₹)</th>
+                            <th>Payment Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Government</td>
+                            <td>${formatNumber(analysis.allotted.Government)}</td>
+                            <td>${formatNumber(analysis.paid.Government)}</td>
+                            <td>${formatNumber(analysis.remaining.Government)}</td>
+                            <td>${getPaymentStatus(analysis.remaining.Government)}</td>
+                        </tr>
+                        <tr>
+                            <td>SVK Management</td>
+                            <td>${formatNumber(analysis.allotted.SVK)}</td>
+                            <td>${formatNumber(analysis.paid.SVK)}</td>
+                            <td>${formatNumber(analysis.remaining.SVK)}</td>
+                            <td>${getPaymentStatus(analysis.remaining.SVK)}</td>
+                        </tr>
+                        <tr>
+                            <td>SMP</td>
+                            <td>${formatNumber(analysis.allotted.SMP)}</td>
+                            <td>${formatNumber(analysis.paid.SMP)}</td>
+                            <td>${formatNumber(analysis.remaining.SMP)}</td>
+                            <td>${getPaymentStatus(analysis.remaining.SMP)}</td>
+                        </tr>
+                        <tr style="font-weight: bold; background-color: var(--table-header-bg);">
+                            <td>Total</td>
+                            <td>${formatNumber(analysis.allotted.Total)}</td>
+                            <td>${formatNumber(analysis.paid.Government + analysis.paid.SVK + analysis.paid.SMP)}</td>
+                            <td>${formatNumber(analysis.remaining.Government + analysis.remaining.SVK + analysis.remaining.SMP)}</td>
+                            <td>${getPaymentStatus(analysis.remaining.Government + analysis.remaining.SVK + analysis.remaining.SMP)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    return tableHTML;
+}
+
+// Get payment status with color coding
+function getPaymentStatus(remainingAmount) {
+    if (remainingAmount === 0) {
+        return '<span style="color: var(--success-color); font-weight: bold;">✓ Paid</span>';
+    } else if (remainingAmount > 0) {
+        return '<span style="color: var(--warning-color); font-weight: bold;">⚠ Pending</span>';
+    } else {
+        return '<span style="color: var(--error-color); font-weight: bold;">⚠ Overpaid</span>';
+    }
+}
+
+// Generate Payment Breakdown Data (sorted by Government, SMP, SVK)
+function generatePaymentBreakdownData() {
+    const breakdown = {
+        Government: [],
+        SMP: [],
+        SVK: []
+    };
+
+    paymentOfSharesData.forEach(payment => {
+        const particulars = payment['Particulars'];
+        const amount = payment['Payment Amt'] || 0;
+        const date = payment['Date'] || '';
+        const remarks = payment['Remarks'] || '';
+        const chqNo = payment['Chq No'] || '';
+
+        if (breakdown.hasOwnProperty(particulars)) {
+            breakdown[particulars].push({
+                date: date,
+                chqNo: chqNo,
+                amount: amount,
+                remarks: remarks
+            });
+        }
+    });
+
+    return breakdown;
+}
+
+// Export Payment Analysis to Excel
+function exportPaymentAnalysisToExcel() {
+    const analysis = calculatePaymentAnalysis();
+    const paymentBreakdown = generatePaymentBreakdownData();
+
+    const getPaymentStatusText = (remaining) => {
+        if (remaining === 0) return 'Paid';
+        else if (remaining > 0) return 'Pending';
+        else return 'Overpaid';
+    };
+
+    // Create workbook with multiple sheets
+    const wb = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+        ['Account', 'Alloted Amount (₹)', 'Paid Amount (₹)', 'Remaining Amount (₹)', 'Payment Status'],
+        ['Government', analysis.allotted.Government, analysis.paid.Government, analysis.remaining.Government, getPaymentStatusText(analysis.remaining.Government)],
+        ['SVK Management', analysis.allotted.SVK, analysis.paid.SVK, analysis.remaining.SVK, getPaymentStatusText(analysis.remaining.SVK)],
+        ['SMP', analysis.allotted.SMP, analysis.paid.SMP, analysis.remaining.SMP, getPaymentStatusText(analysis.remaining.SMP)],
+        ['Total', analysis.allotted.Total, analysis.paid.Government + analysis.paid.SVK + analysis.paid.SMP, analysis.remaining.Government + analysis.remaining.SVK + analysis.remaining.SMP, getPaymentStatusText(analysis.remaining.Government + analysis.remaining.SVK + analysis.remaining.SMP)]
+    ];
+
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Payment Analysis Summary");
+
+    // Payment Breakdown Sheet
+    const breakdownData = [['Sl No', 'Account', 'Date', 'Reference No', 'Amount (₹)', 'Remarks']];
+    let slNo = 1;
+
+    // Process payments in order: Government, SMP, SVK
+    ['Government', 'SMP', 'SVK'].forEach(account => {
+        if (paymentBreakdown[account]) {
+            paymentBreakdown[account].forEach(payment => {
+                breakdownData.push([
+                    slNo++,
+                    account,
+                    payment.date,
+                    payment.chqNo,
+                    payment.amount,
+                    payment.remarks
+                ]);
+            });
+        }
+    });
+
+    const breakdownWs = XLSX.utils.aoa_to_sheet(breakdownData);
+    XLSX.utils.book_append_sheet(wb, breakdownWs, "Payment Breakdown");
+
+    // Auto-adjust column widths
+    const colWidths = [
+        { wch: 8 },  // Sl No
+        { wch: 15 }, // Account
+        { wch: 12 }, // Date
+        { wch: 15 }, // Reference No
+        { wch: 12 }, // Amount
+        { wch: 20 }  // Remarks
+    ];
+    breakdownWs['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, `Payment_Analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// Export Payment Analysis to PDF
+function exportPaymentAnalysisToPDF() {
+    const analysis = calculatePaymentAnalysis();
+    const paymentBreakdown = generatePaymentBreakdownData();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation for better table fitting
+
+    // Add title
+    doc.setFontSize(18);
+    doc.text('SMP Payment Analysis Report', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+    // Add date
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
+
+    // Summary Table
+    const summaryData = [
+        ['Government', analysis.allotted.Government, analysis.paid.Government, analysis.remaining.Government],
+        ['SVK Management', analysis.allotted.SVK, analysis.paid.SVK, analysis.remaining.SVK],
+        ['SMP', analysis.allotted.SMP, analysis.paid.SMP, analysis.remaining.SMP],
+        ['Total', analysis.allotted.Total, analysis.paid.Government + analysis.paid.SVK + analysis.paid.SMP, analysis.remaining.Government + analysis.remaining.SVK + analysis.remaining.SMP]
+    ];
+
+    doc.autoTable({
+        head: [['Account', 'Alloted (₹)', 'Paid (₹)', 'Remaining (₹)']],
+        body: summaryData,
+        startY: 35,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], fontSize: 10 },
+        columnStyles: {
+            0: { cellWidth: 50, fontSize: 9 },
+            1: { cellWidth: 35, halign: 'right', fontSize: 9 },
+            2: { cellWidth: 35, halign: 'right', fontSize: 9 },
+            3: { cellWidth: 35, halign: 'right', fontSize: 9 }
+        }
+    });
+
+    // Payment Breakdown Section
+    const finalY = doc.lastAutoTable.finalY + 15;
+
+    doc.setFontSize(14);
+    doc.text('Payment Breakdown Details', doc.internal.pageSize.getWidth() / 2, finalY, { align: 'center' });
+
+    // Prepare breakdown data
+    const breakdownData = [];
+    let slNo = 1;
+
+    // Process payments in order: Government, SMP, SVK (no account headers)
+    ['Government', 'SMP', 'SVK'].forEach(account => {
+        if (paymentBreakdown[account]) {
+            paymentBreakdown[account].forEach(payment => {
+                breakdownData.push([
+                    slNo++,
+                    account,
+                    payment.date,
+                    payment.chqNo,
+                    payment.amount.toLocaleString('en-IN'),
+                    payment.remarks
+                ]);
+            });
+        }
+    });
+
+    // Add breakdown table
+    doc.autoTable({
+        head: [['Sl No', 'Account', 'Date', 'Reference No', 'Amount (₹)', 'Remarks']],
+        body: breakdownData,
+        startY: finalY + 10,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], fontSize: 8 },
+        styles: { fontSize: 7 },
+        columnStyles: {
+            0: { cellWidth: 15, halign: 'center' },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 20 },
+            3: { cellWidth: 30 },
+            4: { cellWidth: 25, halign: 'right' },
+            5: { cellWidth: 45 }
+        }
+    });
+
+    // Add page numbers
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(
+            `Page ${i} of ${pageCount}`,
+            doc.internal.pageSize.getWidth() - 30,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'right' }
+        );
+    }
+
+    doc.save(`Payment_Analysis_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
 // Initialize Fee Distribution Section
 function initializeFeeDistribution() {
     filteredFeeDistributionData = [...studentsData];
@@ -9341,6 +9722,17 @@ function displayFeeDistributionData() {
     displayFeeDistributionAided();
     displayFeeDistributionUnaided();
     displayFeeDistributionCombined();
+    displayPaymentAnalysis();
+}
+
+// Display Payment Analysis
+function displayPaymentAnalysis() {
+    const paymentAnalysisSection = document.getElementById('paymentAnalysisSection');
+    if (!paymentAnalysisSection) return;
+
+    // Generate the payment analysis table HTML
+    const tableHTML = displayPaymentAnalysisTable();
+    paymentAnalysisSection.innerHTML = tableHTML;
 }
 
 // Display Fee Distribution Student Statistics
@@ -9922,7 +10314,8 @@ function showHideFeeDistributionTables() {
         'feeDistributionSummarySection': ['all', 'summary'],
         'feeDistributionAidedSection': ['all', 'aided'],
         'feeDistributionUnaidedSection': ['all', 'unaided'],
-        'feeDistributionCombinedSection': ['all', 'combined']
+        'feeDistributionCombinedSection': ['all', 'combined'],
+        'paymentAnalysisSection': ['all', 'payment']
     };
     
     Object.entries(sections).forEach(([sectionId, visibleFor]) => {
