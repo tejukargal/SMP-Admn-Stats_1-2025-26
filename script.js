@@ -2718,12 +2718,12 @@ function exportSummaryToPDF() {
     
     doc.setFontSize(14);
     doc.text('Year, Course & Admission Type-wise Student Count', 105, 30, { align: 'center' });
-    
+
     // Generation info
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     const genInfo = `Generated: ${currentDate}`;
-    doc.text(genInfo, 105, 45, { align: 'center' });
+    doc.text(genInfo, 105, 42, { align: 'center' });
     
     // Get table data
     const table = document.getElementById('summaryTable');
@@ -2734,29 +2734,34 @@ function exportSummaryToPDF() {
         return;
     }
     
-    // Table headers
+    // Table headers with improved spacing
     const headers = ['Year', 'Course', 'Regular', 'LTRL', 'SNQ', 'RPTR', 'Total'];
     const startY = 55;
-    
-    doc.setFontSize(9);
+
+    // Optimized column widths for better spacing
+    const colWidths = [30, 28, 25, 24, 24, 24, 25];
+    const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
+    const startX = (210 - tableWidth) / 2; // Center the table on A4 width (210mm)
+
+    doc.setFontSize(10);
     doc.setFont('times', 'bold');
-    
-    doc.setFillColor(240, 240, 240);
-    doc.rect(15, startY - 2, 180, 8, 'F');
-    
-    const colWidths = [25, 25, 22, 22, 22, 22, 22];
-    let xPos = 15;
-    
+
+    // Header background
+    doc.setFillColor(67, 97, 238);
+    doc.rect(startX, startY - 3, tableWidth, 10, 'F');
+    doc.setTextColor(255, 255, 255);
+
+    let xPos = startX;
     headers.forEach((header, index) => {
-        doc.text(header, xPos + 2, startY + 4);
+        doc.text(header, xPos + (colWidths[index] / 2), startY + 4, { align: 'center' });
         xPos += colWidths[index];
     });
-    
+
     doc.setFont(undefined, 'normal');
-    doc.setFontSize(8);
-    
-    let currentY = startY + 12;
-    const rowHeight = 6;
+    doc.setFontSize(9);
+
+    let currentY = startY + 15;
+    const rowHeight = 8;
     const pageHeight = 270;
     
     rows.forEach((row, index) => {
@@ -2771,7 +2776,7 @@ function exportSummaryToPDF() {
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 6);
+                doc.text(header, xPos + (colWidths[i] / 2), currentY + 4, { align: 'center' });
                 xPos += colWidths[i];
             });
             
@@ -2786,21 +2791,21 @@ function exportSummaryToPDF() {
         const isGrandTotal = row.classList.contains('grand-total-row');
         
         if (isSubtotal || isGrandTotal) {
-            doc.setFillColor(67, 97, 238);
-            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
+            doc.setFillColor(52, 152, 219);
+            doc.rect(startX, currentY - 2, tableWidth, rowHeight, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFont('times', 'bold');
         } else if (index % 2 === 0) {
-            doc.setFillColor(250, 250, 250);
-            doc.rect(15, currentY - 2, 270, rowHeight, 'F'); // Optimal width
+            doc.setFillColor(248, 249, 250);
+            doc.rect(startX, currentY - 2, tableWidth, rowHeight, 'F');
             doc.setTextColor(0, 0, 0);
             doc.setFont(undefined, 'normal');
         } else {
             doc.setTextColor(0, 0, 0);
             doc.setFont(undefined, 'normal');
         }
-        
-        xPos = 15;
+
+        xPos = startX;
         
         // Handle Grand Total row special case with proper alignment
         if (isGrandTotal) {
@@ -2822,10 +2827,10 @@ function exportSummaryToPDF() {
                 rptrVal,
                 totalVal
             ];
-            
+
             alignedRowData.forEach((data, i) => {
                 const text = String(data);
-                doc.text(text, xPos + 3, currentY + 4);
+                doc.text(text, xPos + (colWidths[i] / 2), currentY + 5, { align: 'center' });
                 xPos += colWidths[i];
             });
         } else {
@@ -2833,21 +2838,21 @@ function exportSummaryToPDF() {
             const rowData = Array.from(cells).map(cell => cell.textContent.trim());
             rowData.forEach((data, i) => {
                 const text = String(data);
-                doc.text(text, xPos + 3, currentY + 4);
+                doc.text(text, xPos + (colWidths[i] / 2), currentY + 5, { align: 'center' });
                 xPos += colWidths[i];
             });
         }
-        
+
         currentY += rowHeight;
     });
     
-    // Add page numbers
+    // Add page numbers and footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
+        doc.setFontSize(9);
         doc.setFont(undefined, 'normal');
-        doc.setTextColor(0, 0, 0);
+        doc.setTextColor(100, 100, 100);
         doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
         doc.text('SMP Admn Stats 2025-26 - Summary Report', 105, 285, { align: 'center' });
     }
@@ -3085,7 +3090,7 @@ function exportDatewiseToPDF() {
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 6);
+                doc.text(header, xPos + (colWidths[i] / 2), currentY + 4, { align: 'center' });
                 xPos += colWidths[i];
             });
             
@@ -3218,7 +3223,7 @@ function saveToPDF() {
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 6);
+                doc.text(header, xPos + (colWidths[i] / 2), currentY + 4, { align: 'center' });
                 xPos += colWidths[i];
             });
             
@@ -3355,7 +3360,7 @@ function saveDuesToPDF() {
             
             xPos = 15;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + 2, currentY + 6);
+                doc.text(header, xPos + (colWidths[i] / 2), currentY + 4, { align: 'center' });
                 xPos += colWidths[i];
             });
             
