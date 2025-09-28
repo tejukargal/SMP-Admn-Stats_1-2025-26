@@ -371,6 +371,14 @@ function showSection(sectionName, event) {
         event.target.classList.add('active');
     }
 
+    // Hide Payment Analysis section when switching away from Fee Distribution
+    const paymentAnalysisSection = document.getElementById('paymentAnalysisSection');
+    if (paymentAnalysisSection) {
+        if (sectionName !== 'feedistribution') {
+            paymentAnalysisSection.style.display = 'none';
+        }
+    }
+
     // If switching to students section, display student list
     if (sectionName === 'students') {
         if (studentsData.length > 0) {
@@ -1728,7 +1736,6 @@ function generateYearWiseCharts() {
         chartHeader.innerHTML = `
             <div class="year-chart-title">${year} Admissions</div>
             <div class="year-chart-subtitle">Course-wise Student Distribution</div>
-            <div class="year-chart-stats">${totalStudentsThisYear} of ${maxPossibleStudents} seats filled (${completionPercentage}%)</div>
         `;
 
         // Chart wrapper
@@ -1765,23 +1772,14 @@ function generateYearWiseCharts() {
 
         chartWrapper.appendChild(chart);
 
-        // Chart legend
-        const legend = document.createElement('div');
-        legend.className = 'year-chart-legend';
-        legend.innerHTML = `
-            <div class="year-legend-item">
-                <div class="year-legend-color" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));"></div>
-                <span class="year-legend-text">Students Admitted</span>
-            </div>
-            <div class="year-legend-item">
-                <div class="year-legend-color" style="background: var(--border-color);"></div>
-                <span class="year-legend-text">Available Seats: ${TOTAL_INTAKE_PER_COURSE} per course</span>
-            </div>
-        `;
+        // Chart stats (moved below chart)
+        const chartStats = document.createElement('div');
+        chartStats.className = 'year-chart-stats';
+        chartStats.innerHTML = `${totalStudentsThisYear} of ${maxPossibleStudents} seats filled (${completionPercentage}%)`;
 
         yearContainer.appendChild(chartHeader);
         yearContainer.appendChild(chartWrapper);
-        yearContainer.appendChild(legend);
+        yearContainer.appendChild(chartStats);
         yearChartsWrapper.appendChild(yearContainer);
     });
 

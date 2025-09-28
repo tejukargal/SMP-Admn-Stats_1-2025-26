@@ -85,17 +85,21 @@
 body {
     font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
     background: linear-gradient(135deg, var(--bg-color) 0%, #f1f5f9 50%, var(--bg-color) 100%);
-    min-height: 100vh;
+    min-height: auto;
+    height: auto;
     color: var(--text-primary);
     transition: all 0.3s ease;
     line-height: 1.6;
     background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 20px 0 20px;
 }
 
 .header {
@@ -815,11 +819,11 @@ body {
 .year-chart-container {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
     backdrop-filter: blur(20px);
-    border-radius: 16px;
-    padding: 24px 20px;
+    border-radius: 12px;
+    padding: 16px;
     border: 1px solid var(--border-color);
     position: relative;
-    min-width: 500px;
+    min-width: 420px;
     flex-shrink: 0;
     box-shadow: var(--shadow);
 }
@@ -830,34 +834,40 @@ body {
 
 .year-chart-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     position: relative;
     z-index: 10;
 }
 
 .year-chart-title {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 6px;
-}
-
-.year-chart-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
     margin-bottom: 4px;
 }
 
-.year-chart-stats {
+.year-chart-subtitle {
     font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+}
+
+.year-chart-stats {
+    font-size: 0.85rem;
     color: var(--primary-color);
     font-weight: 600;
+    text-align: center;
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
 .year-chart-wrapper {
     position: relative;
-    height: 320px;
-    margin-bottom: 15px;
+    height: 240px;
+    margin-bottom: 0;
 }
 
 .year-chart {
@@ -865,7 +875,7 @@ body {
     align-items: end;
     justify-content: space-around;
     height: 100%;
-    padding: 30px 0 60px 0;
+    padding: 20px 0 40px 0;
     position: relative;
 }
 
@@ -874,52 +884,52 @@ body {
     flex-direction: column;
     align-items: center;
     flex: 1;
-    max-width: 80px;
+    max-width: 70px;
 }
 
 .year-bar-container {
-    height: 220px;
+    height: 160px;
     display: flex;
     align-items: end;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     position: relative;
 }
 
 .year-bar {
-    width: 45px;
-    border-radius: 8px 8px 0 0;
+    width: 40px;
+    border-radius: 0;
     position: relative;
     transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     height: 0%;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    box-shadow: none;
+    border: none;
 }
 
 .year-bar.ce {
-    background: linear-gradient(135deg, var(--ce-color), #1976D2);
-    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+    background: #0ea5e9;
+    box-shadow: none;
 }
 
 .year-bar.me {
-    background: linear-gradient(135deg, var(--me-color), #7B1FA2);
-    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+    background: #a855f7;
+    box-shadow: none;
 }
 
 .year-bar.ec {
-    background: linear-gradient(135deg, var(--ec-color), #F57C00);
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    background: #f97316;
+    box-shadow: none;
 }
 
 .year-bar.cs {
-    background: linear-gradient(135deg, var(--cs-color), #388E3C);
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    background: #10b981;
+    box-shadow: none;
 }
 
 .year-bar.ee {
-    background: linear-gradient(135deg, var(--ee-color), #D84315);
-    box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+    background: #ef4444;
+    box-shadow: none;
 }
 
 .year-bar:hover {
@@ -2737,8 +2747,8 @@ select:hover, input:hover {
 
 .footer {
     text-align: center;
-    padding: 24px 0;
-    margin-top: 32px;
+    padding: 16px 0;
+    margin-top: 20px;
     border-top: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-size: 14px;
@@ -3976,6 +3986,15 @@ td:first-child {
 #paymentAnalysisTable td:not(:first-child) {
     width: 18.75%;
     text-align: right;
+}
+
+/* Ensure Payment Analysis section doesn't take space when hidden */
+#paymentAnalysisSection[style*="display: none"],
+#paymentAnalysisSection[style*="display:none"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 /* Fee Distribution Mobile Responsive */
