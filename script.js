@@ -1065,7 +1065,7 @@ function generateMetrics() {
         const thirdYr = yearBreakdown['3rd Yr'] || 0;
         
         const metricCard = document.createElement('div');
-        metricCard.className = 'metric-card';
+        metricCard.className = `metric-card ${courseColors[course] || ''}`;
         metricCard.style.cursor = 'pointer';
         metricCard.setAttribute('data-course', course);
         metricCard.innerHTML = `
@@ -2367,7 +2367,7 @@ function generateDuesMetrics() {
         };
         
         const metricCard = document.createElement('div');
-        metricCard.className = 'metric-card';
+        metricCard.className = `metric-card ${courseColors[course] || ''}`;
         metricCard.innerHTML = `
             <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
             <div class="metric-label">${course} Students</div>
@@ -2649,7 +2649,7 @@ function generateFilteredDuesMetrics() {
         };
         
         const metricCard = document.createElement('div');
-        metricCard.className = 'metric-card';
+        metricCard.className = `metric-card ${courseColors[course] || ''}`;
         metricCard.innerHTML = `
             <div class="metric-number ${courseColors[course] || ''}">${data.count}</div>
             <div class="metric-label">${course} Students</div>
