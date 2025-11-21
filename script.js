@@ -3320,16 +3320,16 @@ function saveDuesToPDF() {
     doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 27, { align: 'center' });
 
     // Table headers
-    const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Cat', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
+    const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Cat', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
     const startY = 35;
-    
+
     doc.setFontSize(8);
     doc.setFont('times', 'bold');
 
     doc.setFillColor(240, 240, 240);
     doc.rect(10, startY - 2, 276, 8, 'F');
 
-    const colWidths = [8, 22, 22, 8, 12, 16, 14, 14, 10, 16, 16, 16, 16, 16, 16, 16, 16, 18];
+    const colWidths = [8, 28, 28, 8, 12, 16, 14, 14, 16, 16, 16, 16, 16, 16, 16, 16, 18];
     let xPos = 10;
 
     headers.forEach((header, index) => {
@@ -3370,14 +3370,13 @@ function saveDuesToPDF() {
         
         const rowData = [
             serialNumber,
-            (student['Student Name'] || '').substring(0, 11),
-            (student['Father Name'] || '').substring(0, 11),
+            (student['Student Name'] || '').substring(0, 14),
+            (student['Father Name'] || '').substring(0, 14),
             student['Year'] || '',
             student['Course'] || '',
             student['Reg No'] || '',
             (student['Adm Type'] || '').substring(0, 8),
             (student['Adm Cat'] || '').substring(0, 8),
-            student['In/Out'] || '',
             formatAmount(student['SMP Alloted']),
             formatAmount(student['SVK Alloted']),
             formatAmount(student['SMP Paid']),
