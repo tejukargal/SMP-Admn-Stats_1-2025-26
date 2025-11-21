@@ -3301,70 +3301,68 @@ function saveDuesToPDF() {
     const nameFilter = document.getElementById('duesNameFilter').value || 'No Name Filter';
     const currentDate = formatDate(new Date().toISOString().split('T')[0]);
     
-    // Header
-    doc.setFontSize(18);
-    doc.setFont('times', 'bold');
-    doc.text('SMP Admn Stats 2025-26', 148, 20, { align: 'center' });
-    
+    // Header - Compact layout to save space
     doc.setFontSize(14);
-    doc.text('Fee Dues Report', 148, 30, { align: 'center' });
-    
+    doc.setFont('times', 'bold');
+    doc.text('SMP Admn Stats 2025-26 - Fee Dues Report', 148, 12, { align: 'center' });
+
     // Filter Information - Compact horizontal layout
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     const shortNameFilter = nameFilter === 'No Name Filter' ? 'None' : (nameFilter.length > 15 ? nameFilter.substring(0, 15) + '...' : nameFilter);
     const filterInfo = `Generated: ${currentDate} | Course: ${courseFilter} | Year: ${yearFilter} | Name: ${shortNameFilter} | Records: ${filteredDuesData.length}`;
-    doc.text(filterInfo, 148, 45, { align: 'center' });
-    
+    doc.text(filterInfo, 148, 20, { align: 'center' });
+
     // Calculate total dues amount
     const totalDuesAmount = filteredDuesData.reduce((sum, student) => sum + student['Total Dues'], 0);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('times', 'bold');
-    doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 55, { align: 'center' });
-    
+    doc.text(`Total Outstanding Dues: ₹${totalDuesAmount.toLocaleString('en-IN')}`, 148, 27, { align: 'center' });
+
     // Table headers
     const headers = ['Sl', 'Student Name', 'Father Name', 'Yr', 'Course', 'Reg No', 'Adm', 'Cat', 'Status', 'SMP All', 'SVK All', 'SMP Paid', 'SVK Paid', 'SMP Due', 'SVK Due', 'Tot All', 'Tot Paid', 'Tot Due'];
-    const startY = 65;
+    const startY = 35;
     
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setFont('times', 'bold');
-    
+
     doc.setFillColor(240, 240, 240);
-    doc.rect(15, startY - 2, 266, 8, 'F');
-    
-    const colWidths = [8, 20, 20, 8, 10, 15, 12, 12, 8, 15, 15, 15, 15, 15, 15, 15, 15, 15];
-    let xPos = 15;
-    
+    doc.rect(10, startY - 2, 276, 8, 'F');
+
+    const colWidths = [8, 22, 22, 8, 12, 16, 14, 14, 10, 16, 16, 16, 16, 16, 16, 16, 16, 18];
+    let xPos = 10;
+
     headers.forEach((header, index) => {
         doc.text(header, xPos + 2, startY + 4);
         xPos += colWidths[index];
     });
-    
+
     doc.setFont(undefined, 'normal');
-    doc.setFontSize(6);
-    
+    doc.setFontSize(7);
+
     let currentY = startY + 12;
     const rowHeight = 6;
-    const pageHeight = 180;
+    const pageHeight = 185;
     
     filteredDuesData.forEach((student, index) => {
         if (currentY > pageHeight) {
             doc.addPage();
             currentY = 20;
             
+            doc.setFontSize(8);
             doc.setFont('times', 'bold');
             doc.setFillColor(240, 240, 240);
-            doc.rect(15, currentY - 2, 266, 8, 'F');
-            
-            xPos = 15;
+            doc.rect(10, currentY - 2, 276, 8, 'F');
+
+            xPos = 10;
             headers.forEach((header, i) => {
-                doc.text(header, xPos + (colWidths[i] / 2), currentY + 4, { align: 'center' });
+                doc.text(header, xPos + 2, currentY + 4);
                 xPos += colWidths[i];
             });
-            
+
             currentY += 12;
             doc.setFont(undefined, 'normal');
-            doc.setFontSize(6);
+            doc.setFontSize(7);
         }
         
         const serialNumber = String(index + 1).padStart(2, '0');
@@ -3393,13 +3391,13 @@ function saveDuesToPDF() {
         
         if (index % 2 === 0) {
             doc.setFillColor(250, 250, 250);
-            doc.rect(15, currentY - 2, 266, rowHeight, 'F');
+            doc.rect(10, currentY - 2, 276, rowHeight, 'F');
         }
-        
-        xPos = 15;
+
+        xPos = 10;
         rowData.forEach((data, i) => {
             const text = String(data);
-            doc.text(text, xPos + 3, currentY + 4);
+            doc.text(text, xPos + 2, currentY + 4);
             xPos += colWidths[i];
         });
         
